@@ -6,8 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.0.3] - 2024-06-08
 
-- Add keyboard shortcuts for minify css & js files check the [README.md](README#keyboard-shortcuts) for more information
-- Update README.md with new features
+- Add keyboard shortcuts for minify css & js files check the [README.md](README.md#keyboard-shortcuts) for more information
+- Update [README.md](README.md) with new features
 
 
 ## [0.0.2] - 2024-06-08

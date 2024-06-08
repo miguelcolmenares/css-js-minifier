@@ -64,4 +64,4 @@ Contributions are welcome! Feel free to open issues or submit pull requests on t
 
 ## License
 
-This extension is licensed under the [MIT License](LICENSE).
+This extension is licensed under the [MIT License](LICENSE.md).
