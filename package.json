@@ -1,0 +1,94 @@
+{
+	"name": "css-js-minifier",
+	"displayName": "JS & CSS Minifier Tool and Compressor",
+	"description": "Minify CSS and JS files using an toptal API",
+	"version": "0.0.1",
+	"publisher": "Miguel Colmenares",
+	"icon": "images/icon.png",
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onSaveTextDocument"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.minify",
+				"title": "Minify"
+			},
+			{
+				"command": "extension.minifyInNewFile",
+				"title": "Minify and Save as New File"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "extension.minify",
+					"when": "resourceLangId == css || resourceLangId == javascript",
+					"group": "navigation"
+				},
+				{
+					"command": "extension.minifyInNewFile",
+					"when": "resourceLangId == css || resourceLangId == javascript",
+					"group": "navigation"
+				}
+			]
+		},
+		"configuration": {
+			"type": "object",
+			"title": "Minifier Configuration",
+			"properties": {
+				"minifier.minifyOnSave": {
+					"type": "boolean",
+					"default": false,
+					"description": "Minify files automatically on save."
+				},
+				"minifier.minifyInNewFile": {
+					"type": "boolean",
+					"default": false,
+					"description": "Save minified content in a new file."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"compile-tests": "tsc -p . --outDir out",
+		"watch-tests": "tsc -p . -w --outDir out",
+		"pretest": "npm run compile-tests && npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "vscode-test"
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.6",
+		"@types/node": "^18.19.34",
+		"@types/vscode": "^1.90.0",
+		"@typescript-eslint/eslint-plugin": "^7.11.0",
+		"@typescript-eslint/parser": "^7.11.0",
+		"@vscode/test-cli": "^0.0.9",
+		"@vscode/test-electron": "^2.4.0",
+		"eslint": "^8.57.0",
+		"mocha": "^10.4.0",
+		"ts-loader": "^9.5.1",
+		"typescript": "^5.4.5",
+		"webpack": "^5.91.0",
+		"webpack-cli": "^5.1.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/miguelcolmenares/css-js-minifier.git"
+	},
+	"bugs": {
+		"url": "https://github.com/miguelcolmenares/css-js-minifier/issues"
+	},
+	"homepage": "https://github.com/miguelcolmenares/css-js-minifier#readme"
+}
