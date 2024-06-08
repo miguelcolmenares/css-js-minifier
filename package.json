@@ -4,6 +4,9 @@
 	"description": "Minify CSS and JS files using an toptal API",
 	"version": "0.0.1",
 	"publisher": "miguel-colmenares",
+	"sponsor": {
+		"url": "https://github.com/sponsors/miguelcolmenares"
+	},
 	"icon": "images/icon.png",
 	"engines": {
 		"vscode": "^1.90.0"
