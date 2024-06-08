@@ -44,12 +44,12 @@
 			"type": "object",
 			"title": "Minifier Configuration",
 			"properties": {
-				"minifier.minifyOnSave": {
+				"css-js-minifier.minifyOnSave": {
 					"type": "boolean",
 					"default": false,
 					"description": "Minify files automatically on save."
 				},
-				"minifier.minifyInNewFile": {
+				"css-js-minifier.minifyInNewFile": {
 					"type": "boolean",
 					"default": false,
 					"description": "Save minified content in a new file."
@@ -63,8 +63,9 @@
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"compile-tests": "tsc -p . --outDir out",
+		"copy-fixtures": "cp -r ./src/test/fixtures ./out/test/fixtures/",
 		"watch-tests": "tsc -p . -w --outDir out",
-		"pretest": "npm run compile-tests && npm run compile && npm run lint",
+		"pretest": "npm run compile-tests && npm run compile && npm run lint && npm run copy-fixtures",
 		"lint": "eslint src --ext ts",
 		"test": "vscode-test"
 	},

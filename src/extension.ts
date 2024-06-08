@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(minifyInNewFileCommand);
 
 	// Si la configuración minifyOnSave está habilitada, se agrega un listener para minificar al guardar
-	if (vscode.workspace.getConfiguration("minifier").get("minifyOnSave")) {
+	if (vscode.workspace.getConfiguration("css-js-minifier").get("minifyOnSave")) {
 		vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
 			const fileType = document.languageId; // Obtiene el tipo de archivo
 			if (fileType === "css" || fileType === "javascript") {
