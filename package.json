@@ -2,17 +2,37 @@
 	"name": "css-js-minifier",
 	"displayName": "JS & CSS Minifier Tool and Compressor",
 	"description": "Minify CSS and JS files using an toptal API",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "miguel-colmenares",
 	"sponsor": {
 		"url": "https://github.com/sponsors/miguelcolmenares"
 	},
 	"icon": "images/icon.png",
+	"license": "MIT",
+	"author": {
+		"name": "Miguel Colmenares",
+		"email": "me@miguelcolmenares.com"
+	},
+	"galleryBanner": {
+		"color": "#232323",
+		"theme": "dark"
+	},
 	"engines": {
 		"vscode": "^1.90.0"
 	},
 	"categories": [
 		"Other"
+	],
+	"keywords": [
+		"minify",
+		"minifier",
+		"formatter",
+		"format",
+		"compressor",
+		"compress",
+		"css",
+		"javascript",
+		"js"
 	],
 	"activationEvents": [
 		"onSaveTextDocument"
@@ -22,7 +42,7 @@
 		"commands": [
 			{
 				"command": "extension.minify",
-				"title": "Minify"
+				"title": "Minify this File"
 			},
 			{
 				"command": "extension.minifyInNewFile",
@@ -34,12 +54,24 @@
 				{
 					"command": "extension.minify",
 					"when": "resourceLangId == css || resourceLangId == javascript",
-					"group": "navigation"
+					"group": "_CSS&JSMinifier"
 				},
 				{
 					"command": "extension.minifyInNewFile",
 					"when": "resourceLangId == css || resourceLangId == javascript",
-					"group": "navigation"
+					"group": "_CSS&JSMinifier"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "extension.minify",
+					"when": "resourceLangId == css || resourceLangId == javascript",
+					"group": "_CSS&JSMinifier"
+				},
+				{
+					"command": "extension.minifyInNewFile",
+					"when": "resourceLangId == css || resourceLangId == javascript",
+					"group": "_CSS&JSMinifier"
 				}
 			]
 		},
@@ -56,6 +88,27 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Save minified content in a new file."
+				},
+				"css-js-minifier.minifiedNewFilePrefix": {
+					"type": "string",
+					"default": ".min",
+					"enum": [
+						".min",
+						"-min",
+						".compressed",
+						"-compressed",
+						".minified",
+						"-minified"
+					],
+					"enumDescriptions": [
+						"The new file name will have the '.min' extension.",
+						"The new file name will have the '-min' extension.",
+						"The new file name will have the '.compressed' extension.",
+						"The new file name will have the '-compressed' extension.",
+						"The new file name will have the '.minified' extension.",
+						"The new file name will have the '-minified' extension."
+					],
+					"description": "Prefix for the new file name. The extension will be the same as the original file. Only applies when saving minified content in a new file."
 				}
 			}
 		}

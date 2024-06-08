@@ -9,11 +9,28 @@ export function activate(context: vscode.ExtensionContext): void {
 	const minifyCommand = vscode.commands.registerCommand("extension.minify", async () => {
 		// Obtiene el editor de texto activo
 		const editor = vscode.window.activeTextEditor;
+		// Obtiene el archivo seleccionado en el explorador de archivos
+		const explorer = vscode.window.activeTextEditor?.document.uri;
 		if (editor) {
 			const document = editor.document; // Obtiene el documento activo
 			const fileType = document.languageId; // Obtiene el tipo de archivo (css o javascript)
 			const text = document.getText(); // Obtiene el texto del documento
 
+			const minifiedText = await minifyText(text, fileType); // Minifica el texto
+			if (minifiedText) {
+				const edit = new vscode.WorkspaceEdit(); // Crea una nueva edición de trabajo
+				const firstLine = document.lineAt(0); // Obtiene la primera línea del documento
+				const lastLine = document.lineAt(document.lineCount - 1); // Obtiene la última línea del documento
+				const textRange = new vscode.Range(firstLine.range.start, lastLine.range.end); // Crea un rango que abarca todo el documento
+				edit.replace(document.uri, textRange, minifiedText); // Reemplaza el contenido del documento con el texto minificado
+				await vscode.workspace.applyEdit(edit); // Aplica la edición al documento
+				await document.save(); // Guarda el documento
+			}
+		}
+		if (explorer) {
+			const document = await vscode.workspace.openTextDocument(explorer);
+			const fileType = document.languageId; // Obtiene el tipo de archivo (css o javascript)
+			const text = document.getText(); // Obtiene el texto del documento
 			const minifiedText = await minifyText(text, fileType); // Minifica el texto
 			if (minifiedText) {
 				const edit = new vscode.WorkspaceEdit(); // Crea una nueva edición de trabajo
@@ -31,6 +48,11 @@ export function activate(context: vscode.ExtensionContext): void {
 	const minifyInNewFileCommand = vscode.commands.registerCommand("extension.minifyInNewFile", async () => {
 		// Obtiene el editor de texto activo
 		const editor = vscode.window.activeTextEditor;
+		// Obtiene el archivo seleccionado en el explorador de archivos
+		const explorer = vscode.window.activeTextEditor?.document.uri;
+		//Obtiene la configuracion de la extension
+		const settings = vscode.workspace.getConfiguration("css-js-minifier");
+		const newFilePrefix = settings.get("minifiedNewFilePrefix");
 		if (editor) {
 			const document = editor.document; // Obtiene el documento activo
 			const fileType = document.languageId; // Obtiene el tipo de archivo (css o javascript)
@@ -38,7 +60,20 @@ export function activate(context: vscode.ExtensionContext): void {
 			const fileName = document.fileName; // Obtiene el nombre del archivo
 			const minifiedText = await minifyText(text, fileType); // Minifica el texto
 			if (minifiedText) {
-				const newFileName = fileName.replace(/(\.css|\.js)$/, ".min$1"); // Crea un nuevo nombre de archivo con el sufijo .min
+				const newFileName = fileName.replace(/(\.css|\.js)$/, `${newFilePrefix}$1`); // Crea un nuevo nombre de archivo con el sufijo de archivo nuevo especificado en la configuracion
+				const uri = vscode.Uri.file(newFileName); // Crea una nueva URI para el archivo minificado
+				await vscode.workspace.fs.writeFile(uri, Buffer.from(minifiedText, "utf8")); // Escribe el texto minificado en el nuevo archivo
+				vscode.window.showTextDocument(uri); // Abre el nuevo archivo en el editor
+			}
+		}
+		if (explorer) {
+			const document = await vscode.workspace.openTextDocument(explorer);
+			const fileType = document.languageId; // Obtiene el tipo de archivo (css o javascript)
+			const text = document.getText(); // Obtiene el texto del documento
+			const fileName = document.fileName; // Obtiene el nombre del archivo
+			const minifiedText = await minifyText(text, fileType); // Minifica el texto
+			if (minifiedText) {
+				const newFileName = fileName.replace(/(\.css|\.js)$/, `${newFilePrefix}$1`); // Crea un nuevo nombre de archivo con el sufijo de archivo nuevo especificado en la configuracion
 				const uri = vscode.Uri.file(newFileName); // Crea una nueva URI para el archivo minificado
 				await vscode.workspace.fs.writeFile(uri, Buffer.from(minifiedText, "utf8")); // Escribe el texto minificado en el nuevo archivo
 				vscode.window.showTextDocument(uri); // Abre el nuevo archivo en el editor
