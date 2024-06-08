@@ -3,7 +3,7 @@
 	"displayName": "JS & CSS Minifier Tool and Compressor",
 	"description": "Minify CSS and JS files using an toptal API",
 	"version": "0.0.1",
-	"publisher": "Miguel Colmenares",
+	"publisher": "miguel-colmenares",
 	"icon": "images/icon.png",
 	"engines": {
 		"vscode": "^1.90.0"
