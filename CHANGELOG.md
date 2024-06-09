@@ -4,7 +4,7 @@ All notable changes to the "css-js-minifier" extension will be documented in thi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.0.4] - 2024-06-09
+## [0.0.5] - 2024-06-09
 - Update extension icon
 
 ## [0.0.4] - 2024-06-08
