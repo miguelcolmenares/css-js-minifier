@@ -1,8 +1,8 @@
 {
 	"name": "css-js-minifier",
-	"displayName": "JS & CSS Minifier Tool and Compressor",
-	"description": "Minify CSS and JS files directly within Visual Studio Code using the Toptal API. This extension simplifies the process of optimizing your code by providing easy-to-use commands for minification.",
-	"version": "0.0.3",
+	"displayName": "%extension.displayName%",
+	"description": "%extension.description%",
+	"version": "0.0.4",
 	"publisher": "miguel-colmenares",
 	"sponsor": {
 		"url": "https://github.com/sponsors/miguelcolmenares"
@@ -42,11 +42,11 @@
 		"commands": [
 			{
 				"command": "extension.minify",
-				"title": "Minify this File"
+				"title": "%commands.extension.minify.title%"
 			},
 			{
 				"command": "extension.minifyInNewFile",
-				"title": "Minify and Save as New File"
+				"title": "%commands.extension.minifyInNewFile.title%"
 			}
 		],
 		"menus": {
@@ -77,17 +77,17 @@
 		},
 		"configuration": {
 			"type": "object",
-			"title": "Minifier Configuration",
+			"title": "%configuration.title%",
 			"properties": {
 				"css-js-minifier.minifyOnSave": {
 					"type": "boolean",
 					"default": false,
-					"description": "Minify files automatically on save."
+					"description": "%configuration.minifyOnSave%"
 				},
 				"css-js-minifier.minifyInNewFile": {
 					"type": "boolean",
 					"default": false,
-					"description": "Save minified content in a new file."
+					"description": "%configuration.minifyInNewFile%"
 				},
 				"css-js-minifier.minifiedNewFilePrefix": {
 					"type": "string",
@@ -101,14 +101,14 @@
 						"-minified"
 					],
 					"enumDescriptions": [
-						"The new file name will have the '.min' extension.",
-						"The new file name will have the '-min' extension.",
-						"The new file name will have the '.compressed' extension.",
-						"The new file name will have the '-compressed' extension.",
-						"The new file name will have the '.minified' extension.",
-						"The new file name will have the '-minified' extension."
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.1%",
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.2%",
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.3%",
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.4%",
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.5%",
+						"%configuration.minifiedNewFilePrefix.enumDescriptions.6%"
 					],
-					"description": "Prefix for the minified new file. The extension will be the same as the original file. Only applies when saving minified content in a new file."
+					"description": "%configuration.minifiedNewFilePrefix%"
 				}
 			}
 		},
@@ -149,6 +149,8 @@
 		"@types/vscode": "^1.90.0",
 		"@typescript-eslint/eslint-plugin": "^7.11.0",
 		"@typescript-eslint/parser": "^7.11.0",
+		"@vscode/l10n": "^0.0.18",
+		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.9",
 		"@vscode/test-electron": "^2.4.0",
 		"eslint": "^8.57.0",

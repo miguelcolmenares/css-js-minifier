@@ -1,5 +1,12 @@
 # CSS & JS Minifier Extension for VS Code
 
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/miguel-colmenares.css-js-minifier?style=flat-square)
+![GitHub License](https://img.shields.io/github/license/miguelcolmenares/css-js-minifier?style=flat-square)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/master.yml?style=flat-square)
+![Install Extension](https://img.shields.io/badge/Install_extension-blue?style=flat-square&link=vscode%3Aextension%2Fmiguel-colmenares.css-js-minifier)
+
+
+
 ## Description
 
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor. Using the minification service provided by [Toptal](https://www.toptal.com/developers/), this extension makes it quick and easy to optimize your files.

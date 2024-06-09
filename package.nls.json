@@ -1,0 +1,16 @@
+{
+	"extension.displayName": "JS & CSS Minifier Tool and Compressor",
+	"extension.description": "Minify CSS and JS files directly within Visual Studio Code using the Toptal API. This extension simplifies the process of optimizing your code by providing easy-to-use commands for minification.",
+	"commands.extension.minify.title": "Minify this File",
+	"commands.extension.minifyInNewFile.title": "Minify and Save as New File",
+	"configuration.title": "JS & CSS Minifier Tool Configuration",
+	"configuration.minifyOnSave": "Minify files automatically on save.",
+	"configuration.minifyInNewFile": "Save minified content in a new file.",
+	"configuration.minifiedNewFilePrefix": "Prefix for the minified new file. The extension will be the same as the original file. Only applies when saving minified content in a new file.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.1": "The new file name will have the '.min' extension.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.2": "The new file name will have the '-min' extension.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.3": "The new file name will have the '.compressed' extension.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "The new file name will have the '-compressed' extension.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "The new file name will have the '.minified' extension.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "The new file name will have the '-minified' extension."
+}
