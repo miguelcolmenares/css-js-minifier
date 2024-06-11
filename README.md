@@ -11,6 +11,16 @@
 
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor. Using the minification service provided by [Toptal](https://www.toptal.com/developers/), this extension makes it quick and easy to optimize your files.
 
+## Demo
+Minify File through context menu
+
+![Minify File through context menu](https://github.com/miguelcolmenares/css-js-minifier/images/minify.gif)
+
+Minify and Save as New File through context menu
+
+![Minify and Save as New File through context menu](https://github.com/miguelcolmenares/css-js-minifier/images/minify-and-save-as-new-file.gif)
+
+
 ## Key Features
 
 -   **CSS and JavaScript Minification**: Minify open CSS and JS files in the editor using commands from the command palette or the context menu.
