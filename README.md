@@ -14,11 +14,11 @@ The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS 
 ## Demo
 Minify File through context menu
 
-![Minify File through context menu](https://github.com/miguelcolmenares/css-js-minifier/images/minify.gif)
+![Minify File through context menu](images/minify.gif)
 
 Minify and Save as New File through context menu
 
-![Minify and Save as New File through context menu](https://github.com/miguelcolmenares/css-js-minifier/images/minify-and-save-as-new-file.gif)
+![Minify and Save as New File through context menu](images/minify-and-save-as-new-file.gif)
 
 
 ## Key Features
