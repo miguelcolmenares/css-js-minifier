@@ -57,8 +57,8 @@ The extension provides convenient keyboard shortcuts for quick access to its com
     -   `Ctrl+Shift+M` (Windows/Linux)
     -   `Cmd+Shift+M` (Mac)
 -   `Minify and Save as New File`:
-    -   `Ctrl+Shift+Alt+M` (Windows/Linux)
-    -   `Cmd+Shift+Alt+M` (Mac)
+    -   `Ctrl+Shift+Alt+N` (Windows/Linux)
+    -   `Cmd+Shift+Alt+N` (Mac)
 
 ## Installation
 
@@ -80,3 +80,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests on t
 ## License
 
 This extension is licensed under the [MIT License](LICENSE.md).
+
+## Changelog
+
+All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)

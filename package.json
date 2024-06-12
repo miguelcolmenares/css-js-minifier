@@ -2,7 +2,7 @@
 	"name": "css-js-minifier",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"publisher": "miguel-colmenares",
 	"sponsor": {
 		"url": "https://github.com/sponsors/miguelcolmenares"
@@ -146,6 +146,7 @@
 	"devDependencies": {
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^18.19.34",
+		"@types/sinon": "^17.0.3",
 		"@types/vscode": "^1.90.0",
 		"@typescript-eslint/eslint-plugin": "^7.11.0",
 		"@typescript-eslint/parser": "^7.11.0",
@@ -155,6 +156,7 @@
 		"@vscode/test-electron": "^2.4.0",
 		"eslint": "^8.57.0",
 		"mocha": "^10.4.0",
+		"sinon": "^18.0.0",
 		"ts-loader": "^9.5.1",
 		"typescript": "^5.4.5",
 		"webpack": "^5.91.0",
