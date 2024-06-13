@@ -27,6 +27,13 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		}
 	}
 
+	this.afterAll(async function () {
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		await deleteGeneratedFiles(cssUri, prefixes);
+		await deleteGeneratedFiles(jsUri, prefixes);
+	});
+
 	// Test for minifying a CSS file
 	test("Minify CSS file", async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
@@ -59,7 +66,6 @@ suite("JS & CSS Minifier Test Suite", async function () {
 			const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 			const minifiedContent = newDocument.getText();
 			assert.strictEqual(minifiedContent, cssMinifiedContent);
-			await deleteGeneratedFiles(cssUri, [prefix]);
 		});
 	});
 
@@ -74,7 +80,6 @@ suite("JS & CSS Minifier Test Suite", async function () {
 			const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 			const minifiedContent = newDocument.getText();
 			assert.strictEqual(minifiedContent, jsMinifiedContent);
-			await deleteGeneratedFiles(jsUri, [prefix]);
 		});
 	});
 
@@ -89,7 +94,6 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const minifiedContent = newDocument.getText();
 		assert.strictEqual(minifiedContent, cssMinifiedContent);
-		await deleteGeneratedFiles(cssUri, [prefix]);
 	});
 
 	// Test for minifying a JS file and saving it with the configured prefix
@@ -103,7 +107,6 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const minifiedContent = newDocument.getText();
 		assert.strictEqual(minifiedContent, jsMinifiedContent);
-		await deleteGeneratedFiles(jsUri, [prefix]);
 	});
 
 	// Test for minifying a CSS file and saving it as a new file from the explorer context menu
@@ -183,6 +186,5 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const minifiedContent = newDocument.getText();
 		assert.strictEqual(minifiedContent, expectedContent);
-		await deleteGeneratedFiles(newFileUri, [newFilePrefix]);
 	}
 });
