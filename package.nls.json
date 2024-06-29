@@ -1,6 +1,4 @@
 {
-	"extension.displayName": "JS & CSS Minifier Tool and Compressor",
-	"extension.description": "Minify CSS and JS files directly within Visual Studio Code using the Toptal API. This extension simplifies the process of optimizing your code by providing easy-to-use commands for minification.",
 	"commands.extension.minify.title": "Minify this File",
 	"commands.extension.minifyInNewFile.title": "Minify and Save as New File",
 	"configuration.title": "JS & CSS Minifier Tool Configuration",
