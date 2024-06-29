@@ -1,8 +1,31 @@
-import assert from "assert";
-import * as vscode from "vscode";
+import * as fs from "fs";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as fs from "fs";
+import * as vscode from "vscode";
+import assert from "assert";
+
+/**
+ * Deletes the generated files with the specified prefixes.
+ *
+ * @param {vscode.Uri} uri
+ * @param {string[]} prefixes
+ * @returns {Promise<void>}
+ */
+async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]): Promise<void> {
+	for (const prefix of prefixes) {
+		const newFileUri = vscode.Uri.file(uri.fsPath.replace(/(\.css|\.js)$/, `${prefix}$1`));
+		if (fs.existsSync(newFileUri.fsPath)) {
+			fs.unlinkSync(newFileUri.fsPath);
+		}
+	}
+}
+
+// Define expected minified content
+const cssMinifiedContent = "p{color:red}";
+const jsMinifiedContent =
+	'function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
+// Define prefixes for new files
+	const prefixes = [".min", "-min", ".compressed", "-compressed", ".minified", "-minified"];
 
 // Main suite that groups all tests
 suite("JS & CSS Minifier Test Suite", async function () {
@@ -11,21 +34,6 @@ suite("JS & CSS Minifier Test Suite", async function () {
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start all tests.");
-
-	// Define expected minified content
-	const cssMinifiedContent = "p{color:red}";
-	const jsMinifiedContent =
-		'function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
-	const prefixes = [".min", "-min", ".compressed", "-compressed", ".minified", "-minified"];
-
-	async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]) {
-		for (const prefix of prefixes) {
-			const newFileUri = vscode.Uri.file(uri.fsPath.replace(/(\.css|\.js)$/, `${prefix}$1`));
-			if (fs.existsSync(newFileUri.fsPath)) {
-				fs.unlinkSync(newFileUri.fsPath);
-			}
-		}
-	}
 
 	this.afterAll(async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
@@ -87,7 +95,9 @@ suite("JS & CSS Minifier Test Suite", async function () {
 	test("Minify CSS file and save as new file with default prefix", async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
-		const prefix = await vscode.workspace.getConfiguration("css-js-minifier").get("minifiedNewFilePrefix") as string;
+		const prefix = (await vscode.workspace
+			.getConfiguration("css-js-minifier")
+			.get("minifiedNewFilePrefix")) as string;
 		await vscode.window.showTextDocument(cssDocument);
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, `${prefix}$1`));
@@ -100,7 +110,9 @@ suite("JS & CSS Minifier Test Suite", async function () {
 	test("Minify JS file and save as new file with default prefix", async function () {
 		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
 		const jsDocument = await vscode.workspace.openTextDocument(jsUri);
-		const prefix = await vscode.workspace.getConfiguration("css-js-minifier").get("minifiedNewFilePrefix") as string;
+		const prefix = (await vscode.workspace
+			.getConfiguration("css-js-minifier")
+			.get("minifiedNewFilePrefix")) as string;
 		await vscode.window.showTextDocument(jsDocument);
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, `${prefix}$1`));
@@ -187,4 +199,58 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const minifiedContent = newDocument.getText();
 		assert.strictEqual(minifiedContent, expectedContent);
 	}
+});
+
+// Keybinding test suite
+suite("Keybinding Test Suite", async function () {
+	// Set a maximum timeout for each test
+	this.timeout(15000);
+
+	// Show an informational message when starting the tests
+	vscode.window.showInformationMessage("Start keybinding tests.");
+
+	this.afterAll(async function () {
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		await deleteGeneratedFiles(cssUri, prefixes);
+		await deleteGeneratedFiles(jsUri, prefixes);
+	});
+
+	// Test for the keybinding of the minify command
+	test("Keybinding for minify command", async function () {
+		// Create a spy on the command to check if it gets called
+		const executeCommandSpy = sinon.spy(vscode.commands, "executeCommand");
+
+		// Simulate pressing the keybinding
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+		await vscode.window.showTextDocument(cssDocument);
+		await vscode.commands.executeCommand("extension.minify");
+
+		// Check if the command was called
+		assert(executeCommandSpy.calledWith("extension.minify"), "The minify command was not called via keybinding");
+
+		// Restore the original method
+		executeCommandSpy.restore();
+	});
+
+	test("Keybinding for minify in new file command", async function () {
+		// Create a spy on the command to check if it gets called
+		const executeCommandSpy = sinon.spy(vscode.commands, "executeCommand");
+
+		// Simulate pressing the keybinding
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+		await vscode.window.showTextDocument(cssDocument);
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Check if the command was called
+		assert(
+			executeCommandSpy.calledWith("extension.minifyInNewFile"),
+			"The minify in new file command was not called via keybinding",
+		);
+
+		// Restore the original method
+		executeCommandSpy.restore();
+	});
 });
