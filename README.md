@@ -55,10 +55,10 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 
 -   `Minify`:
     -   `alt+ctrl+m` (Windows/Linux)
-    -   `option+command+m` (Mac)
+    -   `option+ctrl+m` (Mac)
 -   `Minify and Save as New File`:
     -   `alt+ctrl+n` (Windows/Linux)
-    -   `option+command+n` (Mac)
+    -   `option+ctrl+n` (Mac)
 
 ## Installation
 

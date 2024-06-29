@@ -5,6 +5,9 @@ All notable changes to the "css-js-minifier" extension will be documented in thi
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [0.0.9] - 2024-06-29
+- Update keybindings configuration to avoid conflicts with macOS default keybindings
+
+## [0.0.9] - 2024-06-29
 - Update keybindings configuration
 - Add test cases
 
