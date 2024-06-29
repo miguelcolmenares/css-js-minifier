@@ -54,11 +54,11 @@ To adjust these settings, add the following lines to your `settings.json` file:
 The extension provides convenient keyboard shortcuts for quick access to its commands:
 
 -   `Minify`:
-    -   `Ctrl+Shift+M` (Windows/Linux)
-    -   `Cmd+Shift+M` (Mac)
+    -   `alt+ctrl+m` (Windows/Linux)
+    -   `option+command+m` (Mac)
 -   `Minify and Save as New File`:
-    -   `Ctrl+Shift+Alt+N` (Windows/Linux)
-    -   `Cmd+Shift+Alt+N` (Mac)
+    -   `alt+ctrl+n` (Windows/Linux)
+    -   `option+command+n` (Mac)
 
 ## Installation
 
