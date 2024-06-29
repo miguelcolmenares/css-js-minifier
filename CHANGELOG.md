@@ -4,6 +4,10 @@ All notable changes to the "css-js-minifier" extension will be documented in thi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.9] - 2024-06-29
+- Update keybindings configuration
+- Add test cases
+
 ## [0.0.8] - 2024-06-12
 - Add file extension validation and content length validation before minifying
 
