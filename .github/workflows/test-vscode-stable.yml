@@ -16,20 +16,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - name: Cache node modules
+        uses: actions/checkout@v5
+      - name: Cache dependencies
         uses: actions/cache@v4
-        id: cache-npm
-        env:
-          cache-name: cache-node-modules
+        id: cache-deps
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+          path: |
+            ~/.npm
+            node_modules
+          key: deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true'}}
+            deps-${{ runner.os }}-
+            deps-
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true'}}
         name: List the state of node modules
         continue-on-error: true
         run: npm list
