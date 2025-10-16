@@ -1,0 +1,67 @@
+# Configuration for Dependabot version updates
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  # Enable version updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    # Allow both direct and indirect updates
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Group minor and patch updates together to reduce PR noise
+    groups:
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "typescript"
+          - "webpack*"
+          - "mocha"
+          - "sinon"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "eslint*"
+          - "typescript"
+          - "webpack*"
+          - "mocha" 
+          - "sinon"
+        update-types:
+          - "minor"
+          - "patch"
+    # Automatically merge security updates
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    # Group all GitHub Actions updates together
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
