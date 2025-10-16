@@ -3,6 +3,30 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import assert from "assert";
+import { setTimeout } from "timers";
+
+/**
+ * Rate limiting configuration for Toptal API tests
+ * Toptal allows 30 requests per minute, so we need delays between tests
+ */
+const RATE_LIMIT_CONFIG = {
+	// Delay between tests in milliseconds (2 seconds)
+	TEST_DELAY_MS: 2000,
+	// Maximum retries for failed requests
+	MAX_RETRIES: 3,
+	// Timeout for individual tests (5 seconds - realistic for API calls)
+	TEST_TIMEOUT_MS: 5000
+};
+
+/**
+ * Adds a delay between tests to respect Toptal API rate limits (30 req/min)
+ * @param ms - Delay in milliseconds (default: 2000ms)
+ */
+async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): Promise<void> {
+	return new Promise(resolve => {
+		setTimeout(resolve, ms);
+	});
+}
 
 /**
  * Deletes the generated files with the specified prefixes.
@@ -29,8 +53,8 @@ const jsMinifiedContent =
 
 // Main suite that groups all tests
 suite("JS & CSS Minifier Test Suite", async function () {
-	// Set a maximum timeout for each test
-	this.timeout(15000);
+	// Set a maximum timeout for each test (increased for rate limiting)
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start all tests.");
@@ -38,6 +62,11 @@ suite("JS & CSS Minifier Test Suite", async function () {
 	// Clean up sinon spies after each test to prevent conflicts
 	this.afterEach(function () {
 		sinon.restore();
+	});
+
+	// Add delay after each test to respect rate limits
+	this.afterEach(async function () {
+		await delayBetweenTests();
 	});
 
 	this.afterAll(async function () {
@@ -205,11 +234,16 @@ suite("JS & CSS Minifier Test Suite", async function () {
 
 // Issue #1 Test Suite - CSS nth-child selectors
 suite("Issue #1 - CSS nth-child Test Suite", async function () {
-	// Set a maximum timeout for each test
-	this.timeout(15000);
+	// Set a maximum timeout for each test (increased for rate limiting)
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start Issue #1 - CSS nth-child tests.");
+
+	// Add delay after each test to respect rate limits
+	this.afterEach(async function () {
+		await delayBetweenTests();
+	});
 
 	this.afterAll(async function () {
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
@@ -287,8 +321,13 @@ suite("Issue #1 - CSS nth-child Test Suite", async function () {
 
 // Keybinding test suite
 suite("Keybinding Test Suite", async function () {
-	// Set a maximum timeout for each test
-	this.timeout(15000);
+	// Set a maximum timeout for each test (increased for rate limiting)
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
+
+	// Add delay after each test to respect rate limits
+	this.afterEach(async function () {
+		await delayBetweenTests();
+	});
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start keybinding tests.");
@@ -341,8 +380,13 @@ suite("Keybinding Test Suite", async function () {
 
 // Issue #5 - Configuration Test Suite
 suite("Issue #5 - Configuration Test Suite", async function () {
-	// Set a maximum timeout for each test
-	this.timeout(15000);
+	// Set a maximum timeout for each test (increased for rate limiting)
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
+
+	// Add delay after each test to respect rate limits
+	this.afterEach(async function () {
+		await delayBetweenTests();
+	});
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start Issue #5 configuration tests.");

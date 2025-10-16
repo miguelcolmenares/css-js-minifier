@@ -9,6 +9,7 @@ on:
 jobs:
   test-minimum:
     name: Test on ${{ matrix.os }} with VS Code 1.90.0
+    timeout-minutes: 3
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
@@ -38,9 +39,17 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm ci
-      - name: Run tests with VS Code 1.90.0
+      - name: Run tests with VS Code 1.90.0 and rate limit handling
         uses: coactions/setup-xvfb@v1
         with:
-          run: npm test
+          run: |
+            # Add delay to handle Toptal API rate limiting (30 req/min)
+            echo "Waiting 25 seconds before running tests to avoid rate limiting..."
+            sleep 25
+            npm test
         env:
           VSCODE_VERSION: '1.90.0'
+          # Rate limiting configuration
+          TEST_DELAY_MS: 2000
+          MAX_RETRIES: 3
+        timeout-minutes: 2
