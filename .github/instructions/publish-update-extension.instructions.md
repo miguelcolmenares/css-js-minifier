@@ -82,7 +82,16 @@ This executes:
 vsce publish
 ```
 
-#### Option B: Package First, Then Publish
+#### Option B: Auto-increment Version While Publishing
+```bash
+# Automatically increment and publish (SemVer)
+vsce publish patch   # 1.0.0 -> 1.0.1
+vsce publish minor   # 1.0.0 -> 1.1.0
+vsce publish major   # 1.0.0 -> 2.0.0
+vsce publish 1.0.1   # Specific version
+```
+
+#### Option C: Package First, Then Publish
 ```bash
 # Create .vsix package for testing/validation
 vsce package
@@ -123,13 +132,18 @@ vsce publish
 
 ### Common Issues
 
-#### 1. Authentication Errors
+#### 1. Authentication Errors (403 Forbidden / 401 Unauthorized)
 ```bash
 # Error: Failed to login
 vsce logout
 vsce login miguel-colmenares
 # Re-enter PAT token
 ```
+
+**Common causes:**
+- PAT token created for specific organization instead of "All accessible organizations"
+- Incorrect scope - must be "Marketplace (Manage)"
+- Expired PAT token
 
 #### 2. Version Conflicts
 ```bash
@@ -151,6 +165,18 @@ npm run vscode:prepublish
 - Publication can take 5-10 minutes to appear
 - Check https://marketplace.visualstudio.com/manage/publishers/miguel-colmenares
 
+#### 5. Extension Name Conflicts
+```bash
+# Error: The extension 'name' already exists in the Marketplace
+# Solution: Change 'name' or 'displayName' in package.json to be unique
+```
+
+#### 6. Too Many Keywords
+```bash
+# Error: You exceeded the number of allowed tags of 30
+# Solution: Limit keywords in package.json to maximum 30
+```
+
 ### Validation Commands
 ```bash
 # Check extension validity
@@ -162,6 +188,12 @@ ls -la dist/
 
 # Test extension locally
 npm run compile-tests && npm test
+
+# Check available vsce commands
+vsce --help
+
+# Test package installation locally
+code --install-extension ./css-js-minifier-X.X.X.vsix
 ```
 
 ## Release Checklist
