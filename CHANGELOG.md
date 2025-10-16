@@ -6,11 +6,30 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Major Refactoring
+
+- **BREAKING REFACTOR**: Restructured codebase into modular architecture
+  - `src/commands/`: Command handlers and core business logic
+  - `src/services/`: External API integration and file operations
+  - `src/utils/`: Validation utilities and helper functions
+
+- Comprehensive JSDoc documentation with practical examples for all functions
+- Modular architecture with clear separation of concerns
+- Enhanced error handling with detailed user feedback
+- Type safety improvements with interfaces and proper typing
+- Reduced main extension file size by 63% (220→81 lines)
+- Eliminated code duplication between minify commands
+- Improved code reusability and maintainability
+- Enhanced documentation standards across all modules
+
+### Technical Improvements
+
 - Migrate to ESLint v9 flat config for better compatibility
 - Optimize GitHub Actions cache strategy across all workflows
 - Optimize CodeQL execution to run only on PRs and weekly schedule
 - Standardize action versions to checkout@v5
 - Improve CI/CD efficiency and reduce resource usage
+- Fix auto-merge workflow: Remove GitHub Actions approval restrictions
 
 ## [0.1.0] - 2024-06-29
 
