@@ -35,6 +35,11 @@ suite("JS & CSS Minifier Test Suite", async function () {
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start all tests.");
 
+	// Clean up sinon spies after each test to prevent conflicts
+	this.afterEach(function () {
+		sinon.restore();
+	});
+
 	this.afterAll(async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
 		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
@@ -151,8 +156,7 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const documentContent = txtDocument.getText();
 		// The content should not change for unsupported file types
 		assert.strictEqual(documentContent, "This is a text file and should not be minified.");
-		assert(showErrorMessageSpy.calledWith("The file type is not supported."));
-		showErrorMessageSpy.restore();
+		assert(showErrorMessageSpy.calledWith("File type 'plaintext' is not supported. Only CSS and JavaScript files can be minified."));
 	});
 
 	// Test for empty CSS file
@@ -165,8 +169,7 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const documentContent = emptyCssDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		assert(showErrorMessageSpy.calledWith("The css file is empty."));
-		showErrorMessageSpy.restore();
+		assert(showErrorMessageSpy.calledWith("Cannot minify empty css file. Please add some content first."));
 	});
 
 	// Test for empty JS file
@@ -179,8 +182,7 @@ suite("JS & CSS Minifier Test Suite", async function () {
 		const documentContent = emptyJsDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		assert(showErrorMessageSpy.calledWith("The javascript file is empty."));
-		showErrorMessageSpy.restore();
+		assert(showErrorMessageSpy.calledWith("Cannot minify empty javascript file. Please add some content first."));
 	});
 
 	// Function to test the explorer context menu functionality
