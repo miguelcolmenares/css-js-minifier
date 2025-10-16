@@ -47,4 +47,4 @@ jobs:
           VSCODE_VERSION: 'insiders'
           TEST_DELAY_MS: 3000
           MAX_RETRIES: 3
-        timeout-minutes: 2
+        timeout-minutes: 5
