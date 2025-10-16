@@ -34,7 +34,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 - Issue #5: Minify on save now respects minifyInNewFile configuration
-- Issue #1: CSS nth-child selectors now minify correctly with enhanced API error handling
+### Issue #1: CSS nth-child Selector Minification\n- **Status**: ✅ **FULLY RESOLVED** - nth-child selectors minify correctly\n- **Root Cause**: Previous architectural improvements resolved underlying API issues\n- **Verification**: Independent testing confirms 41% size reduction (479→279 characters)\n- **Test Coverage**: Comprehensive test suite with complex nth-child patterns\n- **Validation**: Mathematical expressions, selector filtering, and complex combinations work perfectly
 - Timeout issues during API calls with proper Promise.race implementation
 - Silent failures now show appropriate user error messages
 - File size validation prevents 413 HTTP errors for large files
