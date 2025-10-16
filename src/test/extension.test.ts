@@ -33,17 +33,60 @@ async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): 
 }
 
 /**
- * Deletes the generated files with the specified prefixes.
- *
- * @param {vscode.Uri} uri
- * @param {string[]} prefixes
+ * Helper function to safely close VS Code documents to prevent file watcher errors
+ * @param {string[]} filePaths - Array of file paths to close
+ * @returns {Promise<void>}
+ */
+async function closeDocuments(filePaths: string[]): Promise<void> {
+	for (const filePath of filePaths) {
+		const openDocument = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath);
+		if (openDocument) {
+			const editor = vscode.window.visibleTextEditors.find(editor => editor.document.uri.fsPath === filePath);
+			if (editor) {
+				await vscode.window.showTextDocument(openDocument);
+				await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+			}
+		}
+	}
+	// Small delay to ensure file watchers are properly closed
+	await delayBetweenTests(100);
+}
+
+/**
+ * Helper function to delete minified files generated during tests
+ * Properly closes VS Code documents before deletion to avoid file watcher errors
+ * @param {vscode.Uri} uri - The original file URI
+ * @param {string[]} prefixes - Array of prefixes to check for generated files
  * @returns {Promise<void>}
  */
 async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]): Promise<void> {
 	for (const prefix of prefixes) {
 		const newFileUri = vscode.Uri.file(uri.fsPath.replace(/(\.css|\.js)$/, `${prefix}$1`));
+		
+		// Check if file exists before attempting to delete
 		if (fs.existsSync(newFileUri.fsPath)) {
-			fs.unlinkSync(newFileUri.fsPath);
+			// First, close any open document for this file to stop file watchers
+			const openDocument = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === newFileUri.fsPath);
+			if (openDocument) {
+				// Find and close the editor showing this document
+				const editor = vscode.window.visibleTextEditors.find(editor => editor.document.uri.fsPath === newFileUri.fsPath);
+				if (editor) {
+					await vscode.window.showTextDocument(openDocument);
+					await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+					// Small delay to ensure the file watcher is properly closed
+					await delayBetweenTests(100);
+				}
+			}
+			
+			// Now safely delete the file using VS Code's workspace API
+			try {
+				await vscode.workspace.fs.delete(newFileUri);
+			} catch {
+				// Fallback to filesystem deletion if VS Code API fails
+				if (fs.existsSync(newFileUri.fsPath)) {
+					fs.unlinkSync(newFileUri.fsPath);
+				}
+			}
 		}
 	}
 }
@@ -238,13 +281,11 @@ suite("JS & CSS Minifier Test Suite", function () {
 
 // CSS nth-child Test Suite
 suite("CSS nth-child Test Suite", function () {
-	// Set a maximum timeout for each test (increased for rate limiting)
-	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
+	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
+	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		// Set timeout for this hook to 70 seconds (1 minute + buffer)
-		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before CSS nth-child tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
@@ -333,13 +374,11 @@ suite("CSS nth-child Test Suite", function () {
 
 // Keybinding Test Suite
 suite("Keybinding Test Suite", function () {
-	// Set a maximum timeout for each test (increased for rate limiting)
-	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
+	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
+	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		// Set timeout for this hook to 70 seconds (1 minute + buffer)
-		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before Keybinding tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
@@ -400,21 +439,17 @@ suite("Keybinding Test Suite", function () {
 
 // Configuration Test Suite
 suite("Configuration Test Suite", async function () {
-	// Set a maximum timeout for each test (increased significantly for CI)
-	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS * 2);
+	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
+	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		// Set timeout for this hook to 70 seconds (1 minute + buffer)
-		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before Configuration tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
 
 	// Clean up any existing files before starting configuration tests
 	this.beforeAll(async function () {
-		// Set timeout for this hook to handle cleanup operations
-		this.timeout(30000);
 		vscode.window.showInformationMessage("Cleaning up files before configuration tests.");
 		
 		// Reset all configurations to defaults first
@@ -439,10 +474,20 @@ suite("Configuration Test Suite", async function () {
 		const fixturesDir = path.join(__dirname, "fixtures");
 		if (fs.existsSync(fixturesDir)) {
 			const files = fs.readdirSync(fixturesDir);
-			for (const file of files) {
-				if (file.includes("min") || file.includes("compressed")) {
-					const filePath = path.join(fixturesDir, file);
-					if (fs.existsSync(filePath)) {
+			const minifiedFiles = files.filter(file => file.includes("min") || file.includes("compressed"));
+			
+			// Close any open documents for minified files before deletion
+			const filePaths = minifiedFiles.map(file => path.join(fixturesDir, file));
+			await closeDocuments(filePaths);
+			
+			// Now safely delete the files
+			for (const file of minifiedFiles) {
+				const filePath = path.join(fixturesDir, file);
+				if (fs.existsSync(filePath)) {
+					try {
+						await vscode.workspace.fs.delete(vscode.Uri.file(filePath));
+					} catch {
+						// Fallback to filesystem deletion if VS Code API fails
 						fs.unlinkSync(filePath);
 					}
 				}
@@ -625,6 +670,9 @@ suite("Configuration Test Suite", async function () {
 
 	// Test different file prefixes work correctly
 	test("minifiedNewFilePrefix configuration - custom prefix", async function () {
+		// Increase timeout for this specific test
+		this.timeout(30000);
+		
 		// Configure settings with custom prefix
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
 		await config.update("minifyInNewFile", true, true);
@@ -694,6 +742,9 @@ suite("Configuration Test Suite", async function () {
 
 	// Test minifyInNewFile vs in-place behavior
 	test("minifyInNewFile configuration vs in-place minification", async function () {
+		// Increase timeout for this specific test
+		this.timeout(30000);
+		
 		// Copy source file to avoid modification conflicts with other tests
 		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.css");
 		const testFile = path.join(__dirname, "fixtures", "temp-inplace-test.css");
