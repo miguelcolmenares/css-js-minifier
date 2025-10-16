@@ -95,4 +95,4 @@ This extension is licensed under the [MIT License](LICENSE.md).
 
 ## Changelog
 
-All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)
+All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)# Trigger workflows
