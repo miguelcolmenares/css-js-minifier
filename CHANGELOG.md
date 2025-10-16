@@ -22,12 +22,22 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Improved code reusability and maintainability
 - Enhanced documentation standards across all modules
 
+### New Features
+
+- **Robust Timeout Handling**: Added 5000ms timeout for API calls with Promise.race pattern
+  - Handles API responses observed up to 1100ms in performance testing
+  - Specific error messages for timeout vs connectivity issues
+  - Improved user experience with clear, actionable error feedback
+  - Graceful degradation when external APIs are slow or unresponsive
+
 ### Technical Improvements
 
 - Migrate to ESLint v9 flat config for better compatibility
 - Optimize GitHub Actions cache strategy across all workflows
 - Optimize CodeQL execution to run only on PRs and weekly schedule
 - Standardize action versions to checkout@v5
+- Enhanced test suite with automatic Sinon spy cleanup
+- Updated error message validation in tests for new architecture
 - Improve CI/CD efficiency and reduce resource usage
 - Fix auto-merge workflow: Remove GitHub Actions approval restrictions
 
