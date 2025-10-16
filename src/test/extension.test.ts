@@ -203,6 +203,88 @@ suite("JS & CSS Minifier Test Suite", async function () {
 	}
 });
 
+// Issue #1 Test Suite - CSS nth-child selectors
+suite("Issue #1 - CSS nth-child Test Suite", async function () {
+	// Set a maximum timeout for each test
+	this.timeout(15000);
+
+	// Show an informational message when starting the tests
+	vscode.window.showInformationMessage("Start Issue #1 - CSS nth-child tests.");
+
+	this.afterAll(async function () {
+		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
+		await deleteGeneratedFiles(nthChildUri, prefixes);
+	});
+
+	// Test for minifying CSS with nth-child selectors
+	test("Issue #1 - Minify CSS with nth-child selectors", async function () {
+		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
+		const nthChildDocument = await vscode.workspace.openTextDocument(nthChildUri);
+		await vscode.window.showTextDocument(nthChildDocument);
+		
+		// Get original content for debugging
+		const originalContent = nthChildDocument.getText();
+		
+		// Expected minified result based on our curl test
+		const expectedMinified = ".container:nth-child(odd){background-color:#fff;margin:10px}div:nth-child(odd){color:#00f;padding:5px}.item:nth-child(3nof.special){font-weight:700;border:1px solid red}p:nth-child(2n){text-align:center;font-size:14px}.menu-item:nth-child(2n+1of.active){display:block;opacity:.8}";
+		
+		// Execute minify command
+		await vscode.commands.executeCommand("extension.minify");
+		
+		// Get minified content
+		const minifiedContent = nthChildDocument.getText();
+		
+		// DEBUG: Log content to understand what's happening
+		if (minifiedContent === originalContent) {
+			// If content didn't change, this reproduces the issue
+			assert.fail(
+				`Issue #1 REPRODUCED: CSS with nth-child selectors was not minified.\n` +
+				`Original length: ${originalContent.length} characters\n` +
+				`Minified length: ${minifiedContent.length} characters\n` +
+				`Expected result: ${expectedMinified}\n` +
+				`This confirms the bug reported in Issue #1.`
+			);
+		}
+		
+		// If we get here, minification worked - verify the result
+		assert.notStrictEqual(minifiedContent, "", "Minified content should not be empty");
+		assert.notStrictEqual(minifiedContent, originalContent, "Content should be different after minification");
+		
+		// Check that nth-child selectors are preserved
+		assert(minifiedContent.includes("nth-child"), "nth-child selectors should be preserved");
+		
+		// Check that the result is properly minified (no unnecessary whitespace)
+		assert(!minifiedContent.includes("  "), "Should not contain multiple spaces");
+		assert(!minifiedContent.includes("\n"), "Should not contain newlines");
+		
+		// Verify the minified content matches the expected result (or is close to it)
+		const minifiedTrimmed = minifiedContent.trim();
+		assert(minifiedTrimmed.length < originalContent.length, "Minified content should be shorter than original");
+	});
+
+	// Test for minifying CSS with nth-child and saving to new file
+	test("Issue #1 - Minify CSS with nth-child and save as new file", async function () {
+		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
+		const nthChildDocument = await vscode.workspace.openTextDocument(nthChildUri);
+		const prefix = (await vscode.workspace
+			.getConfiguration("css-js-minifier")
+			.get("minifiedNewFilePrefix")) as string;
+		await vscode.window.showTextDocument(nthChildDocument);
+		
+		// Execute minify in new file command
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+		
+		// Check the new minified file
+		const newFileUri = vscode.Uri.file(nthChildDocument.uri.fsPath.replace(/(\.css)$/, `${prefix}$1`));
+		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
+		const minifiedContent = newDocument.getText();
+		
+		// Basic validation
+		assert.notStrictEqual(minifiedContent, "");
+		assert(minifiedContent.includes("nth-child"), "nth-child selectors should be preserved in new file");
+	});
+});
+
 // Keybinding test suite
 suite("Keybinding Test Suite", async function () {
 	// Set a maximum timeout for each test

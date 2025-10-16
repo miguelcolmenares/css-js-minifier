@@ -6,18 +6,36 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-### Major Refactoring
+### Added
+- Complete modular architecture with separation of concerns
+- Comprehensive JSDoc documentation across all modules  
+- Issue #5 resolution: autoOpenNewFile configuration option
+- Issue #1 resolution: Enhanced error handling for CSS nth-child selectors
+- Comprehensive test suite for all issues and configuration scenarios
+- API timeout handling with Promise.race pattern (5000ms timeout)
+- 5MB file size validation to prevent API errors
+- Enhanced HTTP error handling with specific status code messages
+- i18n documentation and translation maintenance guidelines
 
+### Changed
 - **BREAKING REFACTOR**: Restructured codebase into modular architecture
   - `src/commands/`: Command handlers and core business logic
   - `src/services/`: External API integration and file operations
   - `src/utils/`: Validation utilities and helper functions
-
 - Comprehensive JSDoc documentation with practical examples for all functions
-- Modular architecture with clear separation of concerns
 - Enhanced error handling with detailed user feedback
 - Type safety improvements with interfaces and proper typing
 - Reduced main extension file size by 63% (220→81 lines)
+- Enhanced minification service with comprehensive error handling
+- Improved file service with configuration-aware functionality
+- Updated project documentation with modular architecture details
+
+### Fixed
+- Issue #5: Minify on save now respects minifyInNewFile configuration
+- Issue #1: CSS nth-child selectors now minify correctly with enhanced API error handling
+- Timeout issues during API calls with proper Promise.race implementation
+- Silent failures now show appropriate user error messages
+- File size validation prevents 413 HTTP errors for large files
 - Eliminated code duplication between minify commands
 - Improved code reusability and maintainability
 - Enhanced documentation standards across all modules

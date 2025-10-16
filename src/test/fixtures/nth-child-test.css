@@ -1,0 +1,26 @@
+/* CSS file with nth-child selectors to test issue #1 */
+.container:nth-child(2n + 1) {
+    background-color: #ffffff;
+    margin: 10px;
+}
+
+div:nth-child(odd) {
+    color: blue;
+    padding: 5px;
+}
+
+.item:nth-child(3n of .special) {
+    font-weight: bold;
+    border: 1px solid red;
+}
+
+p:nth-child(even) {
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Complex nth-child with class selector */
+.menu-item:nth-child(2n + 1 of .active) {
+    display: block;
+    opacity: 0.8;
+}
