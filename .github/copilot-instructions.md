@@ -98,4 +98,6 @@ HTTP requests to Toptal APIs with form-encoded data:
 ## Security & Code Quality
 - **CodeQL**: Automated security scanning runs on push, PRs, and weekly schedule
 - **Dependabot**: Monitors for security vulnerabilities in dependencies
-- **Critical**: Always review and merge Dependabot security PRs promptly
+- **Auto-merge**: Dependabot PRs automatically merge when all CI checks pass
+- **Workflow Integration**: Auto-merge triggered after Build-Master and all VS Code version tests succeed
+- **Critical**: Monitor auto-merged PRs and manual intervention available if needed

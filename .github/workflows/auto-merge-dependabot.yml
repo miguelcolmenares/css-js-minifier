@@ -1,0 +1,67 @@
+name: Auto-merge Dependabot PRs
+
+on:
+  workflow_run:
+    workflows: ["Build - Master", "Test VS Code Minimum (1.90.0)", "Test VS Code Stable", "Test VS Code Insiders"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    
+    steps:
+      - name: Get PR details
+        id: pr-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.payload.workflow_run.head_sha,
+            });
+            
+            if (pullRequests.length === 0) {
+              console.log('No PR found for this commit');
+              return null;
+            }
+            
+            const pr = pullRequests[0];
+            console.log(`Found PR #${pr.number} by ${pr.user.login}`);
+            
+            return {
+              number: pr.number,
+              user: pr.user.login,
+              mergeable_state: pr.mergeable_state
+            };
+
+      - name: Enable auto-merge for Dependabot PRs
+        if: fromJSON(steps.pr-details.outputs.result).user == 'dependabot[bot]'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ fromJSON(steps.pr-details.outputs.result).number }};
+            
+            // Enable auto-merge
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              event: 'APPROVE'
+            });
+            
+            await github.rest.pulls.enableAutoMerge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: 'squash'
+            });
+            
+            console.log(`Auto-merge enabled for PR #${prNumber}`);
