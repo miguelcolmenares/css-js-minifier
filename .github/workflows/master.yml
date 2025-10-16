@@ -7,10 +7,22 @@ on:
     branches: [ master ]
 
 jobs:
+  # Test extension across multiple VS Code versions and platforms
+  # - 1.90.0: Minimum supported version (engine requirement)
+  # - stable: Current stable release
+  # - insiders: Pre-release version (tested only on Ubuntu for speed)
   test:
+    name: Test on ${{ matrix.os }} with VS Code ${{ matrix.vscode-version }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+        vscode-version: ['1.90.0', 'stable', 'insiders']
+        exclude:
+          # Reduce matrix size by excluding some combinations to speed up CI
+          - os: macos-latest
+            vscode-version: 'insiders'
+          - os: windows-latest
+            vscode-version: 'insiders'
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -43,3 +55,5 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           run: npm test
+        env:
+          VSCODE_VERSION: ${{ matrix.vscode-version }}
