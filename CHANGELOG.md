@@ -4,40 +4,33 @@ All notable changes to the "css-js-minifier" extension will be documented in thi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.0.9] - 2024-06-29
+## [Unreleased]
+
+- Migrate to ESLint v9 flat config for better compatibility
+- Optimize GitHub Actions cache strategy across all workflows
+- Optimize CodeQL execution to run only on PRs and weekly schedule
+- Standardize action versions to checkout@v5
+- Improve CI/CD efficiency and reduce resource usage
+
+## [0.1.0] - 2024-06-29
+
+### Added
+
+- CSS and JavaScript minification using Toptal API
+- Explorer context menu to minify css & js files
+- Keyboard shortcuts for minify css & js files
+- Prefix options for minified files (.min, -min, .compressed, etc.)
+- File extension validation and content length validation before minifying
+- Internazionalization support with Spanish translation
+- Auto-minification on save (configurable)
+- Test cases and comprehensive testing
+
+### Fixed
+
 - Update keybindings configuration to avoid conflicts with macOS default keybindings
+- Demo images in README.md
 
-## [0.0.9] - 2024-06-29
-- Update keybindings configuration
-- Add test cases
+### Changed
 
-## [0.0.8] - 2024-06-12
-- Add file extension validation and content length validation before minifying
-
-## [0.0.7] - 2024-06-11
-- Fix demo images in README.md
-
-## [0.0.6] - 2024-06-11
-- Add demo images to README.md
-
-## [0.0.5] - 2024-06-09
-- Update extension icon
-
-## [0.0.4] - 2024-06-08
-- Add internazionalization support
-- Add spanish translation
-
-## [0.0.3] - 2024-06-08
-
-- Add keyboard shortcuts for minify css & js files check the [README.md](README.md#keyboard-shortcuts) for more information
-- Update [README.md](README.md) with new features
-
-
-## [0.0.2] - 2024-06-08
-
-- Add explorer context menu to minify css & js files
-- Add prefix options to minify css & js files
-
-## [0.0.1] - 2024-06-08
-
-- Initial release
+- Updated extension icon
+- Updated README.md with new features and documentation
