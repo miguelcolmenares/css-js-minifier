@@ -25,10 +25,10 @@ jobs:
           path: |
             ~/.npm
             node_modules
-          key: deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: deps-v2-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            deps-${{ runner.os }}-
-            deps-
+            deps-v2-${{ runner.os }}-
+            deps-v2-
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true'}}
         name: List the state of node modules
         continue-on-error: true
@@ -43,13 +43,11 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           run: |
-            # Add delay to handle Toptal API rate limiting (30 req/min)
             echo "Waiting 25 seconds before running tests to avoid rate limiting..."
             sleep 25
             npm test
         env:
           VSCODE_VERSION: '1.90.0'
-          # Rate limiting configuration
-          TEST_DELAY_MS: 2000
+          TEST_DELAY_MS: 3000
           MAX_RETRIES: 3
         timeout-minutes: 2

@@ -10,8 +10,8 @@ import { setTimeout } from "timers";
  * Toptal allows 30 requests per minute, so we need delays between tests
  */
 const RATE_LIMIT_CONFIG = {
-	// Delay between tests in milliseconds (2 seconds)
-	TEST_DELAY_MS: 2000,
+	// Delay between tests in milliseconds (3 seconds)
+	TEST_DELAY_MS: 3000,
 	// Maximum retries for failed requests
 	MAX_RETRIES: 3,
 	// Timeout for individual tests (5 seconds - realistic for API calls)
@@ -20,7 +20,7 @@ const RATE_LIMIT_CONFIG = {
 
 /**
  * Adds a delay between tests to respect Toptal API rate limits (30 req/min)
- * @param ms - Delay in milliseconds (default: 2000ms)
+ * @param ms - Delay in milliseconds (default: 3000ms)
  */
 async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): Promise<void> {
 	return new Promise(resolve => {
