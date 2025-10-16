@@ -5,28 +5,104 @@ This is a VS Code extension that minifies CSS and JavaScript files using the Top
 
 ## Architecture & Key Components
 
-### Core Extension Structure
-- **`src/extension.ts`**: Main extension entry point with activation/deactivation lifecycle
+### Core Extension Structure (Modular Architecture)
+- **`src/extension.ts`**: Clean entry point (81 lines) - handles activation, command registration, and configuration
+- **`src/commands/`**: Command handlers for VS Code integration
+  - `minifyCommand.ts`: Unified command logic with processDocument() core function
+  - `index.ts`: Command exports with comprehensive documentation
+- **`src/services/`**: Business logic and external integrations
+  - `minificationService.ts`: Toptal API communication with error handling
+  - `fileService.ts`: File system operations and filename utilities
+  - `index.ts`: Service exports with module documentation
+- **`src/utils/`**: Reusable validation and utility functions
+  - `validators.ts`: File type and content validation with user feedback
+  - `index.ts`: Utility exports with module documentation
 - **Two primary commands**: `extension.minify` (in-place) and `extension.minifyInNewFile` (creates `.min` files)
 - **External API dependency**: Uses Toptal's CSS/JS minification APIs via HTTP POST requests
 - **File handling**: Supports both active editor and explorer context actions
 
-### Command Registration Pattern
-Commands are registered in `activate()` and follow this pattern:
+### Command Registration Pattern (Modular)
+Commands are registered in `activate()` using imported handlers:
 ```typescript
-const command = vscode.commands.registerCommand("extension.commandName", async () => {
-  // Get active editor OR explorer selection
-  // Validate file type (css/javascript only)
-  // Call Toptal API for minification
-  // Apply changes via WorkspaceEdit or create new file
-});
+// Clean registration with imported handlers
+const minifyCommandDisposable = vscode.commands.registerCommand("extension.minify", minifyCommand);
+const minifyInNewFileCommandDisposable = vscode.commands.registerCommand("extension.minifyInNewFile", minifyInNewFileCommand);
+
+// Command handlers follow this pattern in commands/minifyCommand.ts:
+async function processDocument(document: vscode.TextDocument, options: MinifyOptions = {}) {
+  // 1. Validate file type and content (utils/validators.ts)
+  // 2. Call minification service (services/minificationService.ts)
+  // 3. Save result using file service (services/fileService.ts)
+}
 ```
 
+### Modular Architecture Benefits
+- **Separation of Concerns**: Each module has a single responsibility
+- **Code Reusability**: No duplicate validation or API logic
+- **Enhanced Testability**: Pure functions easier to unit test
+- **Improved Maintainability**: 63% reduction in main file size (220→81 lines)
+- **Better Documentation**: Comprehensive JSDoc with examples throughout
+- **Scalability**: Easy to add new features without touching core logic
+
 ### Configuration System
-Three settings in `package.json` contribute section:
+Four settings in `package.json` contribute section:
 - `minifyOnSave`: Auto-minify when saving files
 - `minifyInNewFile`: Save to new file instead of overwriting
 - `minifiedNewFilePrefix`: Customize suffix (`.min`, `-min`, `.compressed`, etc.)
+- `autoOpenNewFile`: Automatically open newly created minified files in the editor
+
+### Internationalization (i18n) System
+The extension supports multiple languages through VS Code's `.nls` (Native Language Support) files:
+
+#### Translation Files Structure
+- **`package.nls.json`**: Default English translations (base language)
+- **`package.nls.es.json`**: Spanish translations (locale-specific)
+- **Pattern**: `package.nls.[locale].json` for additional languages
+
+#### Translation Keys and Usage
+All user-facing strings use i18n keys referenced in `package.json`:
+```json
+// In package.json
+"title": "%commands.extension.minify.title%"
+
+// In package.nls.json (English)
+"commands.extension.minify.title": "Minify this File"
+
+// In package.nls.es.json (Spanish)  
+"commands.extension.minify.title": "Minificar este archivo"
+```
+
+#### Supported Translation Categories
+1. **Commands**: Context menu and command palette entries
+   - `commands.extension.minify.title`: Main minify command
+   - `commands.extension.minifyInNewFile.title`: New file minify command
+
+2. **Configuration**: Settings descriptions and options
+   - `configuration.title`: Settings section title
+   - `configuration.minifyOnSave`: Auto-minify on save description
+   - `configuration.minifyInNewFile`: New file creation description
+   - `configuration.minifiedNewFilePrefix`: File naming prefix description
+   - `configuration.autoOpenNewFile`: Auto-open new files description
+
+3. **Enum Descriptions**: Dropdown option explanations
+   - `configuration.minifiedNewFilePrefix.enumDescriptions.[1-6]`: Prefix option descriptions
+
+#### Language Detection
+VS Code automatically selects the appropriate `.nls` file based on:
+- User's VS Code display language setting
+- System locale
+- Falls back to `package.nls.json` (English) if locale not supported
+
+#### Adding New Languages
+To add support for a new language (e.g., French):
+1. Create `package.nls.fr.json` with all translation keys
+2. Translate all string values to French
+3. VS Code will automatically detect and use the file for French users
+
+#### Translation Maintenance
+- **Critical**: Keep all `.nls` files synchronized with identical keys
+- **New Features**: Always add translation keys to all supported language files
+- **Testing**: Verify translations by changing VS Code display language
 
 ## Development Workflows
 
@@ -76,10 +152,27 @@ HTTP requests to Toptal APIs with form-encoded data:
 - **Auto-save**: Listens to `onDidSaveTextDocument` when `minifyOnSave` is enabled
 
 ## Key Files for Extension Development
+
+### Core Files
 - **`package.json`**: Command definitions, menus, keybindings, and configuration schema
-- **`src/extension.ts`**: All core functionality and API integration
-- **`webpack.config.js`**: Node.js target for VS Code extension bundling
+- **`package.nls.json`**: Default English translations for all user-facing strings
+- **`package.nls.es.json`**: Spanish translations with complete key coverage
+- **`src/extension.ts`**: Clean entry point with command registration and lifecycle management
+- **`webpack.config.cjs`**: Node.js target for VS Code extension bundling
 - **`src/test/extension.test.ts`**: Comprehensive test suite with fixture-based testing
+
+### Modular Structure
+- **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic
+- **`src/services/minificationService.ts`**: Toptal API integration with comprehensive error handling
+- **`src/services/fileService.ts`**: File operations (save, replace content, filename generation)
+- **`src/utils/validators.ts`**: File type and content validation with user feedback
+- **`src/*/index.ts`**: Module exports with documentation for each layer
+
+### Documentation Standards
+- **Comprehensive JSDoc**: Every function has detailed documentation with examples
+- **Type Safety**: Interfaces and types for all major data structures
+- **Error Handling**: Documented side effects and error conditions
+- **Usage Examples**: Practical code examples in documentation
 
 ## Testing & Debugging
 - Test files expect specific minified output (hardcoded in test file)

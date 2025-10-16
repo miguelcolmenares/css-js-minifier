@@ -10,5 +10,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.3": "The new file name will have the '.compressed' extension.",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "The new file name will have the '-compressed' extension.",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "The new file name will have the '.minified' extension.",
-	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "The new file name will have the '-minified' extension."
+	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "The new file name will have the '-minified' extension.",
+	"configuration.autoOpenNewFile": "Automatically open newly created minified files in the editor."
 }

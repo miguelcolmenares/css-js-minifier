@@ -37,11 +37,29 @@ Minify and Save as New File through context menu
 -   **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
 -   **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
 -   **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
+-   **File Size Validation**: Automatically validates files are under the 5MB API limit before processing.
+-   **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors, rate limits, and connectivity issues.
 
 ## Available Commands
 
 -   `Minify`: Minifies the current CSS or JS file and overwrites its content.
 -   `Minify and Save as New File`: Minifies the current CSS or JS file and saves the result to a new file with the `.min` suffix.
+
+## API Limitations & Error Handling
+
+The extension uses [Toptal's free minification APIs](https://www.toptal.com/developers/) with the following limitations:
+
+- **Maximum file size**: 5MB per request
+- **Rate limit**: 30 requests per minute  
+- **Supported formats**: CSS and JavaScript only
+- **Content type**: `application/x-www-form-urlencoded`
+
+**Enhanced Error Messages:**
+- **File too large**: Clear indication when files exceed 5MB limit with current file size
+- **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax  
+- **Rate limiting**: Informative message when hitting the 30 requests/minute limit
+- **Network issues**: Specific guidance for connectivity problems vs. API timeouts
+- **Invalid content**: Helpful feedback for unsupported file types or empty files
 
 ## Configuration
 
@@ -50,6 +68,7 @@ You can customize the extension's behavior through the available settings in VS 
 -   `css-js-minifier.minifyOnSave`: Automatically minify CSS and JS files when saving them. (`true` or `false`, default is `false`).
 -   `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
 -   `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
+-   `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
 
 To adjust these settings, add the following lines to your `settings.json` file:
 
@@ -57,7 +76,8 @@ To adjust these settings, add the following lines to your `settings.json` file:
 {
 	"css-js-minifier.minifyOnSave": true,
 	"css-js-minifier.minifyInNewFile": true,
-	"css-js-minifier.minifiedNewFilePrefix": ".min"
+	"css-js-minifier.minifiedNewFilePrefix": ".min",
+	"css-js-minifier.autoOpenNewFile": false
 }
 ```
 
@@ -85,9 +105,20 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 2. Use the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type Minify to access the minification commands.
 3. Alternatively, right-click within the editor and select the desired minification option from the context menu.
 
+## Documentation
+
+For detailed technical documentation, see the [`docs/`](docs/) directory:
+
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
+- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions  
+- **[API Integration](docs/TOPTAL-API.md)** - Toptal API implementation details
+- **[Publishing Workflow](docs/TEST-RATE-LIMITING.md)** - Release and deployment processes
+
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/miguelcolmenares/css-js-minifier.git).
+
+Please review the technical documentation in the [`docs/`](docs/) directory for implementation details and testing guidelines.
 
 ## License
 
@@ -95,4 +126,4 @@ This extension is licensed under the [MIT License](LICENSE.md).
 
 ## Changelog
 
-All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)# Trigger workflows
+All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)

@@ -1,0 +1,8 @@
+/* This is a large CSS file for testing the 5MB limit */
+p { color: red; }
+div { margin: 10px; }
+span { font-size: 14px; }
+/* This file is intentionally kept small for testing, but would simulate a 6MB file in real scenarios */
+.large-class {
+  background: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/...[simulated large base64 data]');
+}
