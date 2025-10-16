@@ -105,9 +105,20 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 2. Use the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type Minify to access the minification commands.
 3. Alternatively, right-click within the editor and select the desired minification option from the context menu.
 
+## Documentation
+
+For detailed technical documentation, see the [`docs/`](docs/) directory:
+
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
+- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions  
+- **[API Integration](docs/TOPTAL-API.md)** - Toptal API implementation details
+- **[Publishing Workflow](docs/TEST-RATE-LIMITING.md)** - Release and deployment processes
+
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/miguelcolmenares/css-js-minifier.git).
+
+Please review the technical documentation in the [`docs/`](docs/) directory for implementation details and testing guidelines.
 
 ## License
 
@@ -115,4 +126,4 @@ This extension is licensed under the [MIT License](LICENSE.md).
 
 ## Changelog
 
-All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)# Trigger workflows
+All notable changes to the "css-js-minifier" extension will be documented in this file. [Change Log](CHANGELOG.md)
