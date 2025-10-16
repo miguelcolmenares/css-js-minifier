@@ -257,5 +257,5 @@ vsce unpublish miguel-colmenares.css-js-minifier@X.X.X
 
 ---
 
-**Last Updated**: October 16, 2025
+**Last Updated**: October 8, 2025
 **Next Review**: Before next major release

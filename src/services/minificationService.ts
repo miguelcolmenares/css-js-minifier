@@ -66,7 +66,7 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * @param {string} fileType - The file type identifier ('css' or 'javascript')
  * @returns {Promise<string | null>} The minified code as a string, or null if minification failed
  * 
-  * @throws {Error} When the API request fails, times out, or returns an invalid response
+  * @throws {Error} API request fails, times out, or returns an invalid response
  * 
  * @sideEffects
  * - Makes an HTTP POST request to external Toptal API with 5-second timeout

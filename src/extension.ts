@@ -6,7 +6,7 @@
  * creating new minified files with configurable prefixes.
  * 
  * @author Miguel Colmenares
- * @version 0.1.0
+ * @version 1.0.0
  * @since 0.1.0
  * @see {@link https://github.com/miguelcolmenares/css-js-minifier} GitHub Repository
  */
