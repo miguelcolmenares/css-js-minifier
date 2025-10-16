@@ -243,6 +243,8 @@ suite("CSS nth-child Test Suite", function () {
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
+		// Set timeout for this hook to 70 seconds (1 minute + buffer)
+		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before CSS nth-child tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
@@ -336,6 +338,8 @@ suite("Keybinding Test Suite", function () {
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
+		// Set timeout for this hook to 70 seconds (1 minute + buffer)
+		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before Keybinding tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
@@ -401,12 +405,16 @@ suite("Configuration Test Suite", async function () {
 
 	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
+		// Set timeout for this hook to 70 seconds (1 minute + buffer)
+		this.timeout(70000);
 		vscode.window.showInformationMessage("Waiting 1 minute before Configuration tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
 
 	// Clean up any existing files before starting configuration tests
 	this.beforeAll(async function () {
+		// Set timeout for this hook to handle cleanup operations
+		this.timeout(30000);
 		vscode.window.showInformationMessage("Cleaning up files before configuration tests.");
 		
 		// Reset all configurations to defaults first
