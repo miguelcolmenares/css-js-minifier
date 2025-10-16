@@ -45,10 +45,64 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 - **Scalability**: Easy to add new features without touching core logic
 
 ### Configuration System
-Three settings in `package.json` contribute section:
+Four settings in `package.json` contribute section:
 - `minifyOnSave`: Auto-minify when saving files
 - `minifyInNewFile`: Save to new file instead of overwriting
 - `minifiedNewFilePrefix`: Customize suffix (`.min`, `-min`, `.compressed`, etc.)
+- `autoOpenNewFile`: Automatically open newly created minified files in the editor
+
+### Internationalization (i18n) System
+The extension supports multiple languages through VS Code's `.nls` (Native Language Support) files:
+
+#### Translation Files Structure
+- **`package.nls.json`**: Default English translations (base language)
+- **`package.nls.es.json`**: Spanish translations (locale-specific)
+- **Pattern**: `package.nls.[locale].json` for additional languages
+
+#### Translation Keys and Usage
+All user-facing strings use i18n keys referenced in `package.json`:
+```json
+// In package.json
+"title": "%commands.extension.minify.title%"
+
+// In package.nls.json (English)
+"commands.extension.minify.title": "Minify this File"
+
+// In package.nls.es.json (Spanish)  
+"commands.extension.minify.title": "Minificar este archivo"
+```
+
+#### Supported Translation Categories
+1. **Commands**: Context menu and command palette entries
+   - `commands.extension.minify.title`: Main minify command
+   - `commands.extension.minifyInNewFile.title`: New file minify command
+
+2. **Configuration**: Settings descriptions and options
+   - `configuration.title`: Settings section title
+   - `configuration.minifyOnSave`: Auto-minify on save description
+   - `configuration.minifyInNewFile`: New file creation description
+   - `configuration.minifiedNewFilePrefix`: File naming prefix description
+   - `configuration.autoOpenNewFile`: Auto-open new files description
+
+3. **Enum Descriptions**: Dropdown option explanations
+   - `configuration.minifiedNewFilePrefix.enumDescriptions.[1-6]`: Prefix option descriptions
+
+#### Language Detection
+VS Code automatically selects the appropriate `.nls` file based on:
+- User's VS Code display language setting
+- System locale
+- Falls back to `package.nls.json` (English) if locale not supported
+
+#### Adding New Languages
+To add support for a new language (e.g., French):
+1. Create `package.nls.fr.json` with all translation keys
+2. Translate all string values to French
+3. VS Code will automatically detect and use the file for French users
+
+#### Translation Maintenance
+- **Critical**: Keep all `.nls` files synchronized with identical keys
+- **New Features**: Always add translation keys to all supported language files
+- **Testing**: Verify translations by changing VS Code display language
 
 ## Development Workflows
 
@@ -101,6 +155,8 @@ HTTP requests to Toptal APIs with form-encoded data:
 
 ### Core Files
 - **`package.json`**: Command definitions, menus, keybindings, and configuration schema
+- **`package.nls.json`**: Default English translations for all user-facing strings
+- **`package.nls.es.json`**: Spanish translations with complete key coverage
 - **`src/extension.ts`**: Clean entry point with command registration and lifecycle management
 - **`webpack.config.cjs`**: Node.js target for VS Code extension bundling
 - **`src/test/extension.test.ts`**: Comprehensive test suite with fixture-based testing
