@@ -80,3 +80,8 @@ HTTP requests to Toptal APIs with form-encoded data:
 - Use `npm run pretest` to compile, lint, and copy fixtures before testing
 - Extension activates on `onSaveTextDocument` event for auto-minification feature
 - Error handling shows user-friendly messages via `vscode.window.showErrorMessage`
+
+## Security & Code Quality
+- **CodeQL**: Automated security scanning runs on push, PRs, and weekly schedule
+- **Dependabot**: Monitors for security vulnerabilities in dependencies
+- **Critical**: Always review and merge Dependabot security PRs promptly
