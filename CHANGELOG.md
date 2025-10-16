@@ -30,6 +30,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Improved user experience with clear, actionable error feedback
   - Graceful degradation when external APIs are slow or unresponsive
 
+- **Enhanced API Error Handling**: Comprehensive error handling based on updated Toptal API documentation
+  - **File Size Validation**: Pre-request validation for 5MB maximum file size limit
+  - **HTTP Status Code Handling**: Specific user messages for all API error codes (400, 405, 406, 413, 422, 429)
+  - **JSON Error Parsing**: Extracts detailed error messages from API JSON responses when available
+  - **Rate Limit Awareness**: Clear messaging when hitting 30 requests/minute limit
+  - **Syntax Error Details**: Informative feedback for CSS/JavaScript syntax errors with precise error descriptions
+
 ### Technical Improvements
 
 - Migrate to ESLint v9 flat config for better compatibility

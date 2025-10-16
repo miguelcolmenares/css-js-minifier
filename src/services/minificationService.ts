@@ -36,6 +36,15 @@ const REQUEST_CONFIG = {
 const API_TIMEOUT_MS = 5000;
 
 /**
+ * Maximum file size allowed by Toptal APIs (5MB in bytes).
+ * Files larger than this will be rejected with HTTP 413 error.
+ * @readonly
+ */
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
+
+
+/**
  * Minifies CSS or JavaScript code using the Toptal minification APIs.
  * 
  * This function sends the provided code to Toptal's free minification service
@@ -44,6 +53,12 @@ const API_TIMEOUT_MS = 5000;
  * 
  * Performance testing shows API response times can vary from 200ms to 1100ms,
  * so a 5-second timeout is implemented to handle network variations gracefully.
+ * 
+ * **API Limitations:**
+ * - Maximum file size: 5MB per request
+ * - Rate limit: 30 requests per minute
+ * - Content type: application/x-www-form-urlencoded only
+ * - HTTP method: POST only
  * 
  * @async
  * @function getMinifiedText
@@ -88,6 +103,16 @@ export async function getMinifiedText(text: string, fileType: string): Promise<s
 		return null;
 	}
 
+	// Validate file size before making API request
+	const fileSizeBytes = new TextEncoder().encode(text).length;
+	if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
+		const sizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
+		vscode.window.showErrorMessage(
+			`File too large: ${sizeMB}MB. Maximum allowed size is 5MB. Please reduce the file size and try again.`
+		);
+		return null;
+	}
+
 	try {
 		// Prepare the request body with form-encoded data
 		const requestBody = new URLSearchParams({ input: text });
@@ -108,11 +133,43 @@ export async function getMinifiedText(text: string, fileType: string): Promise<s
 			timeoutPromise
 		]);
 
-		// Validate the HTTP response status
+		// Handle different HTTP status codes with specific messages
 		if (!response.ok) {
-			throw new Error(
-				`${apiConfig.name} API request failed with status ${response.status}: ${response.statusText}`
-			);
+			let errorMessage = '';
+			
+			// Try to parse JSON error response first
+			try {
+				const errorData = await response.json() as { errors?: Array<{ detail?: string }> };
+				if (errorData.errors && errorData.errors[0]?.detail) {
+					errorMessage = errorData.errors[0].detail;
+				}
+			} catch {
+				// Fall back to status-based messages if JSON parsing fails
+				switch (response.status) {
+					case 400:
+						errorMessage = 'Missing input parameter. Please ensure the file has content.';
+						break;
+					case 405:
+						errorMessage = 'Invalid request method. This is an internal error, please try again.';
+						break;
+					case 406:
+						errorMessage = 'Invalid content type. This is an internal error, please try again.';
+						break;
+					case 413:
+						errorMessage = 'File too large. Maximum allowed size is 5MB. Please reduce the file size.';
+						break;
+					case 422:
+						errorMessage = `Invalid ${fileType} syntax. Please check your code for syntax errors.`;
+						break;
+					case 429:
+						errorMessage = 'Too many requests. API limit is 30 requests per minute. Please wait and try again.';
+						break;
+					default:
+						errorMessage = `${apiConfig.name} API error (${response.status}): ${response.statusText}`;
+				}
+			}
+			
+			throw new Error(errorMessage);
 		}
 
 		// Extract and return the minified text

@@ -37,11 +37,29 @@ Minify and Save as New File through context menu
 -   **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
 -   **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
 -   **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
+-   **File Size Validation**: Automatically validates files are under the 5MB API limit before processing.
+-   **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors, rate limits, and connectivity issues.
 
 ## Available Commands
 
 -   `Minify`: Minifies the current CSS or JS file and overwrites its content.
 -   `Minify and Save as New File`: Minifies the current CSS or JS file and saves the result to a new file with the `.min` suffix.
+
+## API Limitations & Error Handling
+
+The extension uses [Toptal's free minification APIs](https://www.toptal.com/developers/) with the following limitations:
+
+- **Maximum file size**: 5MB per request
+- **Rate limit**: 30 requests per minute  
+- **Supported formats**: CSS and JavaScript only
+- **Content type**: `application/x-www-form-urlencoded`
+
+**Enhanced Error Messages:**
+- **File too large**: Clear indication when files exceed 5MB limit with current file size
+- **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax  
+- **Rate limiting**: Informative message when hitting the 30 requests/minute limit
+- **Network issues**: Specific guidance for connectivity problems vs. API timeouts
+- **Invalid content**: Helpful feedback for unsupported file types or empty files
 
 ## Configuration
 
