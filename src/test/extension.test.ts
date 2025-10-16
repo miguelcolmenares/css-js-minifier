@@ -52,7 +52,7 @@ const jsMinifiedContent =
 	const prefixes = [".min", "-min", ".compressed", "-compressed", ".minified", "-minified"];
 
 // Main suite that groups all tests
-suite("JS & CSS Minifier Test Suite", async function () {
+suite("JS & CSS Minifier Test Suite", function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
@@ -319,8 +319,8 @@ suite("Issue #1 - CSS nth-child Test Suite", async function () {
 	});
 });
 
-// Keybinding test suite
-suite("Keybinding Test Suite", async function () {
+// Keybinding Test Suite
+suite("Keybinding Test Suite", function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
@@ -383,6 +383,59 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
+	// Clean up any existing files before starting configuration tests
+	this.beforeAll(async function () {
+		vscode.window.showInformationMessage("Cleaning up files before Issue #5 configuration tests.");
+		
+		// Clean up any generated minified files from previous tests
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
+		
+		await deleteGeneratedFiles(cssUri, prefixes);
+		await deleteGeneratedFiles(jsUri, prefixes);
+		await deleteGeneratedFiles(nthChildUri, prefixes);
+		
+		// Also clean up any extra minified files that might have been created
+		const fixturesDir = path.join(__dirname, "fixtures");
+		if (fs.existsSync(fixturesDir)) {
+			const files = fs.readdirSync(fixturesDir);
+			for (const file of files) {
+				if (file.includes("min") || file.includes("compressed")) {
+					const filePath = path.join(fixturesDir, file);
+					if (fs.existsSync(filePath)) {
+						fs.unlinkSync(filePath);
+					}
+				}
+			}
+		}
+		
+		// Restore original fixture files from source (they may have been modified in-place by previous tests)
+		const srcFixturesDir = path.join(__dirname, "..", "..", "src", "test", "fixtures");
+		const outFixturesDir = path.join(__dirname, "fixtures");
+		
+		// Copy fresh fixtures from source to restore original content
+		const fixturesToRestore = ["test.css", "test.js", "nth-child-test.css"];
+		for (const fixture of fixturesToRestore) {
+			const srcPath = path.join(srcFixturesDir, fixture);
+			const outPath = path.join(outFixturesDir, fixture);
+			if (fs.existsSync(srcPath)) {
+				const originalContent = fs.readFileSync(srcPath, 'utf8');
+				fs.writeFileSync(outPath, originalContent);
+			}
+		}
+		
+		// Force VS Code to refresh any cached documents by closing them
+		for (const document of vscode.workspace.textDocuments) {
+			if (document.fileName.includes("fixtures")) {
+				await vscode.window.showTextDocument(document);
+				await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+			}
+		}
+		
+		vscode.window.showInformationMessage("File cleanup completed for Issue #5 tests.");
+	});
+
 	// Add delay after each test to respect rate limits
 	this.afterEach(async function () {
 		await delayBetweenTests();
@@ -415,12 +468,20 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 		// Configure settings
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
 		await config.update("autoOpenNewFile", false, true);
+		
+		// Wait for configuration to take effect
+		await delayBetweenTests(500);
+
+		// Copy source file to out directory for this test
+		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.css");
+		const testFile = path.join(__dirname, "fixtures", "temp-test.css");
+		fs.copyFileSync(sourceFile, testFile);
 
 		// Create a spy to monitor showTextDocument calls
 		const showTextDocumentSpy = sinon.spy(vscode.window, "showTextDocument");
 
-		// Open a CSS file and execute minify in new file command
-		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		// Open the copied test file
+		const cssUri = vscode.Uri.file(testFile);
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
 		await vscode.window.showTextDocument(cssDocument);
 
@@ -434,11 +495,22 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 		assert.strictEqual(showTextDocumentSpy.callCount, 0, "New file should NOT have been opened automatically");
 
 		// Verify the new file still exists (just wasn't opened)
-		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".min$1"));
-		assert(fs.existsSync(newFileUri.fsPath), "Minified file should still be created");
+		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\\.css)$/, ".min$1"));
+		assert(fs.existsSync(newFileUri.fsPath), `Minified file should still be created at: ${newFileUri.fsPath}`);
+
+		// Clean up created files
+		if (fs.existsSync(newFileUri.fsPath)) {
+			fs.unlinkSync(newFileUri.fsPath);
+		}
+		if (fs.existsSync(testFile)) {
+			fs.unlinkSync(testFile);
+		}
 
 		// Reset configuration to default
 		await config.update("autoOpenNewFile", true, true);
+
+		// Restore spy
+		showTextDocumentSpy.restore();
 	});
 
 	// Test autoOpenNewFile configuration - enabled (default behavior)
@@ -446,23 +518,50 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 		// Configure settings (this is the default, but being explicit)
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
 		await config.update("autoOpenNewFile", true, true);
+		
+		// Wait for configuration to take effect
+		await delayBetweenTests(500);
 
-		// Open a JS file and execute minify in new file command
-		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		// Copy source file to out directory for this test
+		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.js");
+		const testFile = path.join(__dirname, "fixtures", "temp-test.js");
+		fs.copyFileSync(sourceFile, testFile);
+
+		// Verify the temp file was created and has content
+		assert(fs.existsSync(testFile), `Temporary test file was not created at: ${testFile}`);
+		const tempContent = fs.readFileSync(testFile, "utf8");
+		assert(tempContent.length > 0, "Temporary test file is empty");
+
+		// Open the copied test file
+		const jsUri = vscode.Uri.file(testFile);
 		const jsDocument = await vscode.workspace.openTextDocument(jsUri);
 		await vscode.window.showTextDocument(jsDocument);
+
+		// Additional wait before executing command
+		await delayBetweenTests(500);
 
 		// Execute the minify in new file command
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 
+		// Wait a bit for file creation
+		await delayBetweenTests(1000);
+
 		// Verify the new file exists (auto-open behavior is tested via file creation)
 		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, ".min$1"));
-		assert(fs.existsSync(newFileUri.fsPath), "Minified file was not created");
+		assert(fs.existsSync(newFileUri.fsPath), `Minified file was not created at: ${newFileUri.fsPath}`);
 
 		// Verify the new file has correct minified content
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const newFileContent = newDocument.getText();
 		assert.strictEqual(newFileContent, jsMinifiedContent);
+
+		// Clean up created files
+		if (fs.existsSync(newFileUri.fsPath)) {
+			fs.unlinkSync(newFileUri.fsPath);
+		}
+		if (fs.existsSync(testFile)) {
+			fs.unlinkSync(testFile);
+		}
 	});
 
 	// Test different file prefixes work correctly
@@ -470,6 +569,9 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 		// Configure settings with custom prefix
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
 		await config.update("minifiedNewFilePrefix", ".compressed", true);
+		
+		// Wait for configuration to take effect
+		await delayBetweenTests(500);
 
 		// Open a CSS file
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
