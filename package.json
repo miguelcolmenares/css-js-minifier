@@ -149,7 +149,7 @@
 		"@types/sinon": "^17.0.3",
 		"@types/vscode": "^1.90.0",
 		"@typescript-eslint/eslint-plugin": "^7.11.0",
-		"@typescript-eslint/parser": "^7.11.0",
+		"@typescript-eslint/parser": "^8.46.1",
 		"@vscode/l10n": "^0.0.18",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
