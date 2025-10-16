@@ -8,9 +8,12 @@ on:
 
 jobs:
   test-insiders:
-    name: Test on Ubuntu with VS Code Insiders
+    name: Test on ${{ matrix.os }} with VS Code Insiders
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
