@@ -36,6 +36,12 @@ Three settings in `package.json` contribute section:
 - **Production**: `npm run package` (optimized webpack build)
 - **Combined**: Use VS Code task `tasks: watch-tests` for both
 
+### Pre-Commit Testing
+- **CRITICAL**: Always run `npm test` before committing/pushing changes
+- **Validates**: TypeScript compilation, webpack build, ESLint rules, and all extension functionality
+- **Test Suite**: 23 comprehensive tests covering all minification scenarios and edge cases
+- **Never commit**: Code that fails tests, has compilation errors, or doesn't pass linting
+
 ### Testing Strategy
 Tests use VS Code's extension testing framework with Mocha:
 - **Fixtures**: `src/test/fixtures/` contains test CSS/JS files
