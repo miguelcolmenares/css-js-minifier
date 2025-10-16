@@ -140,7 +140,7 @@
 		"copy-fixtures": "cp -r ./src/test/fixtures ./out/test/fixtures/",
 		"watch-tests": "tsc -p . -w --outDir out",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint && npm run copy-fixtures",
-		"lint": "eslint 'src/**/*.ts'",
+		"lint": "eslint \"src/**/*.ts\"",
 		"test": "vscode-test"
 	},
 	"devDependencies": {
