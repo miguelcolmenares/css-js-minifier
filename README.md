@@ -5,6 +5,10 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/master.yml?style=flat-square)
 [![CodeQL](https://github.com/miguelcolmenares/css-js-minifier/workflows/CodeQL/badge.svg)](https://github.com/miguelcolmenares/css-js-minifier/actions?query=workflow%3ACodeQL "Code quality workflow status")
 
+## Description
+
+The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor. Using the minification service provided by [Toptal](https://www.toptal.com/developers/), this extension makes it quick and easy to optimize your files.
+
 ## VS Code Compatibility Testing
 
 [![VS Code 1.90.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.90.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml "Minimum supported VS Code version - tested on all platforms")
@@ -16,10 +20,6 @@ This extension is thoroughly tested across multiple VS Code versions to ensure c
 - **1.90.0 (Minimum)**: Engine requirement baseline - tested on macOS, Ubuntu, and Windows
 - **Stable**: Current production release - tested on all platforms  
 - **Insiders**: Pre-release builds - tested on Ubuntu for early compatibility validation
-
-## Description
-
-The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor. Using the minification service provided by [Toptal](https://www.toptal.com/developers/), this extension makes it quick and easy to optimize your files.
 
 ## Demo
 Minify File through context menu
