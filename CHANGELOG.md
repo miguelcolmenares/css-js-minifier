@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-10-16
+
 ### Added
 - Complete modular architecture with separation of concerns
 - Comprehensive JSDoc documentation across all modules  
