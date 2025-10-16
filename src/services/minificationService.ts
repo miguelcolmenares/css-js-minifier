@@ -115,9 +115,10 @@ export async function getMinifiedText(text: string, fileType: string): Promise<s
 
 	try {
 		// Prepare the request body with form-encoded data
-		// Fix for Issue #1: Handle + characters in CSS nth-child selectors correctly
-		const requestBody = new URLSearchParams({ input: text });
-		const bodyString = requestBody.toString().replace(/\+/g, '%2B');
+		// Fix for Issue #1: Manual form encoding to handle + characters correctly
+		// The API requires application/x-www-form-urlencoded, but URLSearchParams
+		// converts spaces to + which conflicts with actual + characters in CSS/JS
+		const manuallyEncoded = 'input=' + encodeURIComponent(text);
 		
 		// Create timeout promise that rejects after specified time
 		const timeoutPromise = new Promise<never>((_, reject) => {
@@ -130,7 +131,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<s
 		const response = await Promise.race([
 			fetch(apiConfig.url, {
 				...REQUEST_CONFIG,
-				body: bodyString
+				body: manuallyEncoded
 			}),
 			timeoutPromise
 		]);

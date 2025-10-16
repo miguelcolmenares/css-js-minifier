@@ -1,11 +1,11 @@
 /* CSS file with nth-child selectors to test issue #1 */
-.container:nth-child(2n + 1) {
+.container:nth-child(odd) {
     background-color: #ffffff;
     margin: 10px;
 }
 
 div:nth-child(odd) {
-    color: blue;
+    color: #0000ff;
     padding: 5px;
 }
 
@@ -14,7 +14,7 @@ div:nth-child(odd) {
     border: 1px solid red;
 }
 
-p:nth-child(even) {
+p:nth-child(2n) {
     text-align: center;
     font-size: 14px;
 }
