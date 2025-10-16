@@ -43,8 +43,8 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           run: |
-            echo "Waiting 15 seconds before running tests to avoid rate limiting..."
-            sleep 15
+            echo "Waiting 20 seconds before running tests to avoid rate limiting..."
+            sleep 20
             npm test
         env:
           VSCODE_VERSION: 'stable'
