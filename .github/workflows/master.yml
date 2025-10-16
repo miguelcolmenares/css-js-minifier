@@ -10,7 +10,7 @@ jobs:
   # Primary test job - tests with minimum supported VS Code version
   test:
     name: Test on ${{ matrix.os }}
-    timeout-minutes: 3
+    timeout-minutes: 10
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]

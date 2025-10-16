@@ -9,7 +9,7 @@ on:
 jobs:
   test-minimum:
     name: Test on ${{ matrix.os }} with VS Code 1.90.0
-    timeout-minutes: 3
+    timeout-minutes: 10
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]

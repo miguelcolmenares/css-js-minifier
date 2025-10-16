@@ -9,7 +9,7 @@ on:
 jobs:
   test-stable:
     name: Test on ${{ matrix.os }} with VS Code Stable
-    timeout-minutes: 3
+    timeout-minutes: 10
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]

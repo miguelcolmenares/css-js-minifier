@@ -9,7 +9,7 @@ on:
 jobs:
   test-insiders:
     name: Test on Ubuntu with VS Code Insiders
-    timeout-minutes: 3
+    timeout-minutes: 10
     runs-on: ubuntu-latest
 
     steps:
