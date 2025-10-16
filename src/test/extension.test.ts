@@ -581,23 +581,31 @@ suite("Configuration Test Suite", async function () {
 		await config.update("minifiedNewFilePrefix", ".compressed", true);
 		
 		// Wait for configuration to take effect
-		await delayBetweenTests(1000);
+		await delayBetweenTests(1500);
 
 		// Copy source file to avoid modification issues
 		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.css");
 		const testFile = path.join(__dirname, "fixtures", "temp-custom-test.css");
 		fs.copyFileSync(sourceFile, testFile);
 
+		// Verify the temp file was created and has content
+		assert(fs.existsSync(testFile), `Temporary test file was not created at: ${testFile}`);
+		const tempContent = fs.readFileSync(testFile, "utf8");
+		assert(tempContent.length > 0, "Temporary test file is empty");
+
 		// Open the test file
 		const cssUri = vscode.Uri.file(testFile);
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
 		await vscode.window.showTextDocument(cssDocument);
 
+		// Wait for document to be ready
+		await delayBetweenTests(500);
+
 		// Execute minify in new file command
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 
 		// Wait for file creation
-		await delayBetweenTests(1000);
+		await delayBetweenTests(1500);
 
 		// Verify new file was created with custom prefix
 		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".compressed$1"));
@@ -625,16 +633,27 @@ suite("Configuration Test Suite", async function () {
 
 	// Test minifyInNewFile vs in-place behavior
 	test("minifyInNewFile configuration vs in-place minification", async function () {
+		// Copy source file to avoid modification conflicts with other tests
+		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.css");
+		const testFile = path.join(__dirname, "fixtures", "temp-inplace-test.css");
+		fs.copyFileSync(sourceFile, testFile);
+
 		// Test in-place minification (default behavior)
-		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssUri = vscode.Uri.file(testFile);
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
 		await vscode.window.showTextDocument(cssDocument);
+
+		// Wait for document to be ready
+		await delayBetweenTests(500);
 
 		// Get original content
 		const originalContent = cssDocument.getText();
 
 		// Execute regular minify command (in-place)
 		await vscode.commands.executeCommand("extension.minify");
+
+		// Wait for minification to complete
+		await delayBetweenTests(1000);
 
 		// Verify content was changed in-place
 		const modifiedContent = cssDocument.getText();
@@ -650,8 +669,14 @@ suite("Configuration Test Suite", async function () {
 		await vscode.workspace.applyEdit(edit);
 		await cssDocument.save();
 
+		// Wait for save to complete
+		await delayBetweenTests(500);
+
 		// Now test minifyInNewFile behavior
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Wait for new file creation
+		await delayBetweenTests(1000);
 
 		// Verify original content was NOT changed
 		assert.strictEqual(cssDocument.getText(), originalContent);
@@ -664,5 +689,13 @@ suite("Configuration Test Suite", async function () {
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const newFileContent = newDocument.getText();
 		assert.strictEqual(newFileContent, cssMinifiedContent);
+
+		// Clean up created files
+		if (fs.existsSync(newFileUri.fsPath)) {
+			fs.unlinkSync(newFileUri.fsPath);
+		}
+		if (fs.existsSync(testFile)) {
+			fs.unlinkSync(testFile);
+		}
 	});
 });
