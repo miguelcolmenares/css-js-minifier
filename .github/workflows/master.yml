@@ -51,4 +51,4 @@ jobs:
           VSCODE_VERSION: '1.90.0'
           TEST_DELAY_MS: 3000
           MAX_RETRIES: 3
-        timeout-minutes: 5
+        timeout-minutes: 10

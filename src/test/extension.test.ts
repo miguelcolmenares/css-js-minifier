@@ -18,8 +18,8 @@ const RATE_LIMIT_CONFIG = {
 	TEST_TIMEOUT_MS: 5000,
 	// Delay between configuration tests (increased for CI stability)
 	CONFIG_TEST_DELAY_MS: 5000,
-	// Delay between test suites (1 minute to ensure API rate limit window)
-	SUITE_DELAY_MS: 60000
+	// Delay between test suites (30 seconds to ensure API rate limit compliance while keeping CI under 5min)
+	SUITE_DELAY_MS: 30000
 };
 
 /**
@@ -281,12 +281,12 @@ suite("JS & CSS Minifier Test Suite", function () {
 
 // CSS nth-child Test Suite
 suite("CSS nth-child Test Suite", function () {
-	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
-	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
+	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
+	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
 
-	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
+	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		vscode.window.showInformationMessage("Waiting 1 minute before CSS nth-child tests to avoid API rate limiting...");
+		vscode.window.showInformationMessage("Waiting 30 seconds before CSS nth-child tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
 
@@ -374,12 +374,12 @@ suite("CSS nth-child Test Suite", function () {
 
 // Keybinding Test Suite
 suite("Keybinding Test Suite", function () {
-	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
-	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
+	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
+	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
 
-	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
+	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		vscode.window.showInformationMessage("Waiting 1 minute before Keybinding tests to avoid API rate limiting...");
+		vscode.window.showInformationMessage("Waiting 30 seconds before Keybinding tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
 
@@ -439,12 +439,12 @@ suite("Keybinding Test Suite", function () {
 
 // Configuration Test Suite
 suite("Configuration Test Suite", async function () {
-	// Set a maximum timeout for each test and hooks (increased for 1-minute delays)
-	this.timeout(75000); // 75 seconds to accommodate 1-minute delay + buffer
+	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
+	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
 
-	// Wait 1 minute before starting this suite to avoid API rate limiting conflicts
+	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
 	this.beforeAll(async function () {
-		vscode.window.showInformationMessage("Waiting 1 minute before Configuration tests to avoid API rate limiting...");
+		vscode.window.showInformationMessage("Waiting 30 seconds before Configuration tests to avoid API rate limiting...");
 		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
 	});
 
