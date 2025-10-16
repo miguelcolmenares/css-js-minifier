@@ -112,10 +112,44 @@ To add support for a new language (e.g., French):
 - **Production**: `npm run package` (optimized webpack build)
 - **Combined**: Use VS Code task `tasks: watch-tests` for both
 
+### VS Code Tasks (Recommended Development Workflow)
+The project includes optimized VS Code tasks for efficient development. Access via `Ctrl/Cmd + Shift + P` → "Tasks: Run Task":
+
+#### Testing Tasks
+- **"Test: Run All Tests"** - Complete 29-test suite with compilation and linting (~2 min)
+- **"Test: Configuration Suite Only"** - Configuration tests only (4 tests, ~20s)
+- **"Test: CSS nth-child Suite Only"** - CSS encoding tests only (2 tests, ~7s)  
+- **"Test: Keybinding Suite Only"** - Keyboard shortcut tests (2 tests, ~5s)
+- **"Test: Main Functionality Suite Only"** - Core minification tests (21 tests, ~1.5min)
+- **"Test: Specific Test by Name"** - Run individual test with prompt input
+- **"Test: Compile and Build Only"** - Preparation without testing (~10s)
+- **"Test: Quick Compile and Test"** - Fast TypeScript compilation (~3s)
+
+#### Build & Watch Tasks  
+- **"npm: watch"** - Webpack watch mode (default build task)
+- **"npm: watch-tests"** - TypeScript watch for test files
+- **"tasks: watch-tests"** - Combined extension + test watch mode
+
+#### Development Workflows
+**Feature Development:**
+1. Start: "tasks: watch-tests" (combined watch mode)
+2. Test specific features: "Test: Configuration Suite Only" 
+3. Final validation: "Test: Run All Tests"
+
+**Bug Fixing:**
+1. Identify: "Test: Run All Tests"
+2. Focus: "Test: CSS nth-child Suite Only" (for CSS issues)  
+3. Target: "Test: Specific Test by Name" → enter test name
+4. Verify: "Test: Run All Tests"
+
+**Pre-commit:**
+1. Build check: "Test: Compile and Build Only"
+2. Full validation: "Test: Run All Tests" (ensure 29/29 passing)
+
 ### Pre-Commit Testing
-- **CRITICAL**: Always run `npm test` before committing/pushing changes
+- **CRITICAL**: Always run "Test: Run All Tests" before committing/pushing changes
 - **Validates**: TypeScript compilation, webpack build, ESLint rules, and all extension functionality
-- **Test Suite**: 23 comprehensive tests covering all minification scenarios and edge cases
+- **Test Suite**: 29 comprehensive tests covering all minification scenarios and edge cases
 - **Never commit**: Code that fails tests, has compilation errors, or doesn't pass linting
 
 ### Testing Strategy
@@ -151,7 +185,7 @@ HTTP requests to Toptal APIs with form-encoded data:
 - **New file**: Uses `vscode.workspace.fs.writeFile` with regex-based filename transformation
 - **Auto-save**: Listens to `onDidSaveTextDocument` when `minifyOnSave` is enabled
 
-## Key Files for Extension Development
+### Key Files for Extension Development
 
 ### Core Files
 - **`package.json`**: Command definitions, menus, keybindings, and configuration schema
@@ -160,6 +194,8 @@ HTTP requests to Toptal APIs with form-encoded data:
 - **`src/extension.ts`**: Clean entry point with command registration and lifecycle management
 - **`webpack.config.cjs`**: Node.js target for VS Code extension bundling
 - **`src/test/extension.test.ts`**: Comprehensive test suite with fixture-based testing
+- **`.vscode/tasks.json`**: Optimized VS Code tasks for development and testing workflows
+- **`.vscode/README.md`**: Complete guide for VS Code tasks usage and development workflows
 
 ### Modular Structure
 - **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic
@@ -176,6 +212,9 @@ HTTP requests to Toptal APIs with form-encoded data:
 
 ## Testing & Debugging
 - Test files expect specific minified output (hardcoded in test file)
+- **Recommended**: Use VS Code tasks for efficient testing workflows
+- **Quick testing**: Use "Test: Configuration Suite Only" or specific suite tasks
+- **Full validation**: Use "Test: Run All Tests" before commits
 - Use `npm run pretest` to compile, lint, and copy fixtures before testing
 - Extension activates on `onSaveTextDocument` event for auto-minification feature
 - Error handling shows user-friendly messages via `vscode.window.showErrorMessage`
