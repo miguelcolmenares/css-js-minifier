@@ -6,7 +6,7 @@
 		{
 			"type": "npm",
 			"script": "watch",
-			"problemMatcher": "$ts-webpack-watch",
+			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
 				"reveal": "never",
@@ -35,6 +35,162 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "Test: Run All Tests",
+			"type": "shell",
+			"command": "npm",
+			"args": ["test"],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run complete test suite (29 tests) with compilation and linting"
+		},
+		{
+			"label": "Test: Compile and Build Only",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "pretest"],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": ["$tsc", "$eslint-stylish"],
+			"detail": "Compile TypeScript, run webpack, lint code, and copy fixtures"
+		},
+		{
+			"label": "Test: Configuration Suite Only",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vscode-test", "--grep", "Configuration Test Suite"],
+			"group": "test",
+			"dependsOn": "Test: Compile and Build Only",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run only Configuration Test Suite (4 tests) - autoOpenNewFile, custom prefixes, etc."
+		},
+		{
+			"label": "Test: CSS nth-child Suite Only",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vscode-test", "--grep", "CSS nth-child Test Suite"],
+			"group": "test",
+			"dependsOn": "Test: Compile and Build Only",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run only CSS nth-child Test Suite (2 tests) - CSS selector minification with + characters"
+		},
+		{
+			"label": "Test: Keybinding Suite Only",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vscode-test", "--grep", "Keybinding Test Suite"],
+			"group": "test",
+			"dependsOn": "Test: Compile and Build Only",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run only Keybinding Test Suite (2 tests) - keyboard shortcuts and command palette"
+		},
+		{
+			"label": "Test: Main Functionality Suite Only",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vscode-test", "--grep", "JS & CSS Minifier Test Suite"],
+			"group": "test",
+			"dependsOn": "Test: Compile and Build Only",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run only Main Functionality Test Suite (21 tests) - core minification features"
+		},
+		{
+			"label": "Test: Specific Test by Name",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"vscode-test", 
+				"--grep", 
+				"${input:testName}"
+			],
+			"group": "test",
+			"dependsOn": "Test: Compile and Build Only",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Run specific test by name (you will be prompted to enter the test name)"
+		},
+		{
+			"label": "Test: Quick Compile and Test",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "compile-tests"],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": ["$tsc"],
+			"detail": "Quick TypeScript compilation for tests (no webpack, no linting)"
+		}
+	],
+	"inputs": [
+		{
+			"id": "testName",
+			"description": "Enter the test name to run (partial match allowed)",
+			"default": "autoOpenNewFile",
+			"type": "promptString"
 		}
 	]
 }

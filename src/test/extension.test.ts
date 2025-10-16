@@ -232,13 +232,13 @@ suite("JS & CSS Minifier Test Suite", function () {
 	}
 });
 
-// Issue #1 Test Suite - CSS nth-child selectors
-suite("Issue #1 - CSS nth-child Test Suite", async function () {
+// CSS nth-child Test Suite
+suite("CSS nth-child Test Suite", async function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
-	vscode.window.showInformationMessage("Start Issue #1 - CSS nth-child tests.");
+	vscode.window.showInformationMessage("Start CSS nth-child tests.");
 
 	// Add delay after each test to respect rate limits
 	this.afterEach(async function () {
@@ -251,7 +251,7 @@ suite("Issue #1 - CSS nth-child Test Suite", async function () {
 	});
 
 	// Test for minifying CSS with nth-child selectors
-	test("Issue #1 - Minify CSS with nth-child selectors", async function () {
+	test("Minify CSS with nth-child selectors", async function () {
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
 		const nthChildDocument = await vscode.workspace.openTextDocument(nthChildUri);
 		await vscode.window.showTextDocument(nthChildDocument);
@@ -272,11 +272,11 @@ suite("Issue #1 - CSS nth-child Test Suite", async function () {
 		if (minifiedContent === originalContent) {
 			// If content didn't change, this reproduces the issue
 			assert.fail(
-				`Issue #1 REPRODUCED: CSS with nth-child selectors was not minified.\n` +
+				`CSS nth-child selectors were not minified.\n` +
 				`Original length: ${originalContent.length} characters\n` +
 				`Minified length: ${minifiedContent.length} characters\n` +
 				`Expected result: ${expectedMinified}\n` +
-				`This confirms the bug reported in Issue #1.`
+				`This confirms the CSS nth-child minification bug.`
 			);
 		}
 		
@@ -297,7 +297,7 @@ suite("Issue #1 - CSS nth-child Test Suite", async function () {
 	});
 
 	// Test for minifying CSS with nth-child and saving to new file
-	test("Issue #1 - Minify CSS with nth-child and save as new file", async function () {
+	test("Minify CSS with nth-child and save as new file", async function () {
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
 		const nthChildDocument = await vscode.workspace.openTextDocument(nthChildUri);
 		const prefix = (await vscode.workspace
@@ -378,14 +378,23 @@ suite("Keybinding Test Suite", function () {
 	});
 });
 
-// Issue #5 - Configuration Test Suite
-suite("Issue #5 - Configuration Test Suite", async function () {
+// Configuration Test Suite
+suite("Configuration Test Suite", async function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Clean up any existing files before starting configuration tests
 	this.beforeAll(async function () {
-		vscode.window.showInformationMessage("Cleaning up files before Issue #5 configuration tests.");
+		vscode.window.showInformationMessage("Cleaning up files before configuration tests.");
+		
+		// Reset all configurations to defaults first
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("minifyInNewFile", true, true);
+		await config.update("autoOpenNewFile", true, true);
+		await config.update("minifiedNewFilePrefix", ".min", true);
+		
+		// Wait for configuration changes to take effect
+		await delayBetweenTests(1000);
 		
 		// Clean up any generated minified files from previous tests
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
@@ -433,7 +442,7 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 			}
 		}
 		
-		vscode.window.showInformationMessage("File cleanup completed for Issue #5 tests.");
+		vscode.window.showInformationMessage("File cleanup completed for configuration tests.");
 	});
 
 	// Add delay after each test to respect rate limits
@@ -442,7 +451,7 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 	});
 
 	// Show an informational message when starting the tests
-	vscode.window.showInformationMessage("Start Issue #5 configuration tests.");
+	vscode.window.showInformationMessage("Start configuration tests.");
 
 	// Clean up sinon spies after each test to prevent conflicts
 	this.afterEach(function () {
@@ -568,27 +577,47 @@ suite("Issue #5 - Configuration Test Suite", async function () {
 	test("minifiedNewFilePrefix configuration - custom prefix", async function () {
 		// Configure settings with custom prefix
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("minifyInNewFile", true, true);
 		await config.update("minifiedNewFilePrefix", ".compressed", true);
 		
 		// Wait for configuration to take effect
-		await delayBetweenTests(500);
+		await delayBetweenTests(1000);
 
-		// Open a CSS file
-		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		// Copy source file to avoid modification issues
+		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.css");
+		const testFile = path.join(__dirname, "fixtures", "temp-custom-test.css");
+		fs.copyFileSync(sourceFile, testFile);
+
+		// Open the test file
+		const cssUri = vscode.Uri.file(testFile);
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
 		await vscode.window.showTextDocument(cssDocument);
 
 		// Execute minify in new file command
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 
+		// Wait for file creation
+		await delayBetweenTests(1000);
+
 		// Verify new file was created with custom prefix
 		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".compressed$1"));
-		assert(fs.existsSync(newFileUri.fsPath), "Minified file with custom prefix was not created");
+		assert(fs.existsSync(newFileUri.fsPath), `Minified file with custom prefix was not created at: ${newFileUri.fsPath}`);
 
 		// Verify the new file has minified content
 		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
 		const newFileContent = newDocument.getText();
 		assert.strictEqual(newFileContent, cssMinifiedContent);
+
+		// Clean up created files
+		if (fs.existsSync(newFileUri.fsPath)) {
+			fs.unlinkSync(newFileUri.fsPath);
+		}
+		if (fs.existsSync(testFile)) {
+			fs.unlinkSync(testFile);
+		}
+
+		// Reset prefix to default
+		await config.update("minifiedNewFilePrefix", ".min", true);
 
 		// Reset configuration
 		await config.update("minifiedNewFilePrefix", ".min", true);
