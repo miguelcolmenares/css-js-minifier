@@ -109,6 +109,11 @@
 						"%configuration.minifiedNewFilePrefix.enumDescriptions.6%"
 					],
 					"description": "%configuration.minifiedNewFilePrefix%"
+				},
+				"css-js-minifier.autoOpenNewFile": {
+					"type": "boolean",
+					"default": true,
+					"description": "%configuration.autoOpenNewFile%"
 				}
 			}
 		},

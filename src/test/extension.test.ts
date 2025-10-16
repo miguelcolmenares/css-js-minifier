@@ -256,3 +256,156 @@ suite("Keybinding Test Suite", async function () {
 		executeCommandSpy.restore();
 	});
 });
+
+// Issue #5 - Configuration Test Suite
+suite("Issue #5 - Configuration Test Suite", async function () {
+	// Set a maximum timeout for each test
+	this.timeout(15000);
+
+	// Show an informational message when starting the tests
+	vscode.window.showInformationMessage("Start Issue #5 configuration tests.");
+
+	// Clean up sinon spies after each test to prevent conflicts
+	this.afterEach(function () {
+		sinon.restore();
+	});
+
+	this.afterAll(async function () {
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		await deleteGeneratedFiles(cssUri, prefixes);
+		await deleteGeneratedFiles(jsUri, prefixes);
+		
+		// Reset all configurations to defaults
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("minifyOnSave", false, true);
+		await config.update("minifyInNewFile", false, true);
+		await config.update("autoOpenNewFile", true, true);
+		await config.update("minifiedNewFilePrefix", ".min", true);
+	});
+
+	// Test autoOpenNewFile configuration - disabled
+	test("autoOpenNewFile setting - disabled", async function () {
+		// Configure settings
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("autoOpenNewFile", false, true);
+
+		// Create a spy to monitor showTextDocument calls
+		const showTextDocumentSpy = sinon.spy(vscode.window, "showTextDocument");
+
+		// Open a CSS file and execute minify in new file command
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+		await vscode.window.showTextDocument(cssDocument);
+
+		// Reset the spy counter after opening the original file
+		showTextDocumentSpy.resetHistory();
+
+		// Execute the minify in new file command
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Verify showTextDocument was NOT called for the new file
+		assert.strictEqual(showTextDocumentSpy.callCount, 0, "New file should NOT have been opened automatically");
+
+		// Verify the new file still exists (just wasn't opened)
+		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".min$1"));
+		assert(fs.existsSync(newFileUri.fsPath), "Minified file should still be created");
+
+		// Reset configuration to default
+		await config.update("autoOpenNewFile", true, true);
+	});
+
+	// Test autoOpenNewFile configuration - enabled (default behavior)
+	test("autoOpenNewFile setting - enabled", async function () {
+		// Configure settings (this is the default, but being explicit)
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("autoOpenNewFile", true, true);
+
+		// Open a JS file and execute minify in new file command
+		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		const jsDocument = await vscode.workspace.openTextDocument(jsUri);
+		await vscode.window.showTextDocument(jsDocument);
+
+		// Execute the minify in new file command
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Verify the new file exists (auto-open behavior is tested via file creation)
+		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, ".min$1"));
+		assert(fs.existsSync(newFileUri.fsPath), "Minified file was not created");
+
+		// Verify the new file has correct minified content
+		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
+		const newFileContent = newDocument.getText();
+		assert.strictEqual(newFileContent, jsMinifiedContent);
+	});
+
+	// Test different file prefixes work correctly
+	test("minifiedNewFilePrefix configuration - custom prefix", async function () {
+		// Configure settings with custom prefix
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		await config.update("minifiedNewFilePrefix", ".compressed", true);
+
+		// Open a CSS file
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+		await vscode.window.showTextDocument(cssDocument);
+
+		// Execute minify in new file command
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Verify new file was created with custom prefix
+		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".compressed$1"));
+		assert(fs.existsSync(newFileUri.fsPath), "Minified file with custom prefix was not created");
+
+		// Verify the new file has minified content
+		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
+		const newFileContent = newDocument.getText();
+		assert.strictEqual(newFileContent, cssMinifiedContent);
+
+		// Reset configuration
+		await config.update("minifiedNewFilePrefix", ".min", true);
+	});
+
+	// Test minifyInNewFile vs in-place behavior
+	test("minifyInNewFile configuration vs in-place minification", async function () {
+		// Test in-place minification (default behavior)
+		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+		await vscode.window.showTextDocument(cssDocument);
+
+		// Get original content
+		const originalContent = cssDocument.getText();
+
+		// Execute regular minify command (in-place)
+		await vscode.commands.executeCommand("extension.minify");
+
+		// Verify content was changed in-place
+		const modifiedContent = cssDocument.getText();
+		assert.strictEqual(modifiedContent, cssMinifiedContent);
+		assert.notStrictEqual(modifiedContent, originalContent);
+
+		// Restore original content for next test
+		const edit = new vscode.WorkspaceEdit();
+		const firstLine = cssDocument.lineAt(0);
+		const lastLine = cssDocument.lineAt(cssDocument.lineCount - 1);
+		const textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
+		edit.replace(cssDocument.uri, textRange, originalContent);
+		await vscode.workspace.applyEdit(edit);
+		await cssDocument.save();
+
+		// Now test minifyInNewFile behavior
+		await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+		// Verify original content was NOT changed
+		assert.strictEqual(cssDocument.getText(), originalContent);
+
+		// Verify new file was created
+		const newFileUri = vscode.Uri.file(cssDocument.uri.fsPath.replace(/(\.css)$/, ".min$1"));
+		assert(fs.existsSync(newFileUri.fsPath), "Minified file was not created");
+
+		// Verify new file has minified content
+		const newDocument = await vscode.workspace.openTextDocument(newFileUri);
+		const newFileContent = newDocument.getText();
+		assert.strictEqual(newFileContent, cssMinifiedContent);
+	});
+});

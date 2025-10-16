@@ -39,8 +39,14 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string): 
 	// Write the minified content to the file system
 	await vscode.workspace.fs.writeFile(uri, encodedContent);
 	
-	// Open the newly created file in the VS Code editor
-	await vscode.window.showTextDocument(uri);
+	// Check if the new file should be opened automatically
+	const settings = vscode.workspace.getConfiguration("css-js-minifier");
+	const autoOpenNewFile = settings.get("autoOpenNewFile") as boolean;
+	
+	if (autoOpenNewFile) {
+		// Open the newly created file in the VS Code editor
+		await vscode.window.showTextDocument(uri);
+	}
 	
 	// Provide user feedback about the successful operation
 	vscode.window.showInformationMessage(

@@ -206,11 +206,25 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 
 		// Only proceed if the file has content (empty files don't need minification)
 		if (validateContentLength(text, fileType)) {
+			// Get user configuration settings
+			const settings = vscode.workspace.getConfiguration("css-js-minifier");
+			const shouldCreateNewFile = settings.get("minifyInNewFile") as boolean;
+			const filePrefix = settings.get("minifiedNewFilePrefix") as string;
+			
 			// Minify the content using the minification service
 			const minifiedText = await getMinifiedText(text, fileType);
 			if (minifiedText) {
-				// Replace the document content with the minified version
-				await replaceDocumentContent(document, minifiedText);
+				if (shouldCreateNewFile) {
+					// Create new file with minified content
+					const options: MinifyOptions = {
+						saveAsNewFile: true,
+						filePrefix
+					};
+					await processDocument(document, options);
+				} else {
+					// Replace the document content with the minified version (in-place)
+					await replaceDocumentContent(document, minifiedText);
+				}
 			}
 		}
 	}

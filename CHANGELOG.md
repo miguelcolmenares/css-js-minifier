@@ -37,6 +37,18 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - **Rate Limit Awareness**: Clear messaging when hitting 30 requests/minute limit
   - **Syntax Error Details**: Informative feedback for CSS/JavaScript syntax errors with precise error descriptions
 
+### Bug Fixes
+
+- **Fixed Minify on Save**: Resolved issue where minify on save didn't respect `minifyInNewFile` configuration
+  - Now properly creates new files when `minifyInNewFile: true` is set
+  - Maintains in-place minification when `minifyInNewFile: false` (default behavior)
+  - Respects all user configuration settings during auto-minification on save
+
+- **New Configuration Option**: Added `autoOpenNewFile` setting to control file opening behavior
+  - When `true` (default): Newly created minified files open automatically in editor
+  - When `false`: Files are created silently without opening, reducing editor clutter
+  - Addresses user request for less intrusive minification workflow
+
 ### Technical Improvements
 
 - Migrate to ESLint v9 flat config for better compatibility

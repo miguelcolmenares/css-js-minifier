@@ -68,6 +68,7 @@ You can customize the extension's behavior through the available settings in VS 
 -   `css-js-minifier.minifyOnSave`: Automatically minify CSS and JS files when saving them. (`true` or `false`, default is `false`).
 -   `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
 -   `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
+-   `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
 
 To adjust these settings, add the following lines to your `settings.json` file:
 
@@ -75,7 +76,8 @@ To adjust these settings, add the following lines to your `settings.json` file:
 {
 	"css-js-minifier.minifyOnSave": true,
 	"css-js-minifier.minifyInNewFile": true,
-	"css-js-minifier.minifiedNewFilePrefix": ".min"
+	"css-js-minifier.minifiedNewFilePrefix": ".min",
+	"css-js-minifier.autoOpenNewFile": false
 }
 ```
 
