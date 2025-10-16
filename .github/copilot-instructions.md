@@ -81,6 +81,14 @@ HTTP requests to Toptal APIs with form-encoded data:
 - Extension activates on `onSaveTextDocument` event for auto-minification feature
 - Error handling shows user-friendly messages via `vscode.window.showErrorMessage`
 
+## GitHub CLI Commands
+- **CRITICAL**: Always use `PAGER=cat` or pipe to `| cat` with GitHub CLI commands
+- **Examples**: 
+  - `PAGER=cat gh pr list` or `gh pr list | cat`
+  - `PAGER=cat gh run view <id>` or `gh run view <id> | cat`
+  - `PAGER=cat gh workflow list` or `gh workflow list | cat`
+- **Reason**: Prevents pager issues and ensures complete output in terminal tools
+
 ## Security & Code Quality
 - **CodeQL**: Automated security scanning runs on push, PRs, and weekly schedule
 - **Dependabot**: Monitors for security vulnerabilities in dependencies
