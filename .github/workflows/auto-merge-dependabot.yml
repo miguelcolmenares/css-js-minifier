@@ -42,26 +42,34 @@ jobs:
               mergeable_state: pr.mergeable_state
             };
 
-      - name: Enable auto-merge for Dependabot PRs
+      - name: Auto-merge Dependabot PRs
         if: fromJSON(steps.pr-details.outputs.result).user == 'dependabot[bot]'
         uses: actions/github-script@v8
         with:
           script: |
             const prNumber = ${{ fromJSON(steps.pr-details.outputs.result).number }};
             
-            // Enable auto-merge
-            await github.rest.pulls.createReview({
+            // Check if all required checks have passed
+            const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber,
-              event: 'APPROVE'
+              pull_number: prNumber
             });
             
-            await github.rest.pulls.enableAutoMerge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              merge_method: 'squash'
-            });
+            console.log(`PR #${prNumber} mergeable_state: ${pr.mergeable_state}`);
             
-            console.log(`Auto-merge enabled for PR #${prNumber}`);
+            // Only merge if all checks have passed and PR is ready
+            if (pr.mergeable_state === 'clean') {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: pr.title,
+                commit_message: `${pr.title}\n\n${pr.body || ''}`
+              });
+              
+              console.log(`Successfully merged PR #${prNumber}`);
+            } else {
+              console.log(`PR #${prNumber} not ready for merge. State: ${pr.mergeable_state}`);
+            }
