@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Get PR details
         id: pr-details
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -44,7 +44,7 @@ jobs:
 
       - name: Enable auto-merge for Dependabot PRs
         if: fromJSON(steps.pr-details.outputs.result).user == 'dependabot[bot]'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = ${{ fromJSON(steps.pr-details.outputs.result).number }};
