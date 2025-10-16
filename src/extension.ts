@@ -145,7 +145,8 @@ async function getMinifiedText(text: string, fileType: string): Promise<string |
  */
 async function minifyInNewFile(minifiedText: string, newFileName: string): Promise<void> {
 	const uri = vscode.Uri.file(newFileName); // Create a new URI for the minified file
-	await vscode.workspace.fs.writeFile(uri, Buffer.from(minifiedText, "utf8")); // Write the minified text to the new file
+	const textEncoder = new TextEncoder();
+	await vscode.workspace.fs.writeFile(uri, textEncoder.encode(minifiedText)); // Write the minified text to the new file
 	vscode.window.showTextDocument(uri); // Open the new file in the editor
 	vscode.window.showInformationMessage("The file has been minified and saved."); // Show an information message
 }
