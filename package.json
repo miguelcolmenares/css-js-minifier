@@ -146,8 +146,8 @@
 	"devDependencies": {
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^24.7.2",
-		"@types/sinon": "^17.0.3",
-		"@types/vscode": "^1.90.0",
+		"@types/sinon": "^17.0.4",
+		"@types/vscode": "^1.105.0",
 		"@typescript-eslint/eslint-plugin": "^7.11.0",
 		"@typescript-eslint/parser": "^7.11.0",
 		"@vscode/l10n": "^0.0.18",
@@ -158,8 +158,8 @@
 		"mocha": "^11.7.4",
 		"sinon": "^21.0.0",
 		"ts-loader": "^9.5.4",
-		"typescript": "^5.4.5",
-		"webpack": "^5.94.0",
+		"typescript": "^5.9.3",
+		"webpack": "^5.102.1",
 		"webpack-cli": "^6.0.1"
 	},
 	"repository": {
