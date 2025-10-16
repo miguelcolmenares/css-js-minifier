@@ -128,9 +128,10 @@ async function getMinifiedText(text: string, fileType: string): Promise<string |
 
 		const minifiedText = await response.text(); // Get the minified text from the response
 		return minifiedText; // Return the minified text
-	} catch (error: any) {
+	} catch (error: unknown) {
 		// Show an error message if something goes wrong
-		vscode.window.showErrorMessage(`Error minifying ${fileType}: ${error.message}`);
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`Error minifying ${fileType}: ${errorMessage}`);
 		return null; // Return null if an error occurs
 	}
 }

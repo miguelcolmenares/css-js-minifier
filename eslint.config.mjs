@@ -26,6 +26,7 @@ export default [
       '@typescript-eslint': tsEslint
     },
     rules: {
+      ...tsEslint.configs.recommended.rules,
       '@typescript-eslint/naming-convention': [
         'warn',
         {
@@ -33,11 +34,10 @@ export default [
           format: ['camelCase', 'PascalCase']
         }
       ],
-      '@typescript-eslint/semi': 'warn',
       'curly': 'warn',
       'eqeqeq': 'warn',
       'no-throw-literal': 'warn',
-      'semi': 'off' // Turn off base rule as it conflicts with @typescript-eslint/semi
+      'semi': 'warn'
     }
   },
   {
@@ -58,6 +58,7 @@ export default [
       '@typescript-eslint': tsEslint
     },
     rules: {
+      ...tsEslint.configs.recommended.rules,
       '@typescript-eslint/naming-convention': [
         'warn',
         {
@@ -65,11 +66,10 @@ export default [
           format: ['camelCase', 'PascalCase']
         }
       ],
-      '@typescript-eslint/semi': 'warn',
       'curly': 'warn',
       'eqeqeq': 'warn',
       'no-throw-literal': 'warn',
-      'semi': 'off'
+      'semi': 'warn'
     }
   }
 ];
