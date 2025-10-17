@@ -52,10 +52,6 @@
 			{
 				"command": "extension.minifyInNewFile",
 				"title": "%commands.extension.minifyInNewFile.title%"
-			},
-			{
-				"command": "extension.debugL10n",
-				"title": "Debug L10n"
 			}
 		],
 		"menus": {

@@ -13,7 +13,7 @@
 
 import * as vscode from "vscode";
 import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from "./commands";
-import { loadL10nBundle, t, getL10nStatus } from "./utils/l10nHelper";
+import { loadL10nBundle } from "./utils/l10nHelper";
 
 /**
  * Activates the CSS & JS Minifier extension.
@@ -42,23 +42,6 @@ import { loadL10nBundle, t, getL10nStatus } from "./utils/l10nHelper";
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	// Initialize l10n fallback system
 	await loadL10nBundle(context.extensionPath);
-	
-	// Register debug command with comprehensive testing
-	const debugL10nCommand = vscode.commands.registerCommand("extension.debugL10n", async () => {
-		await loadL10nBundle(context.extensionPath); // Refresh bundle
-		const status = getL10nStatus();
-		const nativeTest = vscode.l10n.t('fileService.inPlace.successWithStats', 'test.css', '100 B', '80 B', '20');
-		const fallbackTest = t('fileService.inPlace.successWithStats', 'test.css', '100 B', '80 B', '20');
-		
-		vscode.window.showInformationMessage(`L10n Debug:
-Bundle: ${status.nativeBundle}
-URI: ${status.nativeUri}
-Native test: ${nativeTest}
-Fallback test: ${fallbackTest}
-Bundle keys: ${status.fallbackKeys}
-VS Code version: ${vscode.version}`);
-	});
-	context.subscriptions.push(debugL10nCommand);
 
 	// Register the main minification command (in-place minification)
 	const minifyCommandDisposable = vscode.commands.registerCommand("extension.minify", minifyCommand);
