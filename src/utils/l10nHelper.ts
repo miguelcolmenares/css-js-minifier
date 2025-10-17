@@ -21,6 +21,8 @@ export async function loadL10nBundle(extensionPath: string): Promise<void> {
 		const content = await vscode.workspace.fs.readFile(l10nFile);
 		l10nBundle = JSON.parse(content.toString());
 	} catch {
+		// Failed to load l10n bundle - file may not exist or be malformed
+		// Falling back to empty bundle (native VS Code l10n will be used)
 		l10nBundle = {};
 	}
 }

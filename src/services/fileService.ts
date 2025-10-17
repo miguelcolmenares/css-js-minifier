@@ -81,13 +81,14 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  * @param {string} minifiedText - The minified content to replace the original with
  * @param {MinificationStats} stats - Statistics about the minification process
  * @param {boolean} [showNotification=true] - Whether to show success notification (default: true)
- * @returns {Promise<void>} Resolves when the document is updated and saved
+ * @param {boolean} [skipSave=false] - Whether to skip saving the document (default: false)
+ * @returns {Promise<void>} Resolves when the document is updated and optionally saved
  * 
  * @throws {Error} When the workspace edit fails or the document cannot be saved
  * 
  * @sideEffects
  * - Modifies the content of the existing document
- * - Saves the document to disk
+ * - Saves the document to disk (unless skipSave is true)
  * - Shows success notification to the user (unless suppressed)
  * - Adds an entry to VS Code's undo history
  * 
@@ -102,10 +103,13 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  * 
  *   // Suppress notification when called from auto-save
  *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats, false);
+ * 
+ *   // Skip save to prevent double writes
+ *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats, true, true);
  * }
  * ```
  */
-export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats, showNotification: boolean = true): Promise<void> {
+export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats, showNotification: boolean = true, skipSave: boolean = false): Promise<void> {
 	// Create a workspace edit to modify the document
 	const edit = new vscode.WorkspaceEdit();
 	
@@ -120,8 +124,10 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Apply the edit to the workspace (this operation can be undone)
 	await vscode.workspace.applyEdit(edit);
 	
-	// Save the document to persist changes to disk
-	await document.save();
+	// Save the document to persist changes to disk (unless caller will handle it)
+	if (!skipSave) {
+		await document.save();
+	}
 	
 	// Provide user feedback about the successful minification with statistics (if not suppressed)
 	if (showNotification) {
