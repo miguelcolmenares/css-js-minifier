@@ -35,9 +35,7 @@ export async function loadL10nBundle(extensionPath: string): Promise<void> {
 export function t(key: string, ...args: string[]): string {
 	try {
 		// Try native VS Code l10n first
-		if (vscode.l10n.bundle && vscode.l10n.uri) {
-			return vscode.l10n.t(key, ...args);
-		}
+		return vscode.l10n.t(key, ...args);
 	} catch {
 		// Fall through to manual fallback
 	}
