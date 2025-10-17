@@ -1,0 +1,19 @@
+{
+	"validators.fileType.unsupported": "Der Dateityp '{0}' wird nicht unterstützt. Nur CSS- und JavaScript-Dateien können minimiert werden.",
+	"validators.content.empty": "Eine leere {0}-Datei kann nicht minimiert werden. Bitte fügen Sie zuerst Inhalt hinzu.",
+	"fileService.newFile.success": "Datei erfolgreich minimiert und gespeichert als: {0}",
+	"fileService.inPlace.success": "{0} wurde erfolgreich minimiert.",
+	"minificationService.fileType.unsupported": "Nicht unterstützter Dateityp für Minimierung: {0}",
+	"minificationService.fileSize.tooLarge": "Datei zu groß: {0}MB. Die maximal zulässige Größe beträgt 5MB. Bitte reduzieren Sie die Dateigröße und versuchen Sie es erneut.",
+	"minificationService.error.missingInput": "Fehlender Eingabeparameter. Bitte stellen Sie sicher, dass die Datei Inhalt enthält.",
+	"minificationService.error.invalidMethod": "Ungültige Anfragemethode. Dies ist ein interner Fehler, bitte versuchen Sie es erneut.",
+	"minificationService.error.invalidContentType": "Ungültiger Inhaltstyp. Dies ist ein interner Fehler, bitte versuchen Sie es erneut.",
+	"minificationService.error.fileTooLarge": "Datei zu groß. Die maximal zulässige Größe beträgt 5MB. Bitte reduzieren Sie die Dateigröße.",
+	"minificationService.error.invalidSyntax": "Ungültige {0}-Syntax. Bitte überprüfen Sie Ihren Code auf Syntaxfehler.",
+	"minificationService.error.rateLimitExceeded": "Zu viele Anfragen. Das API-Limit beträgt 30 Anfragen pro Minute. Bitte warten Sie und versuchen Sie es erneut.",
+	"minificationService.error.apiError": "{0} API-Fehler ({1}): {2}",
+	"minificationService.error.invalidResponse": "Ungültiges Antwortformat von der Minimierungs-API",
+	"minificationService.error.timeout": "Minimierungs-Timeout: Der {0}-Dienst benötigt länger als erwartet. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+	"minificationService.error.network": "Netzwerkfehler: Verbindung zum Minimierungsdienst nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+	"minificationService.error.generic": "Fehler beim Minimieren der {0}-Datei: {1}"
+}

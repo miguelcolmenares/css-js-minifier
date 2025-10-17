@@ -1,0 +1,19 @@
+{
+	"validators.fileType.unsupported": "El tipo de archivo '{0}' no es compatible. Solo se pueden minificar archivos CSS y JavaScript.",
+	"validators.content.empty": "No se puede minificar un archivo {0} vacío. Por favor, agregue contenido primero.",
+	"fileService.newFile.success": "Archivo minificado exitosamente y guardado como: {0}",
+	"fileService.inPlace.success": "{0} ha sido minificado exitosamente.",
+	"minificationService.fileType.unsupported": "Tipo de archivo no compatible para minificación: {0}",
+	"minificationService.fileSize.tooLarge": "Archivo demasiado grande: {0}MB. El tamaño máximo permitido es 5MB. Por favor, reduzca el tamaño del archivo e intente nuevamente.",
+	"minificationService.error.missingInput": "Falta el parámetro de entrada. Por favor, asegúrese de que el archivo tenga contenido.",
+	"minificationService.error.invalidMethod": "Método de solicitud inválido. Esto es un error interno, por favor intente nuevamente.",
+	"minificationService.error.invalidContentType": "Tipo de contenido inválido. Esto es un error interno, por favor intente nuevamente.",
+	"minificationService.error.fileTooLarge": "Archivo demasiado grande. El tamaño máximo permitido es 5MB. Por favor, reduzca el tamaño del archivo.",
+	"minificationService.error.invalidSyntax": "Sintaxis de {0} inválida. Por favor, revise su código en busca de errores de sintaxis.",
+	"minificationService.error.rateLimitExceeded": "Demasiadas solicitudes. El límite de la API es 30 solicitudes por minuto. Por favor, espere e intente nuevamente.",
+	"minificationService.error.apiError": "Error de API {0} ({1}): {2}",
+	"minificationService.error.invalidResponse": "Formato de respuesta inválido de la API de minificación",
+	"minificationService.error.timeout": "Tiempo de espera agotado: El servicio {0} está tardando más de lo esperado. Por favor, verifique su conexión a internet e intente nuevamente.",
+	"minificationService.error.network": "Error de red: No se puede conectar al servicio de minificación. Por favor, verifique su conexión a internet e intente nuevamente.",
+	"minificationService.error.generic": "Error al minificar archivo {0}: {1}"
+}

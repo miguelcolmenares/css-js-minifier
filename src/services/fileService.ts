@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as l10n from "@vscode/l10n";
 
 /**
  * Saves minified content to a new file and opens it in the editor.
@@ -50,7 +51,7 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string): 
 	
 	// Provide user feedback about the successful operation
 	vscode.window.showInformationMessage(
-		`File successfully minified and saved as: ${newFileName.split('/').pop()}`
+		l10n.t('fileService.newFile.success', newFileName.split('/').pop() || 'file')
 	);
 }
 
@@ -105,7 +106,7 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	
 	// Provide user feedback about the successful minification
 	const fileName = document.fileName.split('/').pop() || 'file';
-	vscode.window.showInformationMessage(`${fileName} has been successfully minified.`);
+	vscode.window.showInformationMessage(l10n.t('fileService.inPlace.success', fileName));
 }
 
 /**

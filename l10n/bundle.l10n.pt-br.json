@@ -1,0 +1,19 @@
+{
+	"validators.fileType.unsupported": "O tipo de arquivo '{0}' não é suportado. Apenas arquivos CSS e JavaScript podem ser minificados.",
+	"validators.content.empty": "Não é possível minificar um arquivo {0} vazio. Por favor, adicione conteúdo primeiro.",
+	"fileService.newFile.success": "Arquivo minificado com sucesso e salvo como: {0}",
+	"fileService.inPlace.success": "{0} foi minificado com sucesso.",
+	"minificationService.fileType.unsupported": "Tipo de arquivo não suportado para minificação: {0}",
+	"minificationService.fileSize.tooLarge": "Arquivo muito grande: {0}MB. O tamanho máximo permitido é 5MB. Por favor, reduza o tamanho do arquivo e tente novamente.",
+	"minificationService.error.missingInput": "Parâmetro de entrada ausente. Por favor, certifique-se de que o arquivo tenha conteúdo.",
+	"minificationService.error.invalidMethod": "Método de requisição inválido. Este é um erro interno, por favor tente novamente.",
+	"minificationService.error.invalidContentType": "Tipo de conteúdo inválido. Este é um erro interno, por favor tente novamente.",
+	"minificationService.error.fileTooLarge": "Arquivo muito grande. O tamanho máximo permitido é 5MB. Por favor, reduza o tamanho do arquivo.",
+	"minificationService.error.invalidSyntax": "Sintaxe {0} inválida. Por favor, verifique seu código em busca de erros de sintaxe.",
+	"minificationService.error.rateLimitExceeded": "Muitas requisições. O limite da API é 30 requisições por minuto. Por favor, aguarde e tente novamente.",
+	"minificationService.error.apiError": "Erro da API {0} ({1}): {2}",
+	"minificationService.error.invalidResponse": "Formato de resposta inválido da API de minificação",
+	"minificationService.error.timeout": "Tempo limite de minificação: O serviço {0} está demorando mais do que o esperado. Por favor, verifique sua conexão com a internet e tente novamente.",
+	"minificationService.error.network": "Erro de rede: Não foi possível conectar ao serviço de minificação. Por favor, verifique sua conexão com a internet e tente novamente.",
+	"minificationService.error.generic": "Falha ao minificar arquivo {0}: {1}"
+}
