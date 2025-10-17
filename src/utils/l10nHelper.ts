@@ -45,7 +45,7 @@ export function t(key: string, ...args: string[]): string {
 	// Use manual fallback
 	let message = l10nBundle[key] || key;
 	args.forEach((arg, index) => {
-		message = message.replace(`{${index}}`, arg);
+		message = message.replace(new RegExp(`\\{${index}\\}`, 'g'), arg);
 	});
 	return message;
 }
