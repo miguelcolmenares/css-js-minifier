@@ -116,6 +116,9 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Apply the edit to the workspace (this operation can be undone)
 	await vscode.workspace.applyEdit(edit);
 	
+	// Save the document to persist changes to disk
+	await document.save();
+	
 	// Provide user feedback about the successful minification with statistics
 	const fileName = document.fileName.split('/').pop() || 'file';
 	const config = vscode.workspace.getConfiguration("css-js-minifier");
@@ -179,20 +182,3 @@ export async function saveDocumentSilently(document: vscode.TextDocument): Promi
 	await document.save();
 }
 
-/**
- * Replaces document content and saves automatically (for auto-save scenarios).
- * This version saves the document, which may trigger onDidSaveTextDocument events.
- * 
- * @async
- * @function replaceDocumentContentAndSave
- * @param {vscode.TextDocument} document - The document to modify
- * @param {string} minifiedText - The minified text to replace with
- * @param {MinificationStats} stats - Statistics about the minification
- * @returns {Promise<void>} Resolves when content is replaced and saved
- */
-export async function replaceDocumentContentAndSave(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats): Promise<void> {
-	// Replace content without saving
-	await replaceDocumentContent(document, minifiedText, stats);
-	// Then save explicitly
-	await document.save();
-}

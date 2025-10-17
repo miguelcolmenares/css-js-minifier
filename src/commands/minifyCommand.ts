@@ -10,25 +10,12 @@
  */
 
 import * as vscode from "vscode";
-import { setTimeout } from "timers";
 import { validateFileType, validateContentLength } from "../utils/validators";
 import { getMinifiedText } from "../services/minificationService";
-import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName, saveDocumentSilently, replaceDocumentContentAndSave } from "../services/fileService";
+import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName, saveDocumentSilently } from "../services/fileService";
 
-// Flag to prevent auto-minify immediately after manual command
-let skipNextAutoMinify = false;
-
-/**
- * Sets flag to skip the next auto-minify operation.
- * Used to prevent duplicate processing when manual commands trigger auto-save.
- */
-export function setSkipAutoMinify(): void {
-	skipNextAutoMinify = true;
-	// Reset flag after a longer delay to ensure it covers the entire manual operation
-	setTimeout(() => {
-		skipNextAutoMinify = false;
-	}, 3000); // Increased to 3 seconds to cover minification + save time
-}
+// Flag to track if we're currently in an auto-minify operation to prevent recursion
+let isAutoMinifying = false;
 
 /**
  * Configuration options for minification operations.
@@ -140,7 +127,6 @@ export async function minifyCommand(): Promise<void> {
 
 	// Process the active editor document if available
 	if (editor) {
-		setSkipAutoMinify(); // Prevent duplicate auto-minify from document.save() 
 		await processDocument(editor.document, { debugSource: 'manual' });
 	}
 
@@ -192,7 +178,6 @@ export async function minifyInNewFileCommand(): Promise<void> {
 
 	// Process the active editor document if available
 	if (editor) {
-		setSkipAutoMinify(); // Prevent duplicate auto-minify
 		options.debugSource = 'manual';
 		await processDocument(editor.document, options);
 	}
@@ -233,9 +218,8 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * // - File is saved programmatically
  */
 export async function onSaveMinify(document: vscode.TextDocument): Promise<void> {
-	// Skip auto-minify if a manual command was recently executed
-	if (skipNextAutoMinify) {
-		skipNextAutoMinify = false; // Reset flag
+	// Prevent recursion - if we're already minifying, don't process again
+	if (isAutoMinifying) {
 		return;
 	}
 	
@@ -261,14 +245,19 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 				};
 				await processDocument(document, options);
 			} else {
-				// For in-place minification, minify once and save
-				const result = await getMinifiedText(text, fileType);
-				if (result) {
-					const { minifiedText, stats } = result;
-					// Set flag to prevent recursive auto-minify when document.save() is called
-					setSkipAutoMinify();
-					// Replace the document content with the minified version (in-place) and save
-					await replaceDocumentContentAndSave(document, minifiedText, stats);
+				// For in-place minification, modify content without triggering another save
+				// Set flag to prevent recursion
+				isAutoMinifying = true;
+				try {
+					const result = await getMinifiedText(text, fileType);
+					if (result) {
+						const { minifiedText, stats } = result;
+						// Replace content and save (the save will trigger this function again, but we'll skip it)
+						await replaceDocumentContent(document, minifiedText, stats);
+					}
+				} finally {
+					// Always reset the flag
+					isAutoMinifying = false;
 				}
 			}
 		}
