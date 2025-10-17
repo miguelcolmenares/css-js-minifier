@@ -14,8 +14,9 @@ import { validateFileType, validateContentLength } from "../utils/validators";
 import { getMinifiedText } from "../services/minificationService";
 import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName, saveDocumentSilently } from "../services/fileService";
 
-// Flag to track if we're currently in an auto-minify operation to prevent recursion
-let isAutoMinifying = false;
+// Set to track documents currently being processed to prevent recursion
+// Uses document URI as key to allow per-document tracking
+const processingDocuments = new Set<string>();
 
 /**
  * Configuration options for minification operations.
@@ -218,8 +219,9 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * // - File is saved programmatically
  */
 export async function onSaveMinify(document: vscode.TextDocument): Promise<void> {
-	// Prevent recursion - if we're already minifying, don't process again
-	if (isAutoMinifying) {
+	// Prevent recursion - if this document is already being processed, skip
+	const documentUri = document.uri.toString();
+	if (processingDocuments.has(documentUri)) {
 		return;
 	}
 	
@@ -245,9 +247,8 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 				};
 				await processDocument(document, options);
 			} else {
-				// For in-place minification, modify content without triggering another save
-				// Set flag to prevent recursion
-				isAutoMinifying = true;
+				// For in-place minification, track this document to prevent recursion
+				processingDocuments.add(documentUri);
 				try {
 					const result = await getMinifiedText(text, fileType);
 					if (result) {
@@ -256,8 +257,8 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 						await replaceDocumentContent(document, minifiedText, stats);
 					}
 				} finally {
-					// Always reset the flag
-					isAutoMinifying = false;
+					// Always remove from set when done, even if an error occurs
+					processingDocuments.delete(documentUri);
 				}
 			}
 		}

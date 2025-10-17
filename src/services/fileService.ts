@@ -80,6 +80,7 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  * @param {vscode.TextDocument} document - The VS Code document to modify
  * @param {string} minifiedText - The minified content to replace the original with
  * @param {MinificationStats} stats - Statistics about the minification process
+ * @param {boolean} [showNotification=true] - Whether to show success notification (default: true)
  * @returns {Promise<void>} Resolves when the document is updated and saved
  * 
  * @throws {Error} When the workspace edit fails or the document cannot be saved
@@ -87,7 +88,7 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  * @sideEffects
  * - Modifies the content of the existing document
  * - Saves the document to disk
- * - Shows success notification to the user
+ * - Shows success notification to the user (unless suppressed)
  * - Adds an entry to VS Code's undo history
  * 
  * @example
@@ -98,10 +99,13 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  *   const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
  *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats);
  *   // Document content is replaced and saved, message shows statistics
+ * 
+ *   // Suppress notification when called from auto-save
+ *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats, false);
  * }
  * ```
  */
-export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats): Promise<void> {
+export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats, showNotification: boolean = true): Promise<void> {
 	// Create a workspace edit to modify the document
 	const edit = new vscode.WorkspaceEdit();
 	
@@ -119,19 +123,21 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Save the document to persist changes to disk
 	await document.save();
 	
-	// Provide user feedback about the successful minification with statistics
-	const fileName = document.fileName.split('/').pop() || 'file';
-	const config = vscode.workspace.getConfiguration("css-js-minifier");
-	const showSizeReduction = config.get("showSizeReduction", true);
-	
-	if (showSizeReduction) {
-		vscode.window.showInformationMessage(
-			t('fileService.inPlace.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
-		);
-	} else {
-		vscode.window.showInformationMessage(
-			t('fileService.inPlace.success', fileName)
-		);
+	// Provide user feedback about the successful minification with statistics (if not suppressed)
+	if (showNotification) {
+		const fileName = document.fileName.split('/').pop() || 'file';
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		const showSizeReduction = config.get("showSizeReduction", true);
+		
+		if (showSizeReduction) {
+			vscode.window.showInformationMessage(
+				t('fileService.inPlace.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
+			);
+		} else {
+			vscode.window.showInformationMessage(
+				t('fileService.inPlace.success', fileName)
+			);
+		}
 	}
 }
 
