@@ -1,8 +1,10 @@
 {
 	"validators.fileType.unsupported": "Der Dateityp '{0}' wird nicht unterstützt. Nur CSS- und JavaScript-Dateien können minimiert werden.",
 	"validators.content.empty": "Eine leere {0}-Datei kann nicht minimiert werden. Bitte fügen Sie zuerst Inhalt hinzu.",
-	"fileService.newFile.success": "Datei erfolgreich minimiert und gespeichert als: {0}",
-	"fileService.inPlace.success": "{0} wurde erfolgreich minimiert.",
+	"fileService.newFile.success": "Datei erfolgreich minifiziert und gespeichert als: {0}",
+	"fileService.newFile.successWithStats": "Datei erfolgreich minifiziert und gespeichert als: {0} (Größe reduziert von {1} auf {2}, {3}% Reduktion)",
+	"fileService.inPlace.success": "{0} wurde erfolgreich minifiziert.",
+	"fileService.inPlace.successWithStats": "{0} wurde erfolgreich minifiziert (Größe reduziert von {1} auf {2}, {3}% Reduktion)",
 	"minificationService.fileType.unsupported": "Nicht unterstützter Dateityp für Minimierung: {0}",
 	"minificationService.fileSize.tooLarge": "Datei zu groß: {0}MB. Die maximal zulässige Größe beträgt 5MB. Bitte reduzieren Sie die Dateigröße und versuchen Sie es erneut.",
 	"minificationService.error.missingInput": "Fehlender Eingabeparameter. Bitte stellen Sie sicher, dass die Datei Inhalt enthält.",

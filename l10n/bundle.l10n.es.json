@@ -1,8 +1,10 @@
 {
 	"validators.fileType.unsupported": "El tipo de archivo '{0}' no es compatible. Solo se pueden minificar archivos CSS y JavaScript.",
 	"validators.content.empty": "No se puede minificar un archivo {0} vacío. Por favor, agregue contenido primero.",
-	"fileService.newFile.success": "Archivo minificado exitosamente y guardado como: {0}",
+		"fileService.newFile.success": "Archivo minificado y guardado exitosamente como: {0}",
+	"fileService.newFile.successWithStats": "Archivo minificado y guardado exitosamente como: {0} (Tamaño reducido de {1} a {2}, {3}% de reducción)",
 	"fileService.inPlace.success": "{0} ha sido minificado exitosamente.",
+	"fileService.inPlace.successWithStats": "{0} ha sido minificado exitosamente (Tamaño reducido de {1} a {2}, {3}% de reducción)",
 	"minificationService.fileType.unsupported": "Tipo de archivo no compatible para minificación: {0}",
 	"minificationService.fileSize.tooLarge": "Archivo demasiado grande: {0}MB. El tamaño máximo permitido es 5MB. Por favor, reduzca el tamaño del archivo e intente nuevamente.",
 	"minificationService.error.missingInput": "Falta el parámetro de entrada. Por favor, asegúrese de que el archivo tenga contenido.",
