@@ -212,6 +212,10 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * when the 'minifyOnSave' configuration option is enabled. It automatically
  * minifies CSS and JavaScript files whenever they are saved.
  * 
+ * **Important**: This function ensures only ONE API call per save event:
+ * - When creating new files: delegates to processDocument (single call)
+ * - When in-place: calls getMinifiedText once, then uses setSkipAutoMinify to prevent recursion
+ * 
  * @async
  * @function onSaveMinify
  * @param {vscode.TextDocument} document - The document that was saved
@@ -220,7 +224,7 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * @sideEffects
  * - Modifies the content of the saved file if it's CSS or JavaScript
  * - Shows user notifications for success/error states
- * - Saves the document again after minification
+ * - Saves the document again after minification (in-place mode only)
  * 
  * @example
  * // This function is automatically called when:
