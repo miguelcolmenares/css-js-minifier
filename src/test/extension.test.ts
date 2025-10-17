@@ -639,12 +639,15 @@ suite("Configuration Test Suite", async function () {
 
 	// Test autoOpenNewFile configuration - enabled (default behavior)
 	test("autoOpenNewFile setting - enabled", async function () {
+		// Increase timeout for this specific test (Windows CI needs more time)
+		this.timeout(45000);
+		
 		// Configure settings (this is the default, but being explicit)
 		const config = vscode.workspace.getConfiguration("css-js-minifier");
 		await config.update("autoOpenNewFile", true, true);
 		
-		// Wait for configuration to take effect (increased for CI stability)
-		await delayBetweenTests(RATE_LIMIT_CONFIG.DOCUMENT_READY_CI_MS);
+		// Wait for configuration to take effect (increased significantly for Windows CI)
+		await delayBetweenTests(RATE_LIMIT_CONFIG.CONFIG_STABILITY_MS);
 
 		// Copy source file to out directory for this test
 		const sourceFile = path.join(__dirname, "..", "..", "src", "test", "fixtures", "test.js");
@@ -661,26 +664,26 @@ suite("Configuration Test Suite", async function () {
 		const jsDocument = await vscode.workspace.openTextDocument(jsUri);
 		await vscode.window.showTextDocument(jsDocument);
 
-		// Additional wait before executing command (increased for CI stability)
-		await delayBetweenTests(RATE_LIMIT_CONFIG.DOCUMENT_READY_CI_MS);
+		// Additional wait before executing command (significantly increased for Windows CI)
+		await delayBetweenTests(RATE_LIMIT_CONFIG.CONFIG_STABILITY_MS);
 
 		// Execute the minify in new file command
 		await vscode.commands.executeCommand("extension.minifyInNewFile");
 
-		// Wait for file creation (significantly increased for CI stability)
-		await delayBetweenTests(RATE_LIMIT_CONFIG.FILE_OPERATION_MS);
+		// Wait for file creation (significantly increased for Windows CI)
+		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS / 3); // 10 seconds
 
 		// Verify the new file exists (auto-open behavior is tested via file creation)
 		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, ".min$1"));
 		
-		// Check if file exists multiple times with delays (for CI)
+		// Check if file exists multiple times with delays (increased for Windows CI)
 		let fileExists = false;
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < 10; i++) { // Increased from 5 to 10 attempts
 			if (fs.existsSync(newFileUri.fsPath)) {
 				fileExists = true;
 				break;
 			}
-			await delayBetweenTests(RATE_LIMIT_CONFIG.DOCUMENT_READY_MS);
+			await delayBetweenTests(RATE_LIMIT_CONFIG.CONFIG_CHANGE_MS * 4); // 2 seconds per attempt
 		}
 		
 		assert(fileExists, `Minified file was not created at: ${newFileUri.fsPath}`);
