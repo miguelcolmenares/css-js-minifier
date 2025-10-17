@@ -10,8 +10,25 @@
  */
 
 import * as vscode from "vscode";
-import { validateFileType, validateContentLength } from "../utils";
-import { getMinifiedText, saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from "../services";
+import { setTimeout } from "timers";
+import { validateFileType, validateContentLength } from "../utils/validators";
+import { getMinifiedText } from "../services/minificationService";
+import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName, saveDocumentSilently, replaceDocumentContentAndSave } from "../services/fileService";
+
+// Flag to prevent auto-minify immediately after manual command
+let skipNextAutoMinify = false;
+
+/**
+ * Sets flag to skip the next auto-minify operation.
+ * Used to prevent duplicate processing when manual commands trigger auto-save.
+ */
+export function setSkipAutoMinify(): void {
+	skipNextAutoMinify = true;
+	// Reset flag after a longer delay to ensure it covers the entire manual operation
+	setTimeout(() => {
+		skipNextAutoMinify = false;
+	}, 3000); // Increased to 3 seconds to cover minification + save time
+}
 
 /**
  * Configuration options for minification operations.
@@ -19,10 +36,12 @@ import { getMinifiedText, saveAsNewFile, replaceDocumentContent, createMinifiedF
  * @interface MinifyOptions
  * @property {boolean} [saveAsNewFile] - Whether to save the result as a new file instead of replacing content
  * @property {string} [filePrefix] - The prefix to use when creating new files (e.g., '.min', '-compressed')
+ * @property {string} [debugSource] - Debug identifier for the source of the command
  */
 export interface MinifyOptions {
 	saveAsNewFile?: boolean;
 	filePrefix?: string;
+	debugSource?: string;
 }
 
 /**
@@ -82,6 +101,11 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 	} else {
 		// Replace current document content with minified version
 		await replaceDocumentContent(document, minifiedText, stats);
+		// For manual commands, we need to save explicitly but this won't trigger onSaveMinify 
+		// because the skipNextAutoMinify flag is active
+		if (options.debugSource === 'manual') {
+			await saveDocumentSilently(document);
+		}
 	}
 }
 
@@ -115,7 +139,8 @@ export async function minifyCommand(): Promise<void> {
 
 	// Process the active editor document if available
 	if (editor) {
-		await processDocument(editor.document);
+		setSkipAutoMinify(); // Prevent duplicate auto-minify from document.save() 
+		await processDocument(editor.document, { debugSource: 'manual' });
 	}
 
 	// Handle explorer context (when command is invoked from file explorer)
@@ -166,6 +191,8 @@ export async function minifyInNewFileCommand(): Promise<void> {
 
 	// Process the active editor document if available
 	if (editor) {
+		setSkipAutoMinify(); // Prevent duplicate auto-minify
+		options.debugSource = 'manual';
 		await processDocument(editor.document, options);
 	}
 
@@ -201,6 +228,12 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * // - File is saved programmatically
  */
 export async function onSaveMinify(document: vscode.TextDocument): Promise<void> {
+	// Skip auto-minify if a manual command was recently executed
+	if (skipNextAutoMinify) {
+		skipNextAutoMinify = false; // Reset flag
+		return;
+	}
+	
 	// Check if the saved file is a supported type for minification
 	const fileType = document.languageId;
 	if (fileType === "css" || fileType === "javascript") {
@@ -227,8 +260,8 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 					};
 					await processDocument(document, options);
 				} else {
-					// Replace the document content with the minified version (in-place)
-					await replaceDocumentContent(document, minifiedText, stats);
+					// Replace the document content with the minified version (in-place) and save
+					await replaceDocumentContentAndSave(document, minifiedText, stats);
 				}
 			}
 		}

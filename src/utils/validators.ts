@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as l10n from "@vscode/l10n";
+import { t } from "./l10nHelper";
 
 /**
  * Supported file types for minification.
@@ -61,7 +61,7 @@ export function validateFileType(fileType: string): boolean {
 	if (!isValidFileType(fileType)) {
 		// Show user-friendly error message with supported file types
 		vscode.window.showErrorMessage(
-			l10n.t('validators.fileType.unsupported', fileType)
+			t('validators.fileType.unsupported', fileType)
 		);
 		return false;
 	}
@@ -98,7 +98,7 @@ export function validateContentLength(text: string, fileType: string): boolean {
 	if (text.length === 0) {
 		// Provide contextual error message based on file type
 		vscode.window.showErrorMessage(
-			l10n.t('validators.content.empty', fileType)
+			t('validators.content.empty', fileType)
 		);
 		return false;
 	}

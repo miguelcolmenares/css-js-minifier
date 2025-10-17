@@ -8,3 +8,4 @@
  */
 
 export * from './validators';
+export * from './l10nHelper';

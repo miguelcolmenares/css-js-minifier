@@ -4,6 +4,7 @@
 	"description": "Minify CSS and JS files directly within Visual Studio Code using the Toptal API. Supports 7 languages: English, Spanish, French, German, Portuguese, Japanese, and Chinese. Easy-to-use commands for code optimization.",
 	"version": "1.1.0",
 	"publisher": "miguel-colmenares",
+	"l10n": "./l10n",
 	"sponsor": {
 		"url": "https://github.com/sponsors/miguelcolmenares"
 	},
@@ -51,6 +52,10 @@
 			{
 				"command": "extension.minifyInNewFile",
 				"title": "%commands.extension.minifyInNewFile.title%"
+			},
+			{
+				"command": "extension.debugL10n",
+				"title": "Debug L10n"
 			}
 		],
 		"menus": {
@@ -164,7 +169,6 @@
 		"@types/vscode": "^1.90.0",
 		"@typescript-eslint/eslint-plugin": "^8.46.1",
 		"@typescript-eslint/parser": "^8.46.1",
-		"@vscode/l10n": "^0.0.18",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
 		"@vscode/test-electron": "^2.5.2",
