@@ -103,6 +103,7 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 		await replaceDocumentContent(document, minifiedText, stats);
 		// For manual commands, we need to save explicitly but this won't trigger onSaveMinify 
 		// because the skipNextAutoMinify flag is active
+		// For auto-save, we don't need to save again as we're already in a save event
 		if (options.debugSource === 'manual') {
 			await saveDocumentSilently(document);
 		}
@@ -247,19 +248,21 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 			const shouldCreateNewFile = settings.get("minifyInNewFile") as boolean;
 			const filePrefix = settings.get("minifiedNewFilePrefix") as string;
 			
-			// Minify the content using the minification service
-			const result = await getMinifiedText(text, fileType);
-			if (result) {
-				const { minifiedText, stats } = result;
-				
-				if (shouldCreateNewFile) {
-					// Create new file with minified content
-					const options: MinifyOptions = {
-						saveAsNewFile: true,
-						filePrefix
-					};
-					await processDocument(document, options);
-				} else {
+			if (shouldCreateNewFile) {
+				// Create new file with minified content
+				// Use processDocument to handle the entire workflow (no duplicate API call)
+				const options: MinifyOptions = {
+					saveAsNewFile: true,
+					filePrefix
+				};
+				await processDocument(document, options);
+			} else {
+				// For in-place minification, minify once and save
+				const result = await getMinifiedText(text, fileType);
+				if (result) {
+					const { minifiedText, stats } = result;
+					// Set flag to prevent recursive auto-minify when document.save() is called
+					setSkipAutoMinify();
 					// Replace the document content with the minified version (in-place) and save
 					await replaceDocumentContentAndSave(document, minifiedText, stats);
 				}
