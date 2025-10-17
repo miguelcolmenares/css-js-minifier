@@ -6,7 +6,17 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-17
+
 ### Added
+- **Size Reduction Statistics**: Display percentage of size reduction and file sizes after minification
+  - Shows original and minified file sizes in human-readable format (KB or B)
+  - Calculates and displays percentage of size reduction
+  - Handles edge cases (no reduction, same size files)
+  - Works with both in-place minification and new file creation
+- New configuration option: `showSizeReduction` (default: true)
+  - Allows users to toggle size statistics display on/off
+  - When disabled, shows traditional success messages
 - **Internationalization (i18n) Support**: Full multi-language support for 7 languages
   - 🇺🇸 English (default)
   - 🇪🇸 Spanish

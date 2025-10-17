@@ -11,5 +11,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "Der neue Dateiname erhält die Erweiterung '-compressed'.",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "Der neue Dateiname erhält die Erweiterung '.minified'.",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "Der neue Dateiname erhält die Erweiterung '-minified'.",
-	"configuration.autoOpenNewFile": "Neu erstellte minifizierte Dateien automatisch im Editor öffnen."
+	"configuration.autoOpenNewFile": "Neu erstellte minifizierte Dateien automatisch im Editor öffnen.",
+	"configuration.showSizeReduction": "Größenreduzierungsstatistiken in Erfolgsmeldungen nach der Minifizierung anzeigen."
 }

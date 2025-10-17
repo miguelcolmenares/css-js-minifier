@@ -65,20 +65,23 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 	}
 
 	// Call the minification service to process the content
-	const minifiedText = await getMinifiedText(text, fileType);
-	if (!minifiedText) {
+	const result = await getMinifiedText(text, fileType);
+	if (!result) {
 		// Minification failed, error already reported to user
 		return;
 	}
+
+	// Extract minified text and statistics
+	const { minifiedText, stats } = result;
 
 	// Save the result based on user preferences
 	if (options.saveAsNewFile && options.filePrefix) {
 		// Create new file with minified content
 		const newFileName = createMinifiedFileName(document.fileName, options.filePrefix);
-		await saveAsNewFile(minifiedText, newFileName);
+		await saveAsNewFile(minifiedText, newFileName, stats);
 	} else {
 		// Replace current document content with minified version
-		await replaceDocumentContent(document, minifiedText);
+		await replaceDocumentContent(document, minifiedText, stats);
 	}
 }
 
@@ -212,8 +215,10 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 			const filePrefix = settings.get("minifiedNewFilePrefix") as string;
 			
 			// Minify the content using the minification service
-			const minifiedText = await getMinifiedText(text, fileType);
-			if (minifiedText) {
+			const result = await getMinifiedText(text, fileType);
+			if (result) {
+				const { minifiedText, stats } = result;
+				
 				if (shouldCreateNewFile) {
 					// Create new file with minified content
 					const options: MinifyOptions = {
@@ -223,7 +228,7 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 					await processDocument(document, options);
 				} else {
 					// Replace the document content with the minified version (in-place)
-					await replaceDocumentContent(document, minifiedText);
+					await replaceDocumentContent(document, minifiedText, stats);
 				}
 			}
 		}

@@ -11,5 +11,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "新しいファイル名に '-compressed' 拡張子が付きます。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "新しいファイル名に '.minified' 拡張子が付きます。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "新しいファイル名に '-minified' 拡張子が付きます。",
-	"configuration.autoOpenNewFile": "新しく作成された縮小ファイルをエディタで自動的に開く。"
+	"configuration.autoOpenNewFile": "新しく作成された縮小ファイルをエディタで自動的に開く。",
+	"configuration.showSizeReduction": "縮小後の成功メッセージにサイズ削減統計を表示する。"
 }

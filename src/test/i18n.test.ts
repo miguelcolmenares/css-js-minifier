@@ -8,12 +8,12 @@
  * 4. Language files load properly in VS Code
  * 
  * @author Miguel Colmenares
- * @since 1.0.0
+ * @since 1.1.0
  */
 
 import * as fs from "fs";
 import * as path from "path";
-import assert from "assert";
+import * as assert from "assert";
 
 /**
  * Supported languages for the extension
@@ -57,7 +57,8 @@ const EXPECTED_PACKAGE_KEYS = [
 	'configuration.minifiedNewFilePrefix.enumDescriptions.4',
 	'configuration.minifiedNewFilePrefix.enumDescriptions.5',
 	'configuration.minifiedNewFilePrefix.enumDescriptions.6',
-	'configuration.autoOpenNewFile'
+	'configuration.autoOpenNewFile',
+	'configuration.showSizeReduction'
 ];
 
 /**

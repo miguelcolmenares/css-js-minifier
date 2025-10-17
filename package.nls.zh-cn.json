@@ -11,5 +11,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "新文件名将带有 '-compressed' 扩展名。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "新文件名将带有 '.minified' 扩展名。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "新文件名将带有 '-minified' 扩展名。",
-	"configuration.autoOpenNewFile": "在编辑器中自动打开新创建的压缩文件。"
+	"configuration.autoOpenNewFile": "在编辑器中自动打开新创建的压缩文件。",
+	"configuration.showSizeReduction": "在压缩后的成功消息中显示大小缩减统计信息。"
 }
