@@ -203,14 +203,16 @@ if (shouldCreateNewFile) {
 
 ## Performance Impact
 
-### Before Fix
+### Before Fix (New File Mode)
 - API calls per auto-save (new file mode): **2 calls**
 - Notification spam: **2 messages**
 - API quota usage: **2x normal**
-- Time to complete: **~2-3 seconds** (2 sequential API calls)
+- Time to complete: **~2-3 seconds** (estimated, 2 sequential API calls)
 
-### After Fix
-- API calls per auto-save: **1 call** (50% reduction ✅)
+### After Fix (New File Mode)
+- API calls per auto-save (new file mode): **1 call** (50% reduction ✅)
 - Notification spam: **1 message** (clean UX ✅)
 - API quota usage: **1x normal** (efficient ✅)
-- Time to complete: **~1-1.5 seconds** (single API call ✅)
+- Time to complete: **~1-1.5 seconds** (estimated, single API call ✅)
+
+*Note: Timing estimates depend on network latency, file size, and API response times*

@@ -74,9 +74,9 @@ if (shouldCreateNewFile) {
 ## Impact & Benefits
 
 ### Performance Improvements
-- **50% reduction** in API calls for auto-save with new file creation
-- **Faster minification** (~1-1.5s instead of ~2-3s)
-- **Better API quota usage** (1 call instead of 2)
+- **50% reduction** in API calls specifically for auto-save with "Save as New File" option (from 2 calls to 1)
+- **Faster minification** (estimated ~1-1.5s instead of ~2-3s, depending on network latency and file size)
+- **Better API quota usage** (1 call instead of 2 for new file creation mode)
 
 ### User Experience
 - ✅ Single notification per action (clean, professional)
@@ -152,7 +152,7 @@ See `DOUBLE_NOTIFICATION_FIX.md` for detailed testing procedures.
 - [ ] Full test suite execution (requires VS Code test environment)
 - [ ] PR review and approval
 - [ ] Merge to main branch
-- [ ] Version bump (patch: 1.1.0 → 1.1.1)
+- [ ] Version bump decision (patch 1.1.1 for bug fix, or minor 1.2.0 for performance improvement)
 - [ ] Publish to VS Code Marketplace
 
 ## Related Documentation
