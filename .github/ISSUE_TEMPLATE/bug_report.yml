@@ -1,0 +1,214 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in the CSS & JS Minifier extension
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees:
+  - miguelcolmenares
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us understand and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Open a CSS/JS file with...
+        2. Run the command '....'
+        3. Click on '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: The file should be minified successfully...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Instead, I got an error message...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: vscode-version
+    attributes:
+      label: VS Code Version
+      description: Which version of VS Code are you using?
+      options:
+        - "Stable (latest)"
+        - "Insiders (pre-release)"
+        - "1.90.0 (minimum supported)"
+        - "Other (please specify in Additional Context)"
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension Version
+      description: What version of CSS & JS Minifier are you using?
+      placeholder: "e.g., 1.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Arch)
+        - Linux (Other)
+        - Other (please specify in Additional Context)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating System Version
+      description: What version of the operating system?
+      placeholder: "e.g., Windows 11, macOS 14.1, Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: file-type
+    attributes:
+      label: File Type Affected
+      description: Which file type does this bug affect?
+      options:
+        - CSS
+        - JavaScript
+        - Both CSS and JavaScript
+        - Not applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: VS Code Display Language
+      description: What language is your VS Code configured to use?
+      options:
+        - English (en)
+        - Spanish (es)
+        - French (fr)
+        - German (de)
+        - Portuguese (pt-br)
+        - Japanese (ja)
+        - Chinese Simplified (zh-cn)
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Extension Configuration
+      description: |
+        Please share your extension configuration settings.
+        You can find these in VS Code Settings (search for "css-js-minifier").
+      placeholder: |
+        {
+          "css-js-minifier.minifyOnSave": false,
+          "css-js-minifier.minifyInNewFile": true,
+          "css-js-minifier.minifiedNewFilePrefix": ".min",
+          "css-js-minifier.autoOpenNewFile": true,
+          "css-js-minifier.showSizeReduction": true
+        }
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: error-message
+    attributes:
+      label: Error Message
+      description: If you received an error message, please paste it here.
+      placeholder: Paste the complete error message here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: sample-code
+    attributes:
+      label: Sample Code/File
+      description: |
+        If possible, provide a minimal code sample that reproduces the issue.
+        For CSS/JS files, please include the content that causes the problem.
+      placeholder: |
+        /* CSS code that causes the issue */
+        .example {
+          property: value;
+        }
+      render: css
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Extension Logs
+      description: |
+        Please provide relevant logs from the VS Code Output panel.
+        Go to View > Output and select "CSS & JS Minifier" from the dropdown.
+      placeholder: Paste relevant logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context about the problem here.
+        - Are you behind a proxy or firewall?
+        - Are you using any related extensions?
+        - Does this happen with specific file sizes?
+        - Screenshots or recordings are helpful!
+      placeholder: Any additional information that might be relevant...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I am using the latest version of the extension
+          required: true
+        - label: I have included all required information above
+          required: true
+        - label: I have tested with default extension settings (if applicable)
+          required: false
