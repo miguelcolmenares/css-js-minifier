@@ -54,7 +54,7 @@
 				"clear": false
 			},
 			"problemMatcher": [],
-			"detail": "Run complete test suite (29 tests) with compilation and linting"
+			"detail": "Run complete test suite (35+ tests) with compilation and linting"
 		},
 		{
 			"label": "Test: Compile and Build Only",
