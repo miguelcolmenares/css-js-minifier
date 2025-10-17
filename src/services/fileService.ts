@@ -3,46 +3,6 @@ import * as l10n from "@vscode/l10n";
 import { MinificationStats } from "./minificationService";
 
 /**
- * Formats a size reduction message with statistics.
- * 
- * @function formatSizeReductionMessage
- * @param {string} fileName - The name of the file
- * @param {MinificationStats} stats - The minification statistics
- * @param {boolean} isNewFile - Whether this is for a new file or in-place minification
- * @returns {string} Formatted message with statistics
- */
-export function formatSizeReductionMessage(fileName: string, stats: MinificationStats, isNewFile: boolean): string {
-	const config = vscode.workspace.getConfiguration("css-js-minifier");
-	const showSizeReduction = config.get("showSizeReduction", true);
-	
-	if (!showSizeReduction) {
-		// Return basic message if feature is disabled
-		if (isNewFile) {
-			return `File successfully minified and saved as: ${fileName}`;
-		} else {
-			return `${fileName} has been successfully minified.`;
-		}
-	}
-	
-	// Check if there was any reduction
-	if (stats.reductionPercent === 0) {
-		// No reduction - show simpler message
-		if (isNewFile) {
-			return `File successfully minified and saved as: ${fileName}! No size change (${stats.originalSizeKB})`;
-		} else {
-			return `${fileName} successfully minified! No size change (${stats.originalSizeKB})`;
-		}
-	}
-	
-	// Normal case with reduction
-	if (isNewFile) {
-		return `File successfully minified and saved as: ${fileName}! Size reduced by ${stats.reductionPercent}% (${stats.originalSizeKB} → ${stats.minifiedSizeKB})`;
-	} else {
-		return `${fileName} successfully minified! Size reduced by ${stats.reductionPercent}% (${stats.originalSizeKB} → ${stats.minifiedSizeKB})`;
-	}
-}
-
-/**
  * Saves minified content to a new file and opens it in the editor.
  * 
  * This function creates a new file with the minified content, writes it to disk,
@@ -94,11 +54,18 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
 	
 	// Provide user feedback about the successful operation with statistics
 	const fileName = newFileName.split('/').pop() || 'file';
-	const message = formatSizeReductionMessage(fileName, stats, true);
-	// Provide user feedback about the successful operation
-	vscode.window.showInformationMessage(
-		l10n.t(message)
-	);
+	const config = vscode.workspace.getConfiguration("css-js-minifier");
+	const showSizeReduction = config.get("showSizeReduction", true);
+	
+	if (showSizeReduction) {
+		vscode.window.showInformationMessage(
+			l10n.t('fileService.newFile.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
+		);
+	} else {
+		vscode.window.showInformationMessage(
+			l10n.t('fileService.newFile.success', fileName)
+		);
+	}
 }
 
 /**
@@ -154,8 +121,18 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	
 	// Provide user feedback about the successful minification with statistics
 	const fileName = document.fileName.split('/').pop() || 'file';
-	const message = formatSizeReductionMessage(fileName, stats, false);
-	vscode.window.showInformationMessage(l10n.t('fileService.inPlace.success', message));
+	const config = vscode.workspace.getConfiguration("css-js-minifier");
+	const showSizeReduction = config.get("showSizeReduction", true);
+	
+	if (showSizeReduction) {
+		vscode.window.showInformationMessage(
+			l10n.t('fileService.inPlace.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
+		);
+	} else {
+		vscode.window.showInformationMessage(
+			l10n.t('fileService.inPlace.success', fileName)
+		);
+	}
 }
 
 /**

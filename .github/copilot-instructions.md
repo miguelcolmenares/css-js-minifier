@@ -132,6 +132,38 @@ To add support for a new language:
 
 ## Development Workflows
 
+### Version Management & Documentation Standards
+**CRITICAL Version Update Requirements:**
+- **When changing version numbers:** Always update BOTH `package.json` AND `src/extension.ts`
+- **In `src/extension.ts`:** Update the `@version` line in the file header JSDoc comment
+- **For new functionality files:** Add `@since` comment ONLY in the file header JSDoc (not in individual functions)
+- **Example version update:**
+  ```typescript
+  /**
+   * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
+   * @author Miguel Colmenares
+   * @version 1.2.0  // ← UPDATE THIS when version changes
+   * @since 0.1.0
+   */
+  ```
+
+**New File Documentation Standards:**
+- **Header JSDoc:** Include `@since` with the version when the file was created
+- **Function JSDoc:** Do NOT include `@since` in individual function documentation
+- **Module exports:** Include comprehensive documentation with examples
+
+### Task Execution Behavior (IMPORTANT)
+**CRITICAL Understanding for Copilot:**
+- **Task Success ≠ Completion:** When executing VS Code tasks via `run_task`, a "success" message indicates the task STARTED successfully, NOT that it completed
+- **Test Execution Time:** 
+  - "Test: Run All Tests" takes 3-4 minutes to complete (29 comprehensive tests)
+  - Other test suites take 20s-1.5 minutes depending on scope
+- **Status Interpretation:**
+  - ✅ "Task succeeded with no problems" = Task started successfully
+  - ❌ "Task failed" = Task failed to start or crashed
+  - 📊 To verify completion: Use `get_task_output` or wait for completion indicators
+- **Best Practice:** After running tests, wait for actual completion before assuming results
+
 ### Build & Watch
 - **Development**: `npm run watch` (webpack watch mode)
 - **Testing**: `npm run watch-tests` (TypeScript compilation watch)
