@@ -1,0 +1,149 @@
+name: ❓ Question / Support
+description: Ask a question or request support for using the extension
+title: "[Question]: "
+labels: ["question", "needs-triage"]
+assignees:
+  - miguelcolmenares
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out! Before asking your question, please check:
+        - [README](https://github.com/miguelcolmenares/css-js-minifier#readme) - General documentation
+        - [Discussions](https://github.com/miguelcolmenares/css-js-minifier/discussions) - Community Q&A
+        - [Existing Issues](https://github.com/miguelcolmenares/css-js-minifier/issues) - Previously answered questions
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: Describe your question in detail...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Installation / Setup
+        - Configuration options
+        - How to use a feature
+        - Understanding error messages
+        - Performance or optimization
+        - Internationalization / Languages
+        - File handling / Output
+        - Keyboard shortcuts
+        - API limitations
+        - General usage
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: |
+        Provide context to help us understand your question better.
+        - What are you trying to achieve?
+        - What have you already tried?
+        - What documentation have you consulted?
+      placeholder: Provide context for your question...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: vscode-version
+    attributes:
+      label: VS Code Version
+      description: Which version of VS Code are you using?
+      options:
+        - "Stable (latest)"
+        - "Insiders (pre-release)"
+        - "1.90.0 (minimum supported)"
+        - "Other"
+        - "Not sure"
+    validations:
+      required: false
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension Version
+      description: What version of CSS & JS Minifier are you using?
+      placeholder: "e.g., 1.1.0 (or 'latest')"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+        - Not applicable
+    validations:
+      required: false
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Current Configuration
+      description: |
+        If relevant, share your extension configuration.
+        You can find this in VS Code Settings (search for "css-js-minifier").
+      placeholder: |
+        {
+          "css-js-minifier.minifyOnSave": false,
+          "css-js-minifier.minifyInNewFile": true
+        }
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: code-example
+    attributes:
+      label: Code Example
+      description: If applicable, provide a code example related to your question.
+      placeholder: |
+        /* Example code */
+        .my-class {
+          color: red;
+        }
+      render: css
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Information
+      description: |
+        Add any other information that might be helpful.
+        - Screenshots or recordings
+        - Error messages
+        - Related issues or discussions
+      placeholder: Any additional context...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues and discussions for similar questions
+          required: true
+        - label: I have consulted the README and documentation
+          required: true
+        - label: This is a question about using the extension (not a bug report or feature request)
+          required: true

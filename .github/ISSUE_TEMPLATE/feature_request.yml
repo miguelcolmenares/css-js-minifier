@@ -1,0 +1,170 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for the CSS & JS Minifier extension
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - miguelcolmenares
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please provide detailed information below.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like to see.
+      placeholder: Describe the feature you want...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Is your feature request related to a problem?
+      placeholder: "I'm always frustrated when... / It would be helpful if..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe how you envision this feature working.
+      placeholder: |
+        1. User opens...
+        2. Then clicks...
+        3. The extension should...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: Describe alternative approaches you've thought about...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: Which area does this feature relate to?
+      options:
+        - Minification functionality
+        - Configuration options
+        - User interface / Commands
+        - File handling / Output
+        - Performance / Optimization
+        - Internationalization / Languages
+        - Error handling / Validation
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - "Critical - Blocking my workflow"
+        - "High - Significantly improves usability"
+        - "Medium - Nice to have"
+        - "Low - Minor enhancement"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: file-type
+    attributes:
+      label: Applicable File Types
+      description: Which file types would this feature apply to?
+      options:
+        - CSS only
+        - JavaScript only
+        - Both CSS and JavaScript
+        - Extension configuration
+        - Not applicable
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Provide specific examples of how this feature would be used.
+      placeholder: |
+        Example 1: When working on large CSS files...
+        Example 2: In a project with multiple JS modules...
+    validations:
+      required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: |
+        If applicable, add mockups, screenshots, or examples from other tools.
+        You can drag and drop images here.
+      placeholder: Attach mockups or examples here...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os-relevance
+    attributes:
+      label: Operating System Relevance
+      description: Is this feature specific to a particular operating system?
+      options:
+        - All operating systems
+        - Windows only
+        - macOS only
+        - Linux only
+        - Not OS-specific
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: |
+        If you have technical knowledge, provide implementation suggestions.
+        This is optional but helpful for the maintainer.
+      placeholder: Technical considerations or implementation ideas...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context, screenshots, or information about the feature request.
+        - Related features in other extensions
+        - Links to relevant documentation
+        - Community discussions or user feedback
+      placeholder: Any additional information...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested
+          required: true
+        - label: This feature aligns with the extension's purpose (CSS/JS minification)
+          required: true
+        - label: I have provided clear use cases and examples
+          required: true
+        - label: I am willing to help test this feature if implemented
+          required: false
