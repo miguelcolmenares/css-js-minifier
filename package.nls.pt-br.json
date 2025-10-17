@@ -1,0 +1,16 @@
+{
+	"commands.extension.minify.title": "Minificar este arquivo",
+	"commands.extension.minifyInNewFile.title": "Minificar e salvar em um novo arquivo",
+	"configuration.title": "Configuração da Ferramenta de Minificação JS e CSS",
+	"configuration.minifyOnSave": "Minificar arquivos automaticamente ao salvar",
+	"configuration.minifyInNewFile": "Salvar conteúdo minificado em um novo arquivo",
+	"configuration.minifiedNewFilePrefix": "Prefixo para o novo arquivo minificado. A extensão será a mesma do arquivo original. Aplica-se apenas ao salvar conteúdo minificado em um novo arquivo.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.1": "O nome do novo arquivo terá a extensão '.min'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.2": "O nome do novo arquivo terá a extensão '-min'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.3": "O nome do novo arquivo terá a extensão '.compressed'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "O nome do novo arquivo terá a extensão '-compressed'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "O nome do novo arquivo terá a extensão '.minified'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "O nome do novo arquivo terá a extensão '-minified'.",
+	"configuration.autoOpenNewFile": "Abrir automaticamente arquivos minificados recém-criados no editor.",
+	"configuration.showSizeReduction": "Mostrar estatísticas de redução de tamanho em mensagens de sucesso após a minificação."
+}

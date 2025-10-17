@@ -1,0 +1,19 @@
+{
+	"validators.fileType.unsupported": "ファイルタイプ '{0}' はサポートされていません。CSSとJavaScriptファイルのみを縮小できます。",
+	"validators.content.empty": "空の {0} ファイルを縮小することはできません。最初にコンテンツを追加してください。",
+	"fileService.newFile.success": "ファイルが正常に縮小され、次の名前で保存されました：{0}",
+	"fileService.inPlace.success": "{0} が正常に縮小されました。",
+	"minificationService.fileType.unsupported": "縮小がサポートされていないファイルタイプ：{0}",
+	"minificationService.fileSize.tooLarge": "ファイルが大きすぎます：{0}MB。最大許容サイズは5MBです。ファイルサイズを減らして再試行してください。",
+	"minificationService.error.missingInput": "入力パラメータがありません。ファイルにコンテンツがあることを確認してください。",
+	"minificationService.error.invalidMethod": "無効なリクエストメソッドです。これは内部エラーです。もう一度お試しください。",
+	"minificationService.error.invalidContentType": "無効なコンテンツタイプです。これは内部エラーです。もう一度お試しください。",
+	"minificationService.error.fileTooLarge": "ファイルが大きすぎます。最大許容サイズは5MBです。ファイルサイズを減らしてください。",
+	"minificationService.error.invalidSyntax": "無効な {0} 構文です。コードに構文エラーがないか確認してください。",
+	"minificationService.error.rateLimitExceeded": "リクエストが多すぎます。APIの制限は1分あたり30リクエストです。しばらく待ってから再試行してください。",
+	"minificationService.error.apiError": "{0} APIエラー ({1})：{2}",
+	"minificationService.error.invalidResponse": "縮小APIからの無効な応答形式",
+	"minificationService.error.timeout": "縮小タイムアウト：{0} サービスが予想よりも時間がかかっています。インターネット接続を確認して再試行してください。",
+	"minificationService.error.network": "ネットワークエラー：縮小サービスに接続できません。インターネット接続を確認して再試行してください。",
+	"minificationService.error.generic": "{0} ファイルの縮小に失敗しました：{1}"
+}

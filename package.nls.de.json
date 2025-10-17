@@ -1,0 +1,16 @@
+{
+	"commands.extension.minify.title": "Diese Datei minifizieren",
+	"commands.extension.minifyInNewFile.title": "Minifizieren und als neue Datei speichern",
+	"configuration.title": "Konfiguration des JS & CSS Minifier Tools",
+	"configuration.minifyOnSave": "Dateien beim Speichern automatisch minifizieren",
+	"configuration.minifyInNewFile": "Minifizierten Inhalt in einer neuen Datei speichern",
+	"configuration.minifiedNewFilePrefix": "Präfix für die minifizierte neue Datei. Die Erweiterung ist dieselbe wie die der Originaldatei. Gilt nur beim Speichern minifizierten Inhalts in einer neuen Datei.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.1": "Der neue Dateiname erhält die Erweiterung '.min'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.2": "Der neue Dateiname erhält die Erweiterung '-min'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.3": "Der neue Dateiname erhält die Erweiterung '.compressed'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.4": "Der neue Dateiname erhält die Erweiterung '-compressed'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "Der neue Dateiname erhält die Erweiterung '.minified'.",
+	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "Der neue Dateiname erhält die Erweiterung '-minified'.",
+	"configuration.autoOpenNewFile": "Neu erstellte minifizierte Dateien automatisch im Editor öffnen.",
+	"configuration.showSizeReduction": "Größenreduzierungsstatistiken in Erfolgsmeldungen nach der Minifizierung anzeigen."
+}
