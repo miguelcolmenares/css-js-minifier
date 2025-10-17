@@ -15,10 +15,9 @@ This directory contains technical documentation for the CSS & JS Minifier VS Cod
 
 ### API & Integration
 - **[TOPTAL-API.md](TOPTAL-API.md)** - Toptal minification API integration details
-- **[ERROR-HANDLING.md](ERROR-HANDLING.md)** - Error handling patterns and user experience
 
 ### Internationalization
-- **[I18N.md](I18N.md)** - Multi-language support implementation guide
+- **[INTERNATIONALIZATION.md](INTERNATIONALIZATION.md)** - Multi-language support and translation architecture
 
 ## 🚀 Quick Links
 

@@ -6,6 +6,28 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+- **Internationalization (i18n) Support**: Full multi-language support for 7 languages
+  - 🇺🇸 English (default)
+  - 🇪🇸 Spanish
+  - 🇫🇷 French
+  - 🇩🇪 German
+  - 🇧🇷 Portuguese (Brazilian)
+  - 🇯🇵 Japanese
+  - 🇨🇳 Chinese Simplified
+- Runtime message bundles using @vscode/l10n package
+- 17 internationalized runtime messages across all user notifications
+- 13 internationalized configuration and command labels
+- Comprehensive i18n test suite with 20+ tests
+- i18n architecture documentation (docs/INTERNATIONALIZATION.md)
+- VS Code task for running i18n tests separately
+
+### Changed
+- All hardcoded user-facing strings replaced with l10n.t() calls
+- Error messages now support parameter interpolation
+- Success notifications now properly internationalized
+- README updated with language support information
+
 ## [1.0.0] - 2025-10-16
 
 ### Added
