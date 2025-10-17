@@ -99,7 +99,28 @@ The extension automatically uses your VS Code display language. All user-facing 
 - Error messages and notifications
 - Success messages
 
-To change your VS Code language, use the **Configure Display Language** command from the command palette.
+### Changing Language
+
+To use the extension in your preferred language:
+
+1. **Install Language Pack** (if not already installed):
+   - Open Command Palette (`Ctrl/Cmd+Shift+P`)
+   - Type `Configure Display Language`
+   - Click `Install additional languages...`
+   - Search for and install your language pack (e.g., "Spanish Language Pack")
+
+2. **Switch VS Code Language**:
+   - Open Command Palette (`Ctrl/Cmd+Shift+P`)
+   - Type `Configure Display Language`
+   - Select your preferred language from the list
+   - Restart VS Code when prompted
+
+3. **Verify**:
+   - After restarting, open a CSS or JS file
+   - Right-click in the editor
+   - The extension commands should appear in your selected language
+
+For more information about internationalization, see the [Internationalization Documentation](docs/INTERNATIONALIZATION.md).
 
 ## Keyboard Shortcuts
 
