@@ -84,6 +84,47 @@ To adjust these settings, add the following lines to your `settings.json` file:
 }
 ```
 
+## Internationalization (i18n)
+
+The extension is fully internationalized and supports **7 languages**:
+
+- 🇺🇸 **English** (en) - Default
+- 🇪🇸 **Spanish** (es)
+- 🇫🇷 **French** (fr)
+- 🇩🇪 **German** (de)
+- 🇧🇷 **Portuguese (Brazil)** (pt-br)
+- 🇯🇵 **Japanese** (ja)
+- 🇨🇳 **Chinese Simplified** (zh-cn)
+
+The extension automatically uses your VS Code display language. All user-facing text is translated, including:
+- Commands and menu items
+- Configuration settings and descriptions
+- Error messages and notifications
+- Success messages
+
+### Changing Language
+
+To use the extension in your preferred language:
+
+1. **Install Language Pack** (if not already installed):
+   - Open Command Palette (`Ctrl/Cmd+Shift+P`)
+   - Type `Configure Display Language`
+   - Click `Install additional languages...`
+   - Search for and install your language pack (e.g., "Spanish Language Pack")
+
+2. **Switch VS Code Language**:
+   - Open Command Palette (`Ctrl/Cmd+Shift+P`)
+   - Type `Configure Display Language`
+   - Select your preferred language from the list
+   - Restart VS Code when prompted
+
+3. **Verify**:
+   - After restarting, open a CSS or JS file
+   - Right-click in the editor
+   - The extension commands should appear in your selected language
+
+For more information about internationalization, see the [Internationalization Documentation](docs/INTERNATIONALIZATION.md).
+
 ## Keyboard Shortcuts
 
 The extension provides convenient keyboard shortcuts for quick access to its commands:
@@ -115,6 +156,7 @@ For detailed technical documentation, see the [`docs/`](docs/) directory:
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
 - **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions  
 - **[API Integration](docs/TOPTAL-API.md)** - Toptal API implementation details
+- **[Internationalization](docs/INTERNATIONALIZATION.md)** - Multi-language support and translation architecture
 - **[Publishing Workflow](docs/TEST-RATE-LIMITING.md)** - Release and deployment processes
 
 ## Contributing

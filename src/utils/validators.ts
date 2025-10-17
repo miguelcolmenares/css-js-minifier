@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as l10n from "@vscode/l10n";
 
 /**
  * Supported file types for minification.
@@ -60,7 +61,7 @@ export function validateFileType(fileType: string): boolean {
 	if (!isValidFileType(fileType)) {
 		// Show user-friendly error message with supported file types
 		vscode.window.showErrorMessage(
-			`File type '${fileType}' is not supported. Only CSS and JavaScript files can be minified.`
+			l10n.t('validators.fileType.unsupported', fileType)
 		);
 		return false;
 	}
@@ -97,7 +98,7 @@ export function validateContentLength(text: string, fileType: string): boolean {
 	if (text.length === 0) {
 		// Provide contextual error message based on file type
 		vscode.window.showErrorMessage(
-			`Cannot minify empty ${fileType} file. Please add some content first.`
+			l10n.t('validators.content.empty', fileType)
 		);
 		return false;
 	}

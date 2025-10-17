@@ -52,57 +52,83 @@ Four settings in `package.json` contribute section:
 - `autoOpenNewFile`: Automatically open newly created minified files in the editor
 
 ### Internationalization (i18n) System
-The extension supports multiple languages through VS Code's `.nls` (Native Language Support) files:
+The extension has comprehensive internationalization support across 7 languages using a two-layer translation system:
 
-#### Translation Files Structure
-- **`package.nls.json`**: Default English translations (base language)
-- **`package.nls.es.json`**: Spanish translations (locale-specific)
-- **Pattern**: `package.nls.[locale].json` for additional languages
+#### Supported Languages (7 total)
+- **English (en)**: Default language - `package.nls.json` + `l10n/bundle.l10n.json`
+- **Spanish (es)**: `package.nls.es.json` + `l10n/bundle.l10n.es.json`
+- **French (fr)**: `package.nls.fr.json` + `l10n/bundle.l10n.fr.json`
+- **German (de)**: `package.nls.de.json` + `l10n/bundle.l10n.de.json`
+- **Portuguese (pt-br)**: `package.nls.pt-br.json` + `l10n/bundle.l10n.pt-br.json`
+- **Japanese (ja)**: `package.nls.ja.json` + `l10n/bundle.l10n.ja.json`
+- **Chinese Simplified (zh-cn)**: `package.nls.zh-cn.json` + `l10n/bundle.l10n.zh-cn.json`
 
-#### Translation Keys and Usage
-All user-facing strings use i18n keys referenced in `package.json`:
+#### Two-Layer Translation System
+
+**Layer 1: Package Translations (`package.nls.*.json`)**
+- Used for static contributions in `package.json`
+- Command titles, configuration settings, enum descriptions
+- Referenced using `%key%` syntax in package.json
+- 13 keys total across all languages
+
 ```json
 // In package.json
 "title": "%commands.extension.minify.title%"
 
 // In package.nls.json (English)
 "commands.extension.minify.title": "Minify this File"
-
-// In package.nls.es.json (Spanish)  
-"commands.extension.minify.title": "Minificar este archivo"
 ```
 
-#### Supported Translation Categories
-1. **Commands**: Context menu and command palette entries
-   - `commands.extension.minify.title`: Main minify command
-   - `commands.extension.minifyInNewFile.title`: New file minify command
+**Layer 2: Runtime Messages (`l10n/bundle.l10n.*.json`)**
+- Used for dynamic messages in TypeScript code
+- Error messages, success notifications, validation messages
+- Accessed via `@vscode/l10n` package
+- 17 keys total with parameter interpolation support
 
-2. **Configuration**: Settings descriptions and options
-   - `configuration.title`: Settings section title
-   - `configuration.minifyOnSave`: Auto-minify on save description
-   - `configuration.minifyInNewFile`: New file creation description
-   - `configuration.minifiedNewFilePrefix`: File naming prefix description
-   - `configuration.autoOpenNewFile`: Auto-open new files description
+```typescript
+// In TypeScript
+import * as l10n from '@vscode/l10n';
+vscode.window.showErrorMessage(
+  l10n.t('validators.fileType.unsupported', fileType)
+);
 
-3. **Enum Descriptions**: Dropdown option explanations
-   - `configuration.minifiedNewFilePrefix.enumDescriptions.[1-6]`: Prefix option descriptions
+// In l10n/bundle.l10n.json (English)
+"validators.fileType.unsupported": "File type '{0}' is not supported..."
+```
+
+#### Internationalized Components
+- All error messages (validators, API errors, network errors)
+- All success notifications (file operations)
+- All configuration labels and descriptions
+- All command titles and menu items
+- Parameter interpolation using {0}, {1}, {2} placeholders
+
+#### Translation Testing
+- Comprehensive i18n test suite in `src/test/i18n.test.ts`
+- 20+ tests covering file existence, JSON validity, key consistency
+- Placeholder preservation verification
+- Translation quality checks
+- VS Code task: "Test: Internationalization (i18n) Suite Only"
 
 #### Language Detection
-VS Code automatically selects the appropriate `.nls` file based on:
+VS Code automatically selects the appropriate translation based on:
 - User's VS Code display language setting
 - System locale
 - Falls back to `package.nls.json` (English) if locale not supported
 
 #### Adding New Languages
-To add support for a new language (e.g., French):
-1. Create `package.nls.fr.json` with all translation keys
-2. Translate all string values to French
-3. VS Code will automatically detect and use the file for French users
+To add support for a new language:
+1. Create `package.nls.{locale}.json` with 13 configuration keys
+2. Create `l10n/bundle.l10n.{locale}.json` with 17 runtime message keys
+3. Update test constants in `src/test/i18n.test.ts`
+4. Verify all tests pass
+5. See `docs/INTERNATIONALIZATION.md` for detailed guide
 
 #### Translation Maintenance
 - **Critical**: Keep all `.nls` files synchronized with identical keys
 - **New Features**: Always add translation keys to all supported language files
-- **Testing**: Verify translations by changing VS Code display language
+- **Testing**: Verify translations by running i18n test suite
+- **Documentation**: See `docs/INTERNATIONALIZATION.md` for complete guide
 
 ## Development Workflows
 

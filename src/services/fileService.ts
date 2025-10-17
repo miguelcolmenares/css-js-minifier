@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as l10n from "@vscode/l10n";
 import { MinificationStats } from "./minificationService";
 
 /**
@@ -94,7 +95,10 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
 	// Provide user feedback about the successful operation with statistics
 	const fileName = newFileName.split('/').pop() || 'file';
 	const message = formatSizeReductionMessage(fileName, stats, true);
-	vscode.window.showInformationMessage(message);
+	// Provide user feedback about the successful operation
+	vscode.window.showInformationMessage(
+		l10n.t(message)
+	);
 }
 
 /**
@@ -151,7 +155,7 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Provide user feedback about the successful minification with statistics
 	const fileName = document.fileName.split('/').pop() || 'file';
 	const message = formatSizeReductionMessage(fileName, stats, false);
-	vscode.window.showInformationMessage(message);
+	vscode.window.showInformationMessage(l10n.t('fileService.inPlace.success', message));
 }
 
 /**

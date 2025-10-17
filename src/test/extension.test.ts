@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
+import * as l10n from "@vscode/l10n";
 import assert from "assert";
 import { setTimeout } from "timers";
 
@@ -232,7 +233,7 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = txtDocument.getText();
 		// The content should not change for unsupported file types
 		assert.strictEqual(documentContent, "This is a text file and should not be minified.");
-		assert(showErrorMessageSpy.calledWith("File type 'plaintext' is not supported. Only CSS and JavaScript files can be minified."));
+		assert(showErrorMessageSpy.calledWith(l10n.t('validators.fileType.unsupported', 'plaintext')));
 	});
 
 	// Test for empty CSS file
@@ -245,7 +246,7 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = emptyCssDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		assert(showErrorMessageSpy.calledWith("Cannot minify empty css file. Please add some content first."));
+		assert(showErrorMessageSpy.calledWith(l10n.t('validators.content.empty', 'css')));
 	});
 
 	// Test for empty JS file
@@ -258,7 +259,7 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = emptyJsDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		assert(showErrorMessageSpy.calledWith("Cannot minify empty javascript file. Please add some content first."));
+		assert(showErrorMessageSpy.calledWith(l10n.t('validators.content.empty', 'javascript')));
 	});
 
 	// Function to test the explorer context menu functionality

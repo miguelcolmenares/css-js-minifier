@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as l10n from "@vscode/l10n";
 import { setTimeout } from "timers";
 
 /**
@@ -176,7 +177,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 	const apiConfig = MINIFICATION_APIS[fileType as keyof typeof MINIFICATION_APIS];
 	
 	if (!apiConfig) {
-		vscode.window.showErrorMessage(`Unsupported file type for minification: ${fileType}`);
+		vscode.window.showErrorMessage(l10n.t('minificationService.fileType.unsupported', fileType));
 		return null;
 	}
 
@@ -185,7 +186,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 	if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
 		const sizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
 		vscode.window.showErrorMessage(
-			`File too large: ${sizeMB}MB. Maximum allowed size is 5MB. Please reduce the file size and try again.`
+			l10n.t('minificationService.fileSize.tooLarge', sizeMB)
 		);
 		return null;
 	}
@@ -227,25 +228,25 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 				// Fall back to status-based messages if JSON parsing fails
 				switch (response.status) {
 					case 400:
-						errorMessage = 'Missing input parameter. Please ensure the file has content.';
+						errorMessage = l10n.t('minificationService.error.missingInput');
 						break;
 					case 405:
-						errorMessage = 'Invalid request method. This is an internal error, please try again.';
+						errorMessage = l10n.t('minificationService.error.invalidMethod');
 						break;
 					case 406:
-						errorMessage = 'Invalid content type. This is an internal error, please try again.';
+						errorMessage = l10n.t('minificationService.error.invalidContentType');
 						break;
 					case 413:
-						errorMessage = 'File too large. Maximum allowed size is 5MB. Please reduce the file size.';
+						errorMessage = l10n.t('minificationService.error.fileTooLarge');
 						break;
 					case 422:
-						errorMessage = `Invalid ${fileType} syntax. Please check your code for syntax errors.`;
+						errorMessage = l10n.t('minificationService.error.invalidSyntax', fileType);
 						break;
 					case 429:
-						errorMessage = 'Too many requests. API limit is 30 requests per minute. Please wait and try again.';
+						errorMessage = l10n.t('minificationService.error.rateLimitExceeded');
 						break;
 					default:
-						errorMessage = `${apiConfig.name} API error (${response.status}): ${response.statusText}`;
+						errorMessage = l10n.t('minificationService.error.apiError', apiConfig.name, response.status.toString(), response.statusText);
 				}
 			}
 			
@@ -257,7 +258,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 		
 		// Basic validation of the response
 		if (typeof minifiedText !== 'string') {
-			throw new Error('Invalid response format from minification API');
+			throw new Error(l10n.t('minificationService.error.invalidResponse'));
 		}
 		
 		// Calculate statistics
@@ -277,13 +278,13 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 		
 		if (errorMessage.includes('timed out after')) {
 			// Timeout-specific message with helpful information
-			userMessage = `Minification timeout: The ${apiConfig?.name || fileType} service is taking longer than expected. Please check your internet connection and try again.`;
+			userMessage = l10n.t('minificationService.error.timeout', apiConfig?.name || fileType);
 		} else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
 			// Network connectivity issues
-			userMessage = `Network error: Unable to connect to the minification service. Please check your internet connection and try again.`;
+			userMessage = l10n.t('minificationService.error.network');
 		} else {
 			// General error message
-			userMessage = `Failed to minify ${fileType} file: ${errorMessage}`;
+			userMessage = l10n.t('minificationService.error.generic', fileType, errorMessage);
 		}
 		
 		// Show user-friendly error message

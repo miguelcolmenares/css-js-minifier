@@ -17,30 +17,26 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - New configuration option: `showSizeReduction` (default: true)
   - Allows users to toggle size statistics display on/off
   - When disabled, shows traditional success messages
-- 8 new test cases for size reduction feature
-  - Tests for message formatting with statistics
-  - Tests for configuration toggle behavior
-  - Tests for both CSS and JavaScript files
-  - Tests for new file creation with statistics
-  - Edge case handling (no reduction scenarios)
+- **Internationalization (i18n) Support**: Full multi-language support for 7 languages
+  - 🇺🇸 English (default)
+  - 🇪🇸 Spanish
+  - 🇫🇷 French
+  - 🇩🇪 German
+  - 🇧🇷 Portuguese (Brazilian)
+  - 🇯🇵 Japanese
+  - 🇨🇳 Chinese Simplified
+- Runtime message bundles using @vscode/l10n package
+- 17 internationalized runtime messages across all user notifications
+- 13 internationalized configuration and command labels
+- Comprehensive i18n test suite with 20+ tests
+- i18n architecture documentation (docs/INTERNATIONALIZATION.md)
+- VS Code task for running i18n tests separately
 
 ### Changed
-- Enhanced success messages to include size reduction information
-  - Format: "file.css successfully minified! Size reduced by 45% (1.21 KB → 0.66 KB)"
-  - Alternative format for no reduction: "file.css successfully minified! No size change (1.21 KB)"
-- Updated `MinificationService` to return statistics with minified text
-  - New interfaces: `MinificationStats` and `MinificationResult`
-  - Helper functions: `formatBytes()` and `calculateStats()`
-- Updated `FileService` to display statistics in success messages
-  - New function: `formatSizeReductionMessage()` with configuration awareness
-- Version bumped to 1.1.0
-
-### Technical
-- Added TypeScript interfaces for statistics and results
-- Improved type safety with new return types
-- Backward compatible - all existing functionality maintained
-- All 29 existing tests continue to pass
-- Comprehensive JSDoc documentation for new functions
+- All hardcoded user-facing strings replaced with l10n.t() calls
+- Error messages now support parameter interpolation
+- Success notifications now properly internationalized
+- README updated with language support information
 
 ## [1.0.0] - 2025-10-16
 
