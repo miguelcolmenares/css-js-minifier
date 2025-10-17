@@ -95,7 +95,7 @@ async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]): Promis
 // Define expected minified content
 const cssMinifiedContent = "p{color:red}";
 const jsMinifiedContent =
-	'++function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
+	'function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
 // Define prefixes for new files
 	const prefixes = [".min", "-min", ".compressed", "-compressed", ".minified", "-minified"];
 
