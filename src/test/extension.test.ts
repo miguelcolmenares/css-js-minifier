@@ -2,7 +2,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import * as l10n from "@vscode/l10n";
 import assert from "assert";
 import { setTimeout } from "timers";
 
@@ -119,18 +118,6 @@ const jsMinifiedContent =
 suite("JS & CSS Minifier Test Suite", function () {
 	// Set a maximum timeout for each test (increased for rate limiting)
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
-
-	// Configure l10n before running tests
-	this.beforeAll(async function () {
-		// Initialize l10n with the extension's bundle
-		const extensionUri = vscode.extensions.getExtension('miguel-colmenares.css-js-minifier')?.extensionUri;
-		if (extensionUri) {
-			const bundleFilePath = vscode.Uri.joinPath(extensionUri, 'l10n', 'bundle.l10n.json').fsPath;
-			l10n.config({
-				fsPath: bundleFilePath
-			});
-		}
-	});
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage("Start all tests.");
