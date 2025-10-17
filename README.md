@@ -34,6 +34,7 @@ Minify and Save as New File through context menu
 ## Key Features
 
 -   **CSS and JavaScript Minification**: Minify open CSS and JS files in the editor using commands from the command palette or the context menu.
+-   **Size Reduction Statistics**: See exactly how much space you saved with percentage reduction and before/after file sizes.
 -   **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
 -   **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
 -   **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
@@ -69,6 +70,7 @@ You can customize the extension's behavior through the available settings in VS 
 -   `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
 -   `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
 -   `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
+-   `css-js-minifier.showSizeReduction`: Show size reduction statistics in success messages. (`true` or `false`, default is `true`).
 
 To adjust these settings, add the following lines to your `settings.json` file:
 
@@ -77,7 +79,8 @@ To adjust these settings, add the following lines to your `settings.json` file:
 	"css-js-minifier.minifyOnSave": true,
 	"css-js-minifier.minifyInNewFile": true,
 	"css-js-minifier.minifiedNewFilePrefix": ".min",
-	"css-js-minifier.autoOpenNewFile": false
+	"css-js-minifier.autoOpenNewFile": false,
+	"css-js-minifier.showSizeReduction": true
 }
 ```
 

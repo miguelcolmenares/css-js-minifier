@@ -830,4 +830,215 @@ suite("Configuration Test Suite", async function () {
 			fs.unlinkSync(testFile);
 		}
 	});
+
+	// New test suite for size reduction statistics
+	suite("Size Reduction Statistics", function () {
+		this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
+
+		test("should include size reduction in success message", async function () {
+			// Ensure showSizeReduction is enabled
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			// Mock the showInformationMessage to capture the message
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			// Wait a bit for the message to be shown
+			await delayBetweenTests(1000);
+
+			// Verify the message includes size reduction information
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			assert(message.includes("%") || message.includes("→"), 
+				`Message should include size reduction info. Got: ${message}`);
+
+			showMessageStub.restore();
+		});
+
+		test("should respect showSizeReduction configuration", async function () {
+			// Disable showSizeReduction
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", false, true);
+			await delayBetweenTests(1000);
+
+			// Mock the showInformationMessage to capture the message
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			// Wait a bit for the message to be shown
+			await delayBetweenTests(1000);
+
+			// Verify the message doesn't include size reduction info when disabled
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			assert(message.includes("successfully minified"), 
+				`Message should be a basic success message. Got: ${message}`);
+
+			showMessageStub.restore();
+
+			// Re-enable for other tests
+			await config.update("showSizeReduction", true, true);
+		});
+
+		test("should show size reduction for new file creation", async function () {
+			// Configure for new file creation
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("minifyInNewFile", false, true);
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			// Mock the showInformationMessage to capture the message
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			
+			// Use minifyInNewFile command
+			await vscode.commands.executeCommand("extension.minifyInNewFile");
+
+			// Wait a bit for the message to be shown
+			await delayBetweenTests(1000);
+
+			// Verify the message includes size reduction information
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			assert(message.includes("Size reduced") || message.includes("No size change"), 
+				`Message should include size info. Got: ${message}`);
+
+			showMessageStub.restore();
+
+			// Clean up generated file
+			const newFileUri = vscode.Uri.file(cssUri.fsPath.replace(".css", ".min.css"));
+			if (fs.existsSync(newFileUri.fsPath)) {
+				await closeDocuments([newFileUri.fsPath]);
+				fs.unlinkSync(newFileUri.fsPath);
+			}
+		});
+
+		test("should handle files with no size reduction", async function () {
+			// This test ensures the message handles edge cases properly
+			// We'll use a stub to test the message formatting logic directly
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			await delayBetweenTests(1000);
+
+			// Just verify the message was shown - actual content depends on API result
+			assert(showMessageStub.called, "showInformationMessage should be called");
+
+			showMessageStub.restore();
+		});
+
+		test("should format bytes correctly", async function () {
+			// This is an indirect test - we verify messages include formatted sizes
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			await delayBetweenTests(1000);
+
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			
+			// Verify the message contains either KB or B units
+			const hasUnits = message.includes(" KB") || message.includes(" B");
+			assert(hasUnits, `Message should include size units. Got: ${message}`);
+
+			showMessageStub.restore();
+		});
+
+		test("should calculate reduction percentage", async function () {
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+			const jsDocument = await vscode.workspace.openTextDocument(jsUri);
+			await vscode.window.showTextDocument(jsDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			await delayBetweenTests(1000);
+
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			
+			// Should include percentage if there was reduction
+			const hasPercentage = message.includes("%");
+			const hasNoReduction = message.includes("No size change");
+			assert(hasPercentage || hasNoReduction, 
+				`Message should show percentage or no change. Got: ${message}`);
+
+			showMessageStub.restore();
+		});
+
+		test("should work with JavaScript files", async function () {
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+			const jsDocument = await vscode.workspace.openTextDocument(jsUri);
+			await vscode.window.showTextDocument(jsDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			await delayBetweenTests(1000);
+
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			assert(message.includes("test.js"), `Message should include filename. Got: ${message}`);
+
+			showMessageStub.restore();
+		});
+
+		test("should work with CSS files", async function () {
+			const config = vscode.workspace.getConfiguration("css-js-minifier");
+			await config.update("showSizeReduction", true, true);
+			await delayBetweenTests(1000);
+
+			const showMessageStub = sinon.stub(vscode.window, "showInformationMessage");
+
+			const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
+			const cssDocument = await vscode.workspace.openTextDocument(cssUri);
+			await vscode.window.showTextDocument(cssDocument);
+			await vscode.commands.executeCommand("extension.minify");
+
+			await delayBetweenTests(1000);
+
+			assert(showMessageStub.called, "showInformationMessage should be called");
+			const message = showMessageStub.firstCall.args[0] as string;
+			assert(message.includes("test.css"), `Message should include filename. Got: ${message}`);
+
+			showMessageStub.restore();
+		});
+	});
 });

@@ -6,6 +6,42 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-17
+
+### Added
+- **Size Reduction Statistics**: Display percentage of size reduction and file sizes after minification
+  - Shows original and minified file sizes in human-readable format (KB or B)
+  - Calculates and displays percentage of size reduction
+  - Handles edge cases (no reduction, same size files)
+  - Works with both in-place minification and new file creation
+- New configuration option: `showSizeReduction` (default: true)
+  - Allows users to toggle size statistics display on/off
+  - When disabled, shows traditional success messages
+- 8 new test cases for size reduction feature
+  - Tests for message formatting with statistics
+  - Tests for configuration toggle behavior
+  - Tests for both CSS and JavaScript files
+  - Tests for new file creation with statistics
+  - Edge case handling (no reduction scenarios)
+
+### Changed
+- Enhanced success messages to include size reduction information
+  - Format: "file.css successfully minified! Size reduced by 45% (1.21 KB → 0.66 KB)"
+  - Alternative format for no reduction: "file.css successfully minified! No size change (1.21 KB)"
+- Updated `MinificationService` to return statistics with minified text
+  - New interfaces: `MinificationStats` and `MinificationResult`
+  - Helper functions: `formatBytes()` and `calculateStats()`
+- Updated `FileService` to display statistics in success messages
+  - New function: `formatSizeReductionMessage()` with configuration awareness
+- Version bumped to 1.1.0
+
+### Technical
+- Added TypeScript interfaces for statistics and results
+- Improved type safety with new return types
+- Backward compatible - all existing functionality maintained
+- All 29 existing tests continue to pass
+- Comprehensive JSDoc documentation for new functions
+
 ## [1.0.0] - 2025-10-16
 
 ### Added

@@ -1,4 +1,45 @@
 import * as vscode from "vscode";
+import { MinificationStats } from "./minificationService";
+
+/**
+ * Formats a size reduction message with statistics.
+ * 
+ * @function formatSizeReductionMessage
+ * @param {string} fileName - The name of the file
+ * @param {MinificationStats} stats - The minification statistics
+ * @param {boolean} isNewFile - Whether this is for a new file or in-place minification
+ * @returns {string} Formatted message with statistics
+ */
+function formatSizeReductionMessage(fileName: string, stats: MinificationStats, isNewFile: boolean): string {
+	const config = vscode.workspace.getConfiguration("css-js-minifier");
+	const showSizeReduction = config.get("showSizeReduction", true);
+	
+	if (!showSizeReduction) {
+		// Return basic message if feature is disabled
+		if (isNewFile) {
+			return `File successfully minified and saved as: ${fileName}`;
+		} else {
+			return `${fileName} has been successfully minified.`;
+		}
+	}
+	
+	// Check if there was any reduction
+	if (stats.reductionPercent === 0) {
+		// No reduction - show simpler message
+		if (isNewFile) {
+			return `File successfully minified and saved as: ${fileName}! No size change (${stats.originalSizeKB})`;
+		} else {
+			return `${fileName} successfully minified! No size change (${stats.originalSizeKB})`;
+		}
+	}
+	
+	// Normal case with reduction
+	if (isNewFile) {
+		return `File successfully minified and saved as: ${fileName}! Size reduced by ${stats.reductionPercent}% (${stats.originalSizeKB} → ${stats.minifiedSizeKB})`;
+	} else {
+		return `${fileName} successfully minified! Size reduced by ${stats.reductionPercent}% (${stats.originalSizeKB} → ${stats.minifiedSizeKB})`;
+	}
+}
 
 /**
  * Saves minified content to a new file and opens it in the editor.
@@ -11,6 +52,7 @@ import * as vscode from "vscode";
  * @function saveAsNewFile
  * @param {string} minifiedText - The minified content to save
  * @param {string} newFileName - The complete file path for the new file (including extension)
+ * @param {MinificationStats} stats - Statistics about the minification process
  * @returns {Promise<void>} Resolves when the file is successfully created and opened
  * 
  * @throws {Error} When file system operations fail (e.g., permissions, disk space)
@@ -24,11 +66,12 @@ import * as vscode from "vscode";
  * ```typescript
  * const minifiedCSS = 'body{margin:0;color:red}';
  * const newPath = '/path/to/style.min.css';
- * await saveAsNewFile(minifiedCSS, newPath);
- * // File is created, opened in editor, and user sees success message
+ * const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
+ * await saveAsNewFile(minifiedCSS, newPath, stats);
+ * // File is created, opened in editor, and user sees success message with statistics
  * ```
  */
-export async function saveAsNewFile(minifiedText: string, newFileName: string): Promise<void> {
+export async function saveAsNewFile(minifiedText: string, newFileName: string, stats: MinificationStats): Promise<void> {
 	// Create a VS Code URI for the new file path
 	const uri = vscode.Uri.file(newFileName);
 	
@@ -48,10 +91,10 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string): 
 		await vscode.window.showTextDocument(uri);
 	}
 	
-	// Provide user feedback about the successful operation
-	vscode.window.showInformationMessage(
-		`File successfully minified and saved as: ${newFileName.split('/').pop()}`
-	);
+	// Provide user feedback about the successful operation with statistics
+	const fileName = newFileName.split('/').pop() || 'file';
+	const message = formatSizeReductionMessage(fileName, stats, true);
+	vscode.window.showInformationMessage(message);
 }
 
 /**
@@ -65,6 +108,7 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string): 
  * @function replaceDocumentContent
  * @param {vscode.TextDocument} document - The VS Code document to modify
  * @param {string} minifiedText - The minified content to replace the original with
+ * @param {MinificationStats} stats - Statistics about the minification process
  * @returns {Promise<void>} Resolves when the document is updated and saved
  * 
  * @throws {Error} When the workspace edit fails or the document cannot be saved
@@ -80,12 +124,13 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string): 
  * const activeEditor = vscode.window.activeTextEditor;
  * if (activeEditor) {
  *   const minifiedContent = 'body{margin:0}';
- *   await replaceDocumentContent(activeEditor.document, minifiedContent);
- *   // Document content is replaced and saved
+ *   const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
+ *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats);
+ *   // Document content is replaced and saved, message shows statistics
  * }
  * ```
  */
-export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string): Promise<void> {
+export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats): Promise<void> {
 	// Create a workspace edit to modify the document
 	const edit = new vscode.WorkspaceEdit();
 	
@@ -103,9 +148,10 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Save the document to persist changes to disk
 	await document.save();
 	
-	// Provide user feedback about the successful minification
+	// Provide user feedback about the successful minification with statistics
 	const fileName = document.fileName.split('/').pop() || 'file';
-	vscode.window.showInformationMessage(`${fileName} has been successfully minified.`);
+	const message = formatSizeReductionMessage(fileName, stats, false);
+	vscode.window.showInformationMessage(message);
 }
 
 /**

@@ -2,6 +2,36 @@ import * as vscode from "vscode";
 import { setTimeout } from "timers";
 
 /**
+ * Statistics about the minification process.
+ * 
+ * @interface MinificationStats
+ * @property {number} originalSize - Original file size in bytes
+ * @property {number} minifiedSize - Minified file size in bytes
+ * @property {number} reductionPercent - Percentage of size reduction (0-100)
+ * @property {string} originalSizeKB - Formatted original size (e.g., "1.21 KB")
+ * @property {string} minifiedSizeKB - Formatted minified size (e.g., "0.66 KB")
+ */
+export interface MinificationStats {
+	originalSize: number;
+	minifiedSize: number;
+	reductionPercent: number;
+	originalSizeKB: string;
+	minifiedSizeKB: string;
+}
+
+/**
+ * Result of minification with statistics.
+ * 
+ * @interface MinificationResult
+ * @property {string} minifiedText - The minified code
+ * @property {MinificationStats} stats - Statistics about the minification
+ */
+export interface MinificationResult {
+	minifiedText: string;
+	stats: MinificationStats;
+}
+
+/**
  * Configuration for Toptal minification APIs.
  * @readonly
  */
@@ -42,7 +72,54 @@ const API_TIMEOUT_MS = 5000;
  */
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
+/**
+ * Formats bytes to human-readable string with KB or B units.
+ * 
+ * @function formatBytes
+ * @param {number} bytes - Size in bytes
+ * @returns {string} Formatted string (e.g., "1.21 KB" or "512 B")
+ * 
+ * @example
+ * formatBytes(1234) // Returns: "1.21 KB"
+ * formatBytes(512)  // Returns: "512 B"
+ */
+function formatBytes(bytes: number): string {
+	if (bytes < 1024) {
+		return `${bytes} B`;
+	}
+	const kb = bytes / 1024;
+	return `${kb.toFixed(2)} KB`;
+}
 
+/**
+ * Calculates minification statistics comparing original and minified text.
+ * 
+ * @function calculateStats
+ * @param {string} originalText - The original source code
+ * @param {string} minifiedText - The minified code
+ * @returns {MinificationStats} Statistics object with size and reduction data
+ * 
+ * @example
+ * const stats = calculateStats("body { color: red; }", "body{color:red}");
+ * // Returns: { originalSize: 22, minifiedSize: 15, reductionPercent: 32, ... }
+ */
+function calculateStats(originalText: string, minifiedText: string): MinificationStats {
+	const textEncoder = new TextEncoder();
+	const originalSize = textEncoder.encode(originalText).length;
+	const minifiedSize = textEncoder.encode(minifiedText).length;
+	
+	const reductionPercent = originalSize > 0 
+		? Math.round(((originalSize - minifiedSize) / originalSize) * 100)
+		: 0;
+	
+	return {
+		originalSize,
+		minifiedSize,
+		reductionPercent,
+		originalSizeKB: formatBytes(originalSize),
+		minifiedSizeKB: formatBytes(minifiedSize)
+	};
+}
 
 /**
  * Minifies CSS or JavaScript code using the Toptal minification APIs.
@@ -64,7 +141,7 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * @function getMinifiedText
  * @param {string} text - The source code to be minified (CSS or JavaScript)
  * @param {string} fileType - The file type identifier ('css' or 'javascript')
- * @returns {Promise<string | null>} The minified code as a string, or null if minification failed
+ * @returns {Promise<MinificationResult | null>} The minified code with statistics, or null if minification failed
  * 
   * @throws {Error} API request fails, times out, or returns an invalid response
  * 
@@ -77,13 +154,13 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * ```typescript
  * // Minify CSS code
  * const cssCode = 'body { color: red; margin: 0; }';
- * const minifiedCSS = await getMinifiedText(cssCode, 'css');
- * // Result: 'body{color:red;margin:0}'
+ * const result = await getMinifiedText(cssCode, 'css');
+ * // Result: { minifiedText: 'body{color:red;margin:0}', stats: { ... } }
  * 
  * // Minify JavaScript code
  * const jsCode = 'function hello() { console.log("Hello World"); }';
- * const minifiedJS = await getMinifiedText(jsCode, 'javascript');
- * // Result: 'function hello(){console.log("Hello World")}'
+ * const result = await getMinifiedText(jsCode, 'javascript');
+ * // Result: { minifiedText: 'function hello(){console.log("Hello World")}', stats: { ... } }
  * ```
  * 
  * @performance
@@ -94,7 +171,7 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * @see {@link https://www.toptal.com/developers/cssminifier} CSS Minifier API
  * @see {@link https://www.toptal.com/developers/javascript-minifier} JavaScript Minifier API
  */
-export async function getMinifiedText(text: string, fileType: string): Promise<string | null> {
+export async function getMinifiedText(text: string, fileType: string): Promise<MinificationResult | null> {
 	// Get the appropriate API configuration for the file type
 	const apiConfig = MINIFICATION_APIS[fileType as keyof typeof MINIFICATION_APIS];
 	
@@ -183,7 +260,13 @@ export async function getMinifiedText(text: string, fileType: string): Promise<s
 			throw new Error('Invalid response format from minification API');
 		}
 		
-		return minifiedText;
+		// Calculate statistics
+		const stats = calculateStats(text, minifiedText);
+		
+		return {
+			minifiedText,
+			stats
+		};
 		
 	} catch (error: unknown) {
 		// Handle and report errors with detailed context
