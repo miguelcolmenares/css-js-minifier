@@ -92,9 +92,6 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 		// For manual commands, we need to save explicitly but this won't trigger onSaveMinify 
 		// because the skipNextAutoMinify flag is active
 		// For auto-save, we don't need to save again as we're already in a save event
-		if (options.debugSource === 'manual') {
-			await saveDocumentSilently(document);
-		}
 	}
 }
 
