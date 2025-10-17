@@ -39,9 +39,9 @@ import { loadL10nBundle, t, getL10nStatus } from "./utils/l10nHelper";
  * // - A CSS or JavaScript file is opened (based on activationEvents)
  * // - The user manually activates the extension
  */
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	// Initialize l10n fallback system
-	loadL10nBundle(context.extensionPath);
+	await loadL10nBundle(context.extensionPath);
 	
 	// Register debug command with comprehensive testing
 	const debugL10nCommand = vscode.commands.registerCommand("extension.debugL10n", async () => {
