@@ -8,7 +8,7 @@
  * 4. Language files load properly in VS Code
  * 
  * @author Miguel Colmenares
- * @since 1.0.0
+ * @since 1.1.0
  */
 
 import * as fs from "fs";
