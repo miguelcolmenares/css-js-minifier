@@ -10,7 +10,7 @@ import { MinificationStats } from "./minificationService";
  * @param {boolean} isNewFile - Whether this is for a new file or in-place minification
  * @returns {string} Formatted message with statistics
  */
-function formatSizeReductionMessage(fileName: string, stats: MinificationStats, isNewFile: boolean): string {
+export function formatSizeReductionMessage(fileName: string, stats: MinificationStats, isNewFile: boolean): string {
 	const config = vscode.workspace.getConfiguration("css-js-minifier");
 	const showSizeReduction = config.get("showSizeReduction", true);
 	
