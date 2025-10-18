@@ -44,6 +44,7 @@ export interface MinifyOptions {
  * @function processDocument
  * @param {vscode.TextDocument} document - The VS Code document to process
  * @param {MinifyOptions} [options={}] - Configuration options for the minification
+ * @param {boolean} [skipSave=false] - Whether to skip saving the document (caller will handle save)
  * @returns {Promise<void>} Resolves when the minification process is complete
  * 
  * @throws {Error} When file validation fails or minification service encounters errors
@@ -58,9 +59,12 @@ export interface MinifyOptions {
  *   saveAsNewFile: true,
  *   filePrefix: '.min'
  * });
+ * 
+ * // Minify but don't save (manual command will save later)
+ * await processDocument(document, {}, true);
  * ```
  */
-async function processDocument(document: vscode.TextDocument, options: MinifyOptions = {}): Promise<void> {
+async function processDocument(document: vscode.TextDocument, options: MinifyOptions = {}, skipSave: boolean = false): Promise<void> {
 	// Extract file information for validation and processing
 	const fileType = document.languageId;
 	const text = document.getText();
@@ -88,10 +92,8 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 		await saveAsNewFile(minifiedText, newFileName, stats);
 	} else {
 		// Replace current document content with minified version
-		await replaceDocumentContent(document, minifiedText, stats);
-		// For manual commands, we need to save explicitly but this won't trigger onSaveMinify 
-		// because the skipNextAutoMinify flag is active
-		// For auto-save, we don't need to save again as we're already in a save event
+		// Skip save if caller (e.g., manual command) will handle it to maintain Set protection
+		await replaceDocumentContent(document, minifiedText, stats, true, skipSave);
 	}
 }
 
@@ -130,12 +132,15 @@ export async function minifyCommand(): Promise<void> {
 	// Process the active editor document if available
 	if (editor) {
 		const documentUri = editor.document.uri.toString();
-		// Prevent onSaveMinify from re-processing when processDocument saves
+		// Prevent onSaveMinify from re-processing when we save
 		processingDocuments.add(documentUri);
 		try {
-			await processDocument(editor.document, { debugSource: 'manual' });
+			// Skip save in processDocument - we'll save after while Set still has protection
+			await processDocument(editor.document, { debugSource: 'manual' }, true);
+			// Now save while still protected by Set to prevent onSaveMinify recursion
+			await editor.document.save();
 		} finally {
-			// Always remove from set after processing completes
+			// Remove from set only after ALL operations including save are complete
 			processingDocuments.delete(documentUri);
 		}
 	}
@@ -145,12 +150,15 @@ export async function minifyCommand(): Promise<void> {
 		// Open the document from the explorer selection
 		const document = await vscode.workspace.openTextDocument(explorer);
 		const documentUri = document.uri.toString();
-		// Prevent onSaveMinify from re-processing when processDocument saves
+		// Prevent onSaveMinify from re-processing when we save
 		processingDocuments.add(documentUri);
 		try {
-			await processDocument(document);
+			// Skip save in processDocument - we'll save after while Set still has protection
+			await processDocument(document, {}, true);
+			// Now save while still protected by Set to prevent onSaveMinify recursion
+			await document.save();
 		} finally {
-			// Always remove from set after processing completes
+			// Remove from set only after ALL operations including save are complete
 			processingDocuments.delete(documentUri);
 		}
 	}
