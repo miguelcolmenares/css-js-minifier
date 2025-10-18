@@ -277,6 +277,66 @@ HTTP requests to Toptal APIs with form-encoded data:
 - Extension activates on `onSaveTextDocument` event for auto-minification feature
 - Error handling shows user-friendly messages via `vscode.window.showErrorMessage`
 
+## Package Size Optimization
+
+### Current Optimized State
+- **Package Size**: 47.37 KB (24 files) - **96.8% reduction** from original ~1.46 MB
+- **Key Optimizations Applied**: GIF exclusion + PNG compression with oxipng
+- **Maintained**: Full functionality, 7-language i18n support, complete documentation
+
+### Optimization Strategy (.vscodeignore)
+**CRITICAL for Package Size Management:**
+- **Exclude heavy assets**: `images/*.gif` saves ~1.4 MB (demos/documentation GIFs)
+- **Include essentials only**: Icon, README, CHANGELOG, LICENSE, i18n files
+- **Result**: Extremely efficient package while preserving all user-facing functionality
+
+### Icon Optimization Workflow
+**PNG Compression Process:**
+```bash
+# Install oxipng for maximum PNG optimization
+brew install oxipng
+
+# Optimize with maximum compression while preserving transparency
+oxipng -o 6 --strip all --out images/icon-optimized.png images/icon.png
+
+# Verify quality maintained (600x600, RGBA format)
+file images/icon-optimized.png
+
+# Replace original if significant savings achieved
+mv images/icon-optimized.png images/icon.png
+```
+
+### Package Content Strategy
+**Included (24 files, 47.37 KB):**
+- ✅ `dist/extension.js` (12.04 KB) - Webpack optimized bundle
+- ✅ `images/icon.png` (22.22 KB) - Oxipng compressed, 46% reduction
+- ✅ i18n files (16.79 KB) - Complete 7-language support
+- ✅ Documentation (17.32 KB) - User-essential files only
+
+**Excluded via .vscodeignore:**
+- ❌ `images/*.gif` - Demo/documentation assets (~1.4 MB)
+- ❌ `src/` - TypeScript source code
+- ❌ `node_modules/` - Development dependencies
+- ❌ Test files and development configuration
+
+### Future Optimization Considerations
+**IMPORTANT for Maintainers:**
+1. **Monitor New Assets**: Ensure new images don't inflate package size
+2. **Automate PNG Optimization**: Consider adding oxipng to build process
+3. **Regular Package Audits**: Check `vsce package` output for size creep
+4. **Quality vs Size Balance**: Always verify icon quality after optimization
+5. **Documentation Strategy**: Keep essential docs, move extensive guides to repo only
+
+### Optimization Validation
+```bash
+# Generate package and check size
+npm run package && npx vsce package
+ls -lh *.vsix
+
+# Should show ~47 KB for optimized package
+# If significantly larger, investigate new heavy files
+```
+
 ## GitHub CLI Commands
 - **CRITICAL**: Always use `PAGER=cat` or pipe to `| cat` with GitHub CLI commands
 - **Examples**: 
