@@ -34,19 +34,15 @@ export async function loadL10nBundle(extensionPath: string): Promise<void> {
  * @param args - Arguments to substitute in the message
  * @returns Localized message
  */
-export function t(key: string, ...args: string[]): string {
-	try {
-		// Try native VS Code l10n first
-		return vscode.l10n.t(key, ...args);
-	} catch {
-		// Fall through to manual fallback
-	}
-	
-	// Use manual fallback
+export function t(key: string, ...args: (string | number | boolean)[]): string {
+	// Use manual fallback with our bundle
 	let message = l10nBundle[key] || key;
+	
+	// Replace {0}, {1}, etc. with actual values
 	args.forEach((arg, index) => {
-		message = message.replace(new RegExp(`\\{${index}\\}`, 'g'), arg);
+		message = message.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg));
 	});
+	
 	return message;
 }
 
