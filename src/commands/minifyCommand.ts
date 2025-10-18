@@ -102,6 +102,10 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
  * It works with both the active editor and files selected in the explorer.
  * The original file content is replaced with the minified version.
  * 
+ * **Important**: Prevents double minification by tracking documents during processing.
+ * When processDocument saves the file, it would trigger onSaveMinify, but we prevent
+ * that by adding the document to processingDocuments Set.
+ * 
  * @async
  * @function minifyCommand
  * @returns {Promise<void>} Resolves when the command execution is complete
@@ -125,14 +129,30 @@ export async function minifyCommand(): Promise<void> {
 
 	// Process the active editor document if available
 	if (editor) {
-		await processDocument(editor.document, { debugSource: 'manual' });
+		const documentUri = editor.document.uri.toString();
+		// Prevent onSaveMinify from re-processing when processDocument saves
+		processingDocuments.add(documentUri);
+		try {
+			await processDocument(editor.document, { debugSource: 'manual' });
+		} finally {
+			// Always remove from set after processing completes
+			processingDocuments.delete(documentUri);
+		}
 	}
 
 	// Handle explorer context (when command is invoked from file explorer)
 	if (explorer) {
 		// Open the document from the explorer selection
 		const document = await vscode.workspace.openTextDocument(explorer);
-		await processDocument(document);
+		const documentUri = document.uri.toString();
+		// Prevent onSaveMinify from re-processing when processDocument saves
+		processingDocuments.add(documentUri);
+		try {
+			await processDocument(document);
+		} finally {
+			// Always remove from set after processing completes
+			processingDocuments.delete(documentUri);
+		}
 	}
 }
 
