@@ -126,8 +126,6 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 export async function minifyCommand(): Promise<void> {
 	// Get the currently active editor (if any)
 	const editor = vscode.window.activeTextEditor;
-	// Note: explorer context is handled differently in newer VS Code versions
-	const explorer = vscode.window.activeTextEditor?.document.uri;
 
 	// Process the active editor document if available
 	if (editor) {
@@ -139,24 +137,6 @@ export async function minifyCommand(): Promise<void> {
 			await processDocument(editor.document, { debugSource: 'manual' }, true);
 			// Now save while still protected by Set to prevent onSaveMinify recursion
 			await editor.document.save();
-		} finally {
-			// Remove from set only after ALL operations including save are complete
-			processingDocuments.delete(documentUri);
-		}
-	}
-
-	// Handle explorer context (when command is invoked from file explorer)
-	if (explorer) {
-		// Open the document from the explorer selection
-		const document = await vscode.workspace.openTextDocument(explorer);
-		const documentUri = document.uri.toString();
-		// Prevent onSaveMinify from re-processing when we save
-		processingDocuments.add(documentUri);
-		try {
-			// Skip save in processDocument - we'll save after while Set still has protection
-			await processDocument(document, {}, true);
-			// Now save while still protected by Set to prevent onSaveMinify recursion
-			await document.save();
 		} finally {
 			// Remove from set only after ALL operations including save are complete
 			processingDocuments.delete(documentUri);
@@ -189,8 +169,6 @@ export async function minifyCommand(): Promise<void> {
 export async function minifyInNewFileCommand(): Promise<void> {
 	// Get the currently active editor (if any)
 	const editor = vscode.window.activeTextEditor;
-	// Note: explorer context is handled differently in newer VS Code versions
-	const explorer = vscode.window.activeTextEditor?.document.uri;
 	
 	// Get user configuration for file naming
 	const settings = vscode.workspace.getConfiguration("css-js-minifier");
@@ -199,20 +177,13 @@ export async function minifyInNewFileCommand(): Promise<void> {
 	// Configure options for creating new files
 	const options: MinifyOptions = {
 		saveAsNewFile: true,
-		filePrefix
+		filePrefix,
+		debugSource: 'manual'
 	};
 
 	// Process the active editor document if available
 	if (editor) {
-		options.debugSource = 'manual';
 		await processDocument(editor.document, options);
-	}
-
-	// Handle explorer context (when command is invoked from file explorer)
-	if (explorer) {
-		// Open the document from the explorer selection
-		const document = await vscode.workspace.openTextDocument(explorer);
-		await processDocument(document, options);
 	}
 }
 
