@@ -1,0 +1,130 @@
+name: 📚 Documentation Issue
+description: Report issues or suggest improvements for documentation
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+assignees:
+  - miguelcolmenares
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please provide details about the documentation issue or suggestion.
+
+  - type: dropdown
+    id: documentation-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation is this about?
+      options:
+        - README.md
+        - CHANGELOG.md
+        - Code comments / JSDoc
+        - API documentation (docs/)
+        - Internationalization guide
+        - Installation / Setup instructions
+        - Configuration documentation
+        - Usage examples
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing information
+        - Incorrect/outdated information
+        - Unclear/confusing explanation
+        - Typo or grammar issue
+        - Suggestion for improvement
+        - Request for new documentation
+        - Translation issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the documentation issue or suggestion in detail.
+      placeholder: Explain what's wrong or what should be improved...
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: |
+        Where in the documentation is this issue located?
+        Please provide file names, section titles, or line numbers if applicable.
+      placeholder: |
+        File: README.md
+        Section: "Configuration"
+        Line: ~75
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: If applicable, paste the current documentation text that needs improvement.
+      placeholder: Paste the existing documentation text here...
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: Suggested Content
+      description: If you have a suggestion, provide the improved documentation text.
+      placeholder: Provide your suggested documentation text here...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: Which language version does this affect?
+      options:
+        - English (primary documentation)
+        - Spanish (translations)
+        - French (translations)
+        - German (translations)
+        - Portuguese (translations)
+        - Japanese (translations)
+        - Chinese Simplified (translations)
+        - All languages
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context about the documentation issue.
+        - Screenshots of confusing sections
+        - Links to related documentation
+        - Examples that could be added
+      placeholder: Any additional information...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues for similar documentation requests
+          required: true
+        - label: I have checked the latest version of the documentation
+          required: true
+        - label: If suggesting changes, I have provided clear improvement suggestions
+          required: false
