@@ -249,8 +249,8 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 					const result = await getMinifiedText(text, fileType);
 					if (result) {
 						const { minifiedText, stats } = result;
-						// Replace content and save (the save will trigger this function again, but we'll skip it)
-						await replaceDocumentContent(document, minifiedText, stats);
+						// Replace content and save (suppress notification for auto-save to avoid duplicates)
+						await replaceDocumentContent(document, minifiedText, stats, false);
 					}
 				} finally {
 					// Always remove from set when done, even if an error occurs
