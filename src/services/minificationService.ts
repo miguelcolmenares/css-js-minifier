@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as l10n from "@vscode/l10n";
 import { setTimeout } from "timers";
+import { t } from "../utils/l10nHelper";
 
 /**
  * Statistics about the minification process.
@@ -177,7 +177,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 	const apiConfig = MINIFICATION_APIS[fileType as keyof typeof MINIFICATION_APIS];
 	
 	if (!apiConfig) {
-		vscode.window.showErrorMessage(l10n.t('minificationService.fileType.unsupported', fileType));
+		vscode.window.showErrorMessage(t('minificationService.fileType.unsupported', fileType));
 		return null;
 	}
 
@@ -186,7 +186,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 	if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
 		const sizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
 		vscode.window.showErrorMessage(
-			l10n.t('minificationService.fileSize.tooLarge', sizeMB)
+			t('minificationService.fileSize.tooLarge', sizeMB)
 		);
 		return null;
 	}
@@ -228,25 +228,25 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 				// Fall back to status-based messages if JSON parsing fails
 				switch (response.status) {
 					case 400:
-						errorMessage = l10n.t('minificationService.error.missingInput');
+						errorMessage = t('minificationService.error.missingInput');
 						break;
 					case 405:
-						errorMessage = l10n.t('minificationService.error.invalidMethod');
+						errorMessage = t('minificationService.error.invalidMethod');
 						break;
 					case 406:
-						errorMessage = l10n.t('minificationService.error.invalidContentType');
+						errorMessage = t('minificationService.error.invalidContentType');
 						break;
 					case 413:
-						errorMessage = l10n.t('minificationService.error.fileTooLarge');
+						errorMessage = t('minificationService.error.fileTooLarge');
 						break;
 					case 422:
-						errorMessage = l10n.t('minificationService.error.invalidSyntax', fileType);
+						errorMessage = t('minificationService.error.invalidSyntax', fileType);
 						break;
 					case 429:
-						errorMessage = l10n.t('minificationService.error.rateLimitExceeded');
+						errorMessage = t('minificationService.error.rateLimitExceeded');
 						break;
 					default:
-						errorMessage = l10n.t('minificationService.error.apiError', apiConfig.name, response.status.toString(), response.statusText);
+						errorMessage = t('minificationService.error.apiError', apiConfig.name, response.status.toString(), response.statusText);
 				}
 			}
 			
@@ -258,7 +258,7 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 		
 		// Basic validation of the response
 		if (typeof minifiedText !== 'string') {
-			throw new Error(l10n.t('minificationService.error.invalidResponse'));
+			throw new Error(t('minificationService.error.invalidResponse'));
 		}
 		
 		// Calculate statistics
@@ -278,13 +278,13 @@ export async function getMinifiedText(text: string, fileType: string): Promise<M
 		
 		if (errorMessage.includes('timed out after')) {
 			// Timeout-specific message with helpful information
-			userMessage = l10n.t('minificationService.error.timeout', apiConfig?.name || fileType);
+			userMessage = t('minificationService.error.timeout', apiConfig?.name || fileType);
 		} else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
 			// Network connectivity issues
-			userMessage = l10n.t('minificationService.error.network');
+			userMessage = t('minificationService.error.network');
 		} else {
 			// General error message
-			userMessage = l10n.t('minificationService.error.generic', fileType, errorMessage);
+			userMessage = t('minificationService.error.generic', fileType, errorMessage);
 		}
 		
 		// Show user-friendly error message

@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import assert from "assert";
 import { setTimeout } from "timers";
+import { t } from "../utils/l10nHelper";
 
 /**
  * Rate limiting configuration for Toptal API tests
@@ -248,11 +249,12 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = txtDocument.getText();
 		// The content should not change for unsupported file types
 		assert.strictEqual(documentContent, "This is a text file and should not be minified.");
-		// Check if the error message was called with the correct translation key or translated text
+		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, "showErrorMessage should be called");
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const isCorrectMessage = errorMessage.includes('validators.fileType.unsupported') || 
-			errorMessage.includes('not supported') || errorMessage.includes('plaintext');
+		const expectedMessage = t('validators.fileType.unsupported', 'plaintext');
+		// Check if message contains key parts (handles both translated and fallback cases)
+		const isCorrectMessage = errorMessage.includes('plaintext') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show unsupported file type message. Got: ${errorMessage}`);
 	});
 
@@ -266,11 +268,12 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = emptyCssDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		// Check if the error message was called with the correct translation key or translated text
+		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, "showErrorMessage should be called");
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const isCorrectMessage = errorMessage.includes('validators.content.empty') || 
-			errorMessage.includes('empty') || errorMessage.includes('css');
+		const expectedMessage = t('validators.content.empty', 'css');
+		// Check if message contains key parts (handles both translated and fallback cases)
+		const isCorrectMessage = errorMessage.includes('css') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty CSS file message. Got: ${errorMessage}`);
 	});
 
@@ -284,11 +287,12 @@ suite("JS & CSS Minifier Test Suite", function () {
 		const documentContent = emptyJsDocument.getText();
 		// The content should remain empty
 		assert.strictEqual(documentContent, "");
-		// Check if the error message was called with the correct translation key or translated text
+		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, "showErrorMessage should be called");
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const isCorrectMessage = errorMessage.includes('validators.content.empty') || 
-			errorMessage.includes('empty') || errorMessage.includes('javascript');
+		const expectedMessage = t('validators.content.empty', 'javascript');
+		// Check if message contains key parts (handles both translated and fallback cases)
+		const isCorrectMessage = errorMessage.includes('javascript') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty JavaScript file message. Got: ${errorMessage}`);
 	});
 

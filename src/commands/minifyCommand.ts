@@ -10,8 +10,13 @@
  */
 
 import * as vscode from "vscode";
-import { validateFileType, validateContentLength } from "../utils";
-import { getMinifiedText, saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from "../services";
+import { validateFileType, validateContentLength } from "../utils/validators";
+import { getMinifiedText } from "../services/minificationService";
+import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from "../services/fileService";
+
+// Set to track documents currently being processed to prevent recursion
+// Uses document URI as key to allow per-document tracking
+const processingDocuments = new Set<string>();
 
 /**
  * Configuration options for minification operations.
@@ -19,10 +24,12 @@ import { getMinifiedText, saveAsNewFile, replaceDocumentContent, createMinifiedF
  * @interface MinifyOptions
  * @property {boolean} [saveAsNewFile] - Whether to save the result as a new file instead of replacing content
  * @property {string} [filePrefix] - The prefix to use when creating new files (e.g., '.min', '-compressed')
+ * @property {string} [debugSource] - Debug identifier for the source of the command
  */
 export interface MinifyOptions {
 	saveAsNewFile?: boolean;
 	filePrefix?: string;
+	debugSource?: string;
 }
 
 /**
@@ -37,6 +44,7 @@ export interface MinifyOptions {
  * @function processDocument
  * @param {vscode.TextDocument} document - The VS Code document to process
  * @param {MinifyOptions} [options={}] - Configuration options for the minification
+ * @param {boolean} [skipSave=false] - Whether to skip saving the document (caller will handle save)
  * @returns {Promise<void>} Resolves when the minification process is complete
  * 
  * @throws {Error} When file validation fails or minification service encounters errors
@@ -51,9 +59,12 @@ export interface MinifyOptions {
  *   saveAsNewFile: true,
  *   filePrefix: '.min'
  * });
+ * 
+ * // Minify but don't save (manual command will save later)
+ * await processDocument(document, {}, true);
  * ```
  */
-async function processDocument(document: vscode.TextDocument, options: MinifyOptions = {}): Promise<void> {
+async function processDocument(document: vscode.TextDocument, options: MinifyOptions = {}, skipSave: boolean = false): Promise<void> {
 	// Extract file information for validation and processing
 	const fileType = document.languageId;
 	const text = document.getText();
@@ -81,7 +92,8 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 		await saveAsNewFile(minifiedText, newFileName, stats);
 	} else {
 		// Replace current document content with minified version
-		await replaceDocumentContent(document, minifiedText, stats);
+		// Skip save if caller (e.g., manual command) will handle it to maintain Set protection
+		await replaceDocumentContent(document, minifiedText, stats, true, skipSave);
 	}
 }
 
@@ -91,6 +103,10 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
  * This function handles in-place minification of CSS and JavaScript files.
  * It works with both the active editor and files selected in the explorer.
  * The original file content is replaced with the minified version.
+ * 
+ * **Important**: Prevents double minification by tracking documents during processing.
+ * When processDocument saves the file, it would trigger onSaveMinify, but we prevent
+ * that by adding the document to processingDocuments Set.
  * 
  * @async
  * @function minifyCommand
@@ -110,19 +126,21 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 export async function minifyCommand(): Promise<void> {
 	// Get the currently active editor (if any)
 	const editor = vscode.window.activeTextEditor;
-	// Note: explorer context is handled differently in newer VS Code versions
-	const explorer = vscode.window.activeTextEditor?.document.uri;
 
 	// Process the active editor document if available
 	if (editor) {
-		await processDocument(editor.document);
-	}
-
-	// Handle explorer context (when command is invoked from file explorer)
-	if (explorer) {
-		// Open the document from the explorer selection
-		const document = await vscode.workspace.openTextDocument(explorer);
-		await processDocument(document);
+		const documentUri = editor.document.uri.toString();
+		// Prevent onSaveMinify from re-processing when we save
+		processingDocuments.add(documentUri);
+		try {
+			// Skip save in processDocument - we'll save after while Set still has protection
+			await processDocument(editor.document, { debugSource: 'manual' }, true);
+			// Now save while still protected by Set to prevent onSaveMinify recursion
+			await editor.document.save();
+		} finally {
+			// Remove from set only after ALL operations including save are complete
+			processingDocuments.delete(documentUri);
+		}
 	}
 }
 
@@ -151,8 +169,6 @@ export async function minifyCommand(): Promise<void> {
 export async function minifyInNewFileCommand(): Promise<void> {
 	// Get the currently active editor (if any)
 	const editor = vscode.window.activeTextEditor;
-	// Note: explorer context is handled differently in newer VS Code versions
-	const explorer = vscode.window.activeTextEditor?.document.uri;
 	
 	// Get user configuration for file naming
 	const settings = vscode.workspace.getConfiguration("css-js-minifier");
@@ -161,19 +177,13 @@ export async function minifyInNewFileCommand(): Promise<void> {
 	// Configure options for creating new files
 	const options: MinifyOptions = {
 		saveAsNewFile: true,
-		filePrefix
+		filePrefix,
+		debugSource: 'manual'
 	};
 
 	// Process the active editor document if available
 	if (editor) {
 		await processDocument(editor.document, options);
-	}
-
-	// Handle explorer context (when command is invoked from file explorer)
-	if (explorer) {
-		// Open the document from the explorer selection
-		const document = await vscode.workspace.openTextDocument(explorer);
-		await processDocument(document, options);
 	}
 }
 
@@ -184,6 +194,10 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * when the 'minifyOnSave' configuration option is enabled. It automatically
  * minifies CSS and JavaScript files whenever they are saved.
  * 
+ * **Important**: This function ensures only ONE API call per save event:
+ * - When creating new files: delegates to processDocument (single call)
+ * - When in-place: calls getMinifiedText once, then uses setSkipAutoMinify to prevent recursion
+ * 
  * @async
  * @function onSaveMinify
  * @param {vscode.TextDocument} document - The document that was saved
@@ -192,7 +206,7 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * @sideEffects
  * - Modifies the content of the saved file if it's CSS or JavaScript
  * - Shows user notifications for success/error states
- * - Saves the document again after minification
+ * - Saves the document again after minification (in-place mode only)
  * 
  * @example
  * // This function is automatically called when:
@@ -201,6 +215,12 @@ export async function minifyInNewFileCommand(): Promise<void> {
  * // - File is saved programmatically
  */
 export async function onSaveMinify(document: vscode.TextDocument): Promise<void> {
+	// Prevent recursion - if this document is already being processed, skip
+	const documentUri = document.uri.toString();
+	if (processingDocuments.has(documentUri)) {
+		return;
+	}
+	
 	// Check if the saved file is a supported type for minification
 	const fileType = document.languageId;
 	if (fileType === "css" || fileType === "javascript") {
@@ -214,21 +234,27 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 			const shouldCreateNewFile = settings.get("minifyInNewFile") as boolean;
 			const filePrefix = settings.get("minifiedNewFilePrefix") as string;
 			
-			// Minify the content using the minification service
-			const result = await getMinifiedText(text, fileType);
-			if (result) {
-				const { minifiedText, stats } = result;
-				
-				if (shouldCreateNewFile) {
-					// Create new file with minified content
-					const options: MinifyOptions = {
-						saveAsNewFile: true,
-						filePrefix
-					};
-					await processDocument(document, options);
-				} else {
-					// Replace the document content with the minified version (in-place)
-					await replaceDocumentContent(document, minifiedText, stats);
+			if (shouldCreateNewFile) {
+				// Create new file with minified content
+				// Use processDocument to handle the entire workflow (no duplicate API call)
+				const options: MinifyOptions = {
+					saveAsNewFile: true,
+					filePrefix
+				};
+				await processDocument(document, options);
+			} else {
+				// For in-place minification, track this document to prevent recursion
+				processingDocuments.add(documentUri);
+				try {
+					const result = await getMinifiedText(text, fileType);
+					if (result) {
+						const { minifiedText, stats } = result;
+						// Replace content and save (suppress notification for auto-save to avoid duplicates)
+						await replaceDocumentContent(document, minifiedText, stats, false);
+					}
+				} finally {
+					// Always remove from set when done, even if an error occurs
+					processingDocuments.delete(documentUri);
 				}
 			}
 		}

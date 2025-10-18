@@ -13,6 +13,7 @@
 
 import * as vscode from "vscode";
 import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from "./commands";
+import { loadL10nBundle } from "./utils/l10nHelper";
 
 /**
  * Activates the CSS & JS Minifier extension.
@@ -38,7 +39,10 @@ import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from "./commands"
  * // - A CSS or JavaScript file is opened (based on activationEvents)
  * // - The user manually activates the extension
  */
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
+	// Initialize l10n fallback system
+	await loadL10nBundle(context.extensionPath);
+
 	// Register the main minification command (in-place minification)
 	const minifyCommandDisposable = vscode.commands.registerCommand("extension.minify", minifyCommand);
 

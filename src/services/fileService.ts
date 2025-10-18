@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as l10n from "@vscode/l10n";
 import { MinificationStats } from "./minificationService";
+import { t } from "../utils/l10nHelper";
 
 /**
  * Saves minified content to a new file and opens it in the editor.
@@ -59,11 +59,11 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
 	
 	if (showSizeReduction) {
 		vscode.window.showInformationMessage(
-			l10n.t('fileService.newFile.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
+			t('fileService.newFile.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
 		);
 	} else {
 		vscode.window.showInformationMessage(
-			l10n.t('fileService.newFile.success', fileName)
+			t('fileService.newFile.success', fileName)
 		);
 	}
 }
@@ -80,14 +80,16 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  * @param {vscode.TextDocument} document - The VS Code document to modify
  * @param {string} minifiedText - The minified content to replace the original with
  * @param {MinificationStats} stats - Statistics about the minification process
- * @returns {Promise<void>} Resolves when the document is updated and saved
+ * @param {boolean} [showNotification=true] - Whether to show success notification (default: true)
+ * @param {boolean} [skipSave=false] - Whether to skip saving the document (default: false)
+ * @returns {Promise<void>} Resolves when the document is updated and optionally saved
  * 
  * @throws {Error} When the workspace edit fails or the document cannot be saved
  * 
  * @sideEffects
  * - Modifies the content of the existing document
- * - Saves the document to disk
- * - Shows success notification to the user
+ * - Saves the document to disk (unless skipSave is true)
+ * - Shows success notification to the user (unless suppressed)
  * - Adds an entry to VS Code's undo history
  * 
  * @example
@@ -98,10 +100,16 @@ export async function saveAsNewFile(minifiedText: string, newFileName: string, s
  *   const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
  *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats);
  *   // Document content is replaced and saved, message shows statistics
+ * 
+ *   // Suppress notification when called from auto-save
+ *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats, false);
+ * 
+ *   // Skip save to prevent double writes
+ *   await replaceDocumentContent(activeEditor.document, minifiedContent, stats, true, true);
  * }
  * ```
  */
-export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats): Promise<void> {
+export async function replaceDocumentContent(document: vscode.TextDocument, minifiedText: string, stats: MinificationStats, showNotification: boolean = true, skipSave: boolean = false): Promise<void> {
 	// Create a workspace edit to modify the document
 	const edit = new vscode.WorkspaceEdit();
 	
@@ -116,22 +124,26 @@ export async function replaceDocumentContent(document: vscode.TextDocument, mini
 	// Apply the edit to the workspace (this operation can be undone)
 	await vscode.workspace.applyEdit(edit);
 	
-	// Save the document to persist changes to disk
-	await document.save();
+	// Save the document to persist changes to disk (unless caller will handle it)
+	if (!skipSave) {
+		await document.save();
+	}
 	
-	// Provide user feedback about the successful minification with statistics
-	const fileName = document.fileName.split('/').pop() || 'file';
-	const config = vscode.workspace.getConfiguration("css-js-minifier");
-	const showSizeReduction = config.get("showSizeReduction", true);
-	
-	if (showSizeReduction) {
-		vscode.window.showInformationMessage(
-			l10n.t('fileService.inPlace.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
-		);
-	} else {
-		vscode.window.showInformationMessage(
-			l10n.t('fileService.inPlace.success', fileName)
-		);
+	// Provide user feedback about the successful minification with statistics (if not suppressed)
+	if (showNotification) {
+		const fileName = document.fileName.split('/').pop() || 'file';
+		const config = vscode.workspace.getConfiguration("css-js-minifier");
+		const showSizeReduction = config.get("showSizeReduction", true);
+		
+		if (showSizeReduction) {
+			vscode.window.showInformationMessage(
+				t('fileService.inPlace.successWithStats', fileName, stats.originalSizeKB, stats.minifiedSizeKB, stats.reductionPercent.toString())
+			);
+		} else {
+			vscode.window.showInformationMessage(
+				t('fileService.inPlace.success', fileName)
+			);
+		}
 	}
 }
 
@@ -167,3 +179,18 @@ export function createMinifiedFileName(originalFileName: string, prefix: string)
 	// Matches .css or .js at the end of the filename and replaces with prefix + extension
 	return originalFileName.replace(/(\.css|\.js)$/, `${prefix}$1`);
 }
+
+/**
+ * Saves a document explicitly without showing user notifications.
+ * Used when we need to save a document after modifications but want to avoid
+ * triggering additional save events or showing duplicate notifications.
+ * 
+ * @async
+ * @function saveDocumentSilently
+ * @param {vscode.TextDocument} document - The document to save
+ * @returns {Promise<void>} Resolves when the document is saved
+ */
+export async function saveDocumentSilently(document: vscode.TextDocument): Promise<void> {
+	await document.save();
+}
+
