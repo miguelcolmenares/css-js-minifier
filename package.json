@@ -163,7 +163,7 @@
 		"@types/node": "^25.0.2",
 		"@types/sinon": "^21.0.0",
 		"@types/vscode": "^1.107.0",
-		"@typescript-eslint/eslint-plugin": "^8.49.0",
+		"@typescript-eslint/eslint-plugin": "^8.50.0",
 		"@typescript-eslint/parser": "^8.46.1",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
