@@ -2,7 +2,7 @@ name: Auto-merge Dependabot PRs
 
 on:
   workflow_run:
-    workflows: ["Build - Master", "Test VS Code Minimum (1.90.0)", "Test VS Code Stable", "Test VS Code Insiders"]
+    workflows: ["Build - Master", "Test VS Code Minimum (1.109.0)", "Test VS Code Stable", "Test VS Code Insiders"]
     types: [completed]
 
 permissions:
