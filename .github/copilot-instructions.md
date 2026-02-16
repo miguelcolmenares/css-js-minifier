@@ -5,17 +5,29 @@ This is a VS Code extension that minifies CSS and JavaScript files. CSS minifica
 
 ## Architecture & Key Components
 
-### Core Extension Structure (Modular Architecture)
+### Core Extension Structure (DDD/SRP Architecture)
 - **`src/extension.ts`**: Clean entry point (81 lines) - handles activation, command registration, and configuration
 - **`src/commands/`**: Command handlers for VS Code integration
   - `minifyCommand.ts`: Unified command logic with processDocument() core function
   - `index.ts`: Command exports with comprehensive documentation
-- **`src/services/`**: Business logic and external integrations
-  - `minificationService.ts`: Hybrid minification (local clean-css for CSS, Toptal API for JS)
+- **`src/services/`**: Business logic and orchestration
+  - `minificationService.ts`: Facade/orchestrator that routes to appropriate strategy
   - `fileService.ts`: File system operations and filename utilities
+  - `strategies/`: Minification strategy implementations
+    - `localCssMinifier.ts`: Local CSS minification using clean-css
+    - `toptalApiMinifier.ts`: Remote JS minification via Toptal API
+    - `index.ts`: Strategy exports
   - `index.ts`: Service exports with module documentation
+- **`src/lib/`**: Shared constants and utilities (DDD infrastructure layer)
+  - `constants.ts`: Centralized configuration (API configs, timeouts, clean-css options)
+  - `helpers.ts`: Utility functions (formatBytes, calculateStats)
+  - `index.ts`: Library exports
+- **`src/types/`**: Type definitions (DDD domain layer)
+  - `minification.ts`: MinificationStats, MinificationResult, ApiConfig, HttpRequestConfig
+  - `index.ts`: Type exports
 - **`src/utils/`**: Reusable validation and utility functions
   - `validators.ts`: File type and content validation with user feedback
+  - `l10nHelper.ts`: Internationalization helper
   - `index.ts`: Utility exports with module documentation
 - **Two primary commands**: `extension.minify` (in-place) and `extension.minifyInNewFile` (creates `.min` files)
 - **Hybrid minification**: CSS uses local clean-css library, JavaScript uses Toptal API
@@ -37,12 +49,13 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 ```
 
 ### Modular Architecture Benefits
-- **Separation of Concerns**: Each module has a single responsibility
+- **Single Responsibility**: Each module has one clear purpose
+- **Separation of Concerns**: Types, constants, strategies are isolated
 - **Code Reusability**: No duplicate validation or API logic
-- **Enhanced Testability**: Pure functions easier to unit test
+- **Enhanced Testability**: Strategies can be mocked independently
 - **Improved Maintainability**: 63% reduction in main file size (220→81 lines)
 - **Better Documentation**: Comprehensive JSDoc with examples throughout
-- **Scalability**: Easy to add new features without touching core logic
+- **Extensibility**: Easy to add new strategies (e.g., localJsMinifier)
 
 ### Configuration System
 Four settings in `package.json` contribute section:
@@ -238,12 +251,13 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - Uses `clean-css` library v5.3.3 with Level 2 optimizations
 - Offline minification without network dependency
 - Features: whitespace/comment removal, rule merging, shorthand optimization, color optimization
-- Function: `minifyCSSLocal()` in `minificationService.ts`
+- Strategy: `services/strategies/localCssMinifier.ts` → `minifyCss()`
 
 **JavaScript Minification (Remote):**
 - Uses Toptal API: `https://www.toptal.com/developers/javascript-minifier/api/raw`
 - HTTP POST with form-encoded data via `URLSearchParams`
 - 5-second timeout with proper error handling
+- Strategy: `services/strategies/toptalApiMinifier.ts` → `minifyJavaScript()`
 
 ### File Manipulation Approach
 - **In-place**: Uses `WorkspaceEdit` to replace entire document content
@@ -263,9 +277,14 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`.vscode/README.md`**: Complete guide for VS Code tasks usage and development workflows
 
 ### Modular Structure
-- **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic
-- **`src/services/minificationService.ts`**: Hybrid minification (clean-css for CSS, Toptal API for JS)
+- **`src/lib/constants.ts`**: Centralized configuration (TOPTAL_JS_API, CLEAN_CSS_OPTIONS, timeouts)
+- **`src/lib/helpers.ts`**: Utility functions (formatBytes, calculateStats)
+- **`src/types/minification.ts`**: Type definitions (MinificationResult, MinificationStats, ApiConfig)
+- **`src/services/strategies/localCssMinifier.ts`**: Local CSS minification with clean-css
+- **`src/services/strategies/toptalApiMinifier.ts`**: Remote JS minification via Toptal API
+- **`src/services/minificationService.ts`**: Facade that routes to appropriate strategy
 - **`src/services/fileService.ts`**: File operations (save, replace content, filename generation)
+- **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic
 - **`src/utils/validators.ts`**: File type and content validation with user feedback
 - **`src/*/index.ts`**: Module exports with documentation for each layer
 
