@@ -83,7 +83,7 @@ export function minifyCss(text: string): MinificationResult | null {
 	} catch (error: unknown) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		vscode.window.showErrorMessage(
-			t('minificationService.error.generic', 'CSS', errorMessage)
+			t('minificationService.error.generic', 'css', errorMessage)
 		);
 		return null;
 	}

@@ -255,8 +255,8 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 
 **JavaScript Minification (Remote):**
 - Uses Toptal API: `https://www.toptal.com/developers/javascript-minifier/api/raw`
-- HTTP POST with form-encoded data via `URLSearchParams`
-- 5-second timeout with proper error handling
+- HTTP POST with manually form-encoded body using `encodeURIComponent` to avoid `+` space-handling issues
+- 5-second timeout with AbortController for proper cleanup
 - Strategy: `services/strategies/toptalApiMinifier.ts` → `minifyJavaScript()`
 
 ### File Manipulation Approach

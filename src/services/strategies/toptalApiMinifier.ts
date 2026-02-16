@@ -11,7 +11,6 @@
  */
 
 import * as vscode from "vscode";
-import { setTimeout } from "timers";
 import { t } from "../../utils/l10nHelper";
 import { MinificationResult } from "../../types";
 import { 
@@ -67,21 +66,22 @@ export async function minifyJavaScript(text: string): Promise<MinificationResult
 		// converts spaces to + which conflicts with actual + characters in JS
 		const manuallyEncoded = 'input=' + encodeURIComponent(text);
 		
-		// Create timeout promise that rejects after specified time
-		const timeoutPromise = new Promise<never>((_, reject) => {
-			setTimeout(() => {
-				reject(new Error(`${TOPTAL_JS_API.name} API request timed out after ${API_TIMEOUT_MS}ms`));
-			}, API_TIMEOUT_MS);
-		});
+		// Use AbortController for proper timeout cleanup
+		// This ensures the timeout is cancelled when fetch completes first
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 		
-		// Race the fetch request against the timeout
-		const response = await Promise.race([
-			fetch(TOPTAL_JS_API.url, {
+		let response: Response;
+		try {
+			response = await fetch(TOPTAL_JS_API.url, {
 				...HTTP_REQUEST_CONFIG,
-				body: manuallyEncoded
-			}),
-			timeoutPromise
-		]);
+				body: manuallyEncoded,
+				signal: controller.signal
+			});
+		} finally {
+			// Always clear the timeout to prevent memory leaks
+			clearTimeout(timeoutId);
+		}
 
 		// Handle different HTTP status codes with specific messages
 		if (!response.ok) {
@@ -141,12 +141,13 @@ export async function minifyJavaScript(text: string): Promise<MinificationResult
 	} catch (error: unknown) {
 		// Handle and report errors with detailed context
 		const errorMessage = error instanceof Error ? error.message : String(error);
+		const errorName = error instanceof Error ? error.name : '';
 		
 		// Provide specific user-friendly messages based on error type
 		let userMessage: string;
 		
-		if (errorMessage.includes('timed out after')) {
-			// Timeout-specific message with helpful information
+		if (errorName === 'AbortError' || errorMessage.includes('aborted')) {
+			// Timeout via AbortController
 			userMessage = t('minificationService.error.timeout', TOPTAL_JS_API.name);
 		} else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
 			// Network connectivity issues

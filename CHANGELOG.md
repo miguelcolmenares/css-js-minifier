@@ -32,7 +32,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Added `clean-css` v5.3.3 as production dependency
 - Added `@types/clean-css` v4.2.11 as development dependency
-- New `minifyCSSLocal()` function in minificationService.ts
+- New local CSS minifier strategy (`minifyCss()` in `services/strategies/localCssMinifier.ts`) integrated via the `minificationService` facade
 - MIT license compatibility maintained
 
 ## [1.1.0] - 2025-10-17
