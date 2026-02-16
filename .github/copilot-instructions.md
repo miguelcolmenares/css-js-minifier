@@ -1,7 +1,7 @@
 # CSS & JS Minifier Extension - AI Developer Guide
 
 ## Project Overview
-This is a VS Code extension that minifies CSS and JavaScript files using the Toptal API. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
+This is a VS Code extension that minifies CSS and JavaScript files. CSS minification is performed locally using clean-css, while JavaScript uses the Toptal API. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
 
 ## Architecture & Key Components
 
@@ -11,14 +11,14 @@ This is a VS Code extension that minifies CSS and JavaScript files using the Top
   - `minifyCommand.ts`: Unified command logic with processDocument() core function
   - `index.ts`: Command exports with comprehensive documentation
 - **`src/services/`**: Business logic and external integrations
-  - `minificationService.ts`: Toptal API communication with error handling
+  - `minificationService.ts`: Hybrid minification (local clean-css for CSS, Toptal API for JS)
   - `fileService.ts`: File system operations and filename utilities
   - `index.ts`: Service exports with module documentation
 - **`src/utils/`**: Reusable validation and utility functions
   - `validators.ts`: File type and content validation with user feedback
   - `index.ts`: Utility exports with module documentation
 - **Two primary commands**: `extension.minify` (in-place) and `extension.minifyInNewFile` (creates `.min` files)
-- **External API dependency**: Uses Toptal's CSS/JS minification APIs via HTTP POST requests
+- **Hybrid minification**: CSS uses local clean-css library, JavaScript uses Toptal API
 - **File handling**: Supports both active editor and explorer context actions
 
 ### Command Registration Pattern (Modular)
@@ -232,11 +232,18 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 // Handle both contexts with similar logic
 ```
 
-### API Integration Pattern
-HTTP requests to Toptal APIs with form-encoded data:
-- CSS: `https://www.toptal.com/developers/cssminifier/api/raw`
-- JS: `https://www.toptal.com/developers/javascript-minifier/api/raw`
-- Uses `URLSearchParams` for proper form encoding
+### Minification Architecture
+
+**CSS Minification (Local - v1.2.0+):**
+- Uses `clean-css` library v5.3.3 with Level 2 optimizations
+- Offline minification without network dependency
+- Features: whitespace/comment removal, rule merging, shorthand optimization, color optimization
+- Function: `minifyCSSLocal()` in `minificationService.ts`
+
+**JavaScript Minification (Remote):**
+- Uses Toptal API: `https://www.toptal.com/developers/javascript-minifier/api/raw`
+- HTTP POST with form-encoded data via `URLSearchParams`
+- 5-second timeout with proper error handling
 
 ### File Manipulation Approach
 - **In-place**: Uses `WorkspaceEdit` to replace entire document content
@@ -257,7 +264,7 @@ HTTP requests to Toptal APIs with form-encoded data:
 
 ### Modular Structure
 - **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic
-- **`src/services/minificationService.ts`**: Toptal API integration with comprehensive error handling
+- **`src/services/minificationService.ts`**: Hybrid minification (clean-css for CSS, Toptal API for JS)
 - **`src/services/fileService.ts`**: File operations (save, replace content, filename generation)
 - **`src/utils/validators.ts`**: File type and content validation with user feedback
 - **`src/*/index.ts`**: Module exports with documentation for each layer

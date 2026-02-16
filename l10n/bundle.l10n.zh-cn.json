@@ -17,5 +17,6 @@
 	"minificationService.error.invalidResponse": "压缩API返回的响应格式无效",
 	"minificationService.error.timeout": "压缩超时：{0} 服务响应时间超出预期。请检查您的互联网连接后重试。",
 	"minificationService.error.network": "网络错误：无法连接到压缩服务。请检查您的互联网连接后重试。",
-	"minificationService.error.generic": "压缩 {0} 文件失败：{1}"
+	"minificationService.error.generic": "压缩 {0} 文件失败：{1}",
+	"minificationService.error.cssLocal": "CSS压缩错误：{0}"
 }

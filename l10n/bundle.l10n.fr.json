@@ -17,5 +17,6 @@
 	"minificationService.error.invalidResponse": "Format de réponse invalide de l'API de minification",
 	"minificationService.error.timeout": "Délai d'attente de minification dépassé : Le service {0} prend plus de temps que prévu. Veuillez vérifier votre connexion Internet et réessayer.",
 	"minificationService.error.network": "Erreur réseau : Impossible de se connecter au service de minification. Veuillez vérifier votre connexion Internet et réessayer.",
-	"minificationService.error.generic": "Échec de la minification du fichier {0} : {1}"
+	"minificationService.error.generic": "Échec de la minification du fichier {0} : {1}",
+	"minificationService.error.cssLocal": "Erreur de minification CSS : {0}"
 }

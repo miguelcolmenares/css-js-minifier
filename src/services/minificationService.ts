@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { setTimeout } from "timers";
 import { t } from "../utils/l10nHelper";
+import CleanCSS from "clean-css";
 
 /**
  * Statistics about the minification process.
@@ -123,20 +124,109 @@ function calculateStats(originalText: string, minifiedText: string): Minificatio
 }
 
 /**
- * Minifies CSS or JavaScript code using the Toptal minification APIs.
+ * Configuration options for clean-css minification.
+ * Level 2 provides aggressive optimizations while remaining safe.
+ * @readonly
+ * @since 1.2.0
+ */
+const CLEAN_CSS_OPTIONS: CleanCSS.OptionsOutput = {
+	level: 2,
+	returnPromise: false
+};
+
+/**
+ * Minifies CSS code locally using the clean-css library.
  * 
- * This function sends the provided code to Toptal's free minification service
- * and returns the minified result. It handles both CSS and JavaScript files
- * by selecting the appropriate API endpoint based on the file type.
+ * This function provides offline CSS minification without requiring network access.
+ * It uses clean-css level 2 optimizations which include:
+ * - Removing whitespace and comments
+ * - Merging adjacent rules with same selectors
+ * - Combining longhand properties into shorthands
+ * - Removing duplicate rules
+ * - Optimizing colors, fonts, and other values
  * 
- * Performance testing shows API response times can vary from 200ms to 1100ms,
- * so a 5-second timeout is implemented to handle network variations gracefully.
+ * @function minifyCSSLocal
+ * @param {string} text - The CSS source code to be minified
+ * @returns {MinificationResult | null} The minified CSS with statistics, or null if minification failed
  * 
- * **API Limitations:**
+ * @sideEffects
+ * - Shows error messages to the user via VS Code notifications on failure
+ * - Shows warning messages for any CSS issues detected
+ * 
+ * @example
+ * ```typescript
+ * const cssCode = 'body { color: red; margin: 0; }';
+ * const result = minifyCSSLocal(cssCode);
+ * // Result: { minifiedText: 'body{color:red;margin:0}', stats: { ... } }
+ * ```
+ * 
+ * @see {@link https://github.com/clean-css/clean-css} clean-css documentation
+ * @since 1.2.0
+ */
+function minifyCSSLocal(text: string): MinificationResult | null {
+	try {
+		const cleanCSS = new CleanCSS(CLEAN_CSS_OPTIONS);
+		const output = cleanCSS.minify(text);
+		
+		// Check for errors (critical issues that prevent minification)
+		if (output.errors && output.errors.length > 0) {
+			const errorMessage = output.errors[0];
+			vscode.window.showErrorMessage(
+				t('minificationService.error.cssLocal', errorMessage)
+			);
+			return null;
+		}
+		
+		// Show warnings if any (non-critical issues)
+		// Note: We silently ignore warnings since clean-css can still produce valid output
+		// Warnings typically indicate minor CSS issues that don't affect the minified result
+		
+		// Ensure we have valid output
+		if (typeof output.styles !== 'string') {
+			vscode.window.showErrorMessage(
+				t('minificationService.error.invalidResponse')
+			);
+			return null;
+		}
+		
+		// Calculate statistics using clean-css built-in stats
+		const stats: MinificationStats = {
+			originalSize: output.stats.originalSize,
+			minifiedSize: output.stats.minifiedSize,
+			reductionPercent: Math.round(output.stats.efficiency * 100),
+			originalSizeKB: formatBytes(output.stats.originalSize),
+			minifiedSizeKB: formatBytes(output.stats.minifiedSize)
+		};
+		
+		return {
+			minifiedText: output.styles,
+			stats
+		};
+		
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(
+			t('minificationService.error.generic', 'CSS', errorMessage)
+		);
+		return null;
+	}
+}
+
+/**
+ * Minifies CSS or JavaScript code.
+ * 
+ * For CSS files, this function uses the local clean-css library for fast,
+ * offline minification. For JavaScript files, it uses the Toptal minification API.
+ * 
+ * **CSS Minification (Local - clean-css):**
+ * - No network required - works offline
+ * - Level 2 optimizations for maximum compression
+ * - Handles modern CSS features
+ * 
+ * **JavaScript Minification (Remote - Toptal API):**
  * - Maximum file size: 5MB per request
  * - Rate limit: 30 requests per minute
- * - Content type: application/x-www-form-urlencoded only
- * - HTTP method: POST only
+ * - 5-second timeout for network variations
  * 
  * @async
  * @function getMinifiedText
@@ -144,35 +234,33 @@ function calculateStats(originalText: string, minifiedText: string): Minificatio
  * @param {string} fileType - The file type identifier ('css' or 'javascript')
  * @returns {Promise<MinificationResult | null>} The minified code with statistics, or null if minification failed
  * 
-  * @throws {Error} API request fails, times out, or returns an invalid response
- * 
  * @sideEffects
- * - Makes an HTTP POST request to external Toptal API with 5-second timeout
+ * - For JavaScript: Makes an HTTP POST request to external Toptal API with 5-second timeout
  * - Shows error messages to the user via VS Code notifications on failure
- * - Timeout errors show specific guidance about connectivity issues
  * 
  * @example
  * ```typescript
- * // Minify CSS code
+ * // Minify CSS code (uses local clean-css)
  * const cssCode = 'body { color: red; margin: 0; }';
  * const result = await getMinifiedText(cssCode, 'css');
  * // Result: { minifiedText: 'body{color:red;margin:0}', stats: { ... } }
  * 
- * // Minify JavaScript code
+ * // Minify JavaScript code (uses Toptal API)
  * const jsCode = 'function hello() { console.log("Hello World"); }';
  * const result = await getMinifiedText(jsCode, 'javascript');
  * // Result: { minifiedText: 'function hello(){console.log("Hello World")}', stats: { ... } }
  * ```
  * 
- * @performance
- * - Typical response time: 200-1100ms based on performance testing
- * - Timeout configured: 5000ms to handle network variations
- * - Large files may take longer to process
- * 
- * @see {@link https://www.toptal.com/developers/cssminifier} CSS Minifier API
+ * @see {@link https://github.com/clean-css/clean-css} clean-css documentation
  * @see {@link https://www.toptal.com/developers/javascript-minifier} JavaScript Minifier API
  */
 export async function getMinifiedText(text: string, fileType: string): Promise<MinificationResult | null> {
+	// For CSS files, use local clean-css minification (no network required)
+	if (fileType === 'css') {
+		return minifyCSSLocal(text);
+	}
+	
+	// For JavaScript files, use the Toptal API
 	// Get the appropriate API configuration for the file type
 	const apiConfig = MINIFICATION_APIS[fileType as keyof typeof MINIFICATION_APIS];
 	

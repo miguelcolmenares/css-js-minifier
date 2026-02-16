@@ -17,5 +17,6 @@
 	"minificationService.error.invalidResponse": "Ungültiges Antwortformat von der Minimierungs-API",
 	"minificationService.error.timeout": "Minimierungs-Timeout: Der {0}-Dienst benötigt länger als erwartet. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
 	"minificationService.error.network": "Netzwerkfehler: Verbindung zum Minimierungsdienst nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-	"minificationService.error.generic": "Fehler beim Minimieren der {0}-Datei: {1}"
+	"minificationService.error.generic": "Fehler beim Minimieren der {0}-Datei: {1}",
+	"minificationService.error.cssLocal": "CSS-Minimierungsfehler: {0}"
 }

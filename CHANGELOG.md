@@ -6,6 +6,35 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-10-25
+
+### Added
+
+- **Local CSS Minification**: Replaced remote Toptal CSS API with local clean-css library
+  - Uses clean-css v5.3.3 with Level 2 optimizations for aggressive yet safe minification
+  - Provides offline CSS minification without requiring network access
+  - Built-in statistics support (original size, minified size, efficiency percentage)
+  - Includes removal of whitespace/comments, rule merging, shorthand optimization, and color optimization
+  - New translation key `minificationService.error.cssLocal` across all 7 languages
+
+### Changed
+
+- **Hybrid Minification Architecture**: CSS uses local minification, JavaScript continues using Toptal API
+- Updated README.md with new minification architecture documentation
+- Extension description updated to reflect local CSS minification capability
+- Bundle size increased from ~48KB to ~514KB (includes clean-css and source-map dependencies)
+
+### Fixed
+
+- Resolved CSS minification failures caused by Toptal API deprecation (502/503 errors, timeouts)
+
+### Technical
+
+- Added `clean-css` v5.3.3 as production dependency
+- Added `@types/clean-css` v4.2.11 as development dependency
+- New `minifyCSSLocal()` function in minificationService.ts
+- MIT license compatibility maintained
+
 ## [1.1.0] - 2025-10-17
 
 ### Added

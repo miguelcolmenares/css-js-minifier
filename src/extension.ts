@@ -1,12 +1,13 @@
 /**
  * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
  * 
- * This extension provides commands to minify CSS and JavaScript files using
- * the Toptal minification APIs. It supports both in-place minification and
+ * This extension provides commands to minify CSS and JavaScript files.
+ * CSS minification uses local clean-css library, while JavaScript uses
+ * the Toptal minification API. It supports both in-place minification and
  * creating new minified files with configurable prefixes.
  * 
  * @author Miguel Colmenares
- * @version 1.1.0
+ * @version 1.2.0
  * @since 0.1.0
  * @see {@link https://github.com/miguelcolmenares/css-js-minifier} GitHub Repository
  */

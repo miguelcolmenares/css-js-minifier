@@ -7,7 +7,12 @@
 
 ## Description
 
-The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor. Using the minification service provided by [Toptal](https://www.toptal.com/developers/), this extension makes it quick and easy to optimize your files.
+The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
+
+- **CSS files** are minified locally using [clean-css](https://github.com/clean-css/clean-css), providing fast, offline minification with no network required.
+- **JavaScript files** are minified using the service provided by [Toptal](https://www.toptal.com/developers/).
+
+This extension makes it quick and easy to optimize your files.
 
 ## VS Code Compatibility Testing
 
@@ -22,6 +27,7 @@ This extension is thoroughly tested across multiple VS Code versions to ensure c
 - **Insiders**: Pre-release builds - tested on Ubuntu for early compatibility validation
 
 ## Demo
+
 Minify File through context menu
 
 ![Minify File through context menu](images/minify.gif)
@@ -30,32 +36,45 @@ Minify and Save as New File through context menu
 
 ![Minify and Save as New File through context menu](images/minify-and-save-as-new-file.gif)
 
-
 ## Key Features
 
--   **CSS and JavaScript Minification**: Minify open CSS and JS files in the editor using commands from the command palette or the context menu.
--   **Size Reduction Statistics**: See exactly how much space you saved with percentage reduction and before/after file sizes.
--   **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
--   **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
--   **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
--   **File Size Validation**: Automatically validates files are under the 5MB API limit before processing.
--   **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors, rate limits, and connectivity issues.
+- **CSS and JavaScript Minification**: Minify open CSS and JS files in the editor using commands from the command palette or the context menu.
+- **Size Reduction Statistics**: See exactly how much space you saved with percentage reduction and before/after file sizes.
+- **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
+- **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
+- **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
+- **File Size Validation**: Automatically validates files are under the 5MB API limit before processing.
+- **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors, rate limits, and connectivity issues.
 
 ## Available Commands
 
--   `Minify`: Minifies the current CSS or JS file and overwrites its content.
--   `Minify and Save as New File`: Minifies the current CSS or JS file and saves the result to a new file with the `.min` suffix.
+- `Minify`: Minifies the current CSS or JS file and overwrites its content.
+- `Minify and Save as New File`: Minifies the current CSS or JS file and saves the result to a new file with the `.min` suffix.
 
 ## API Limitations & Error Handling
 
-The extension uses [Toptal's free minification APIs](https://www.toptal.com/developers/) with the following limitations:
+### CSS Minification (Local)
+
+CSS files are minified locally using the [clean-css](https://github.com/clean-css/clean-css) library:
+
+- **No network required**: Works completely offline
+- **No file size limit**: Limited only by system memory
+- **No rate limiting**: Minify as many files as needed
+- **Level 2 optimizations**: Aggressive but safe optimizations including rule merging, property deduplication, and shorthand conversion
+
+### JavaScript Minification (Remote)
+
+JavaScript files use [Toptal's minification API](https://www.toptal.com/developers/) with the following limitations:
 
 - **Maximum file size**: 5MB per request
 - **Rate limit**: 30 requests per minute  
-- **Supported formats**: CSS and JavaScript only
+- **Network required**: Internet connection needed
 - **Content type**: `application/x-www-form-urlencoded`
 
+> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local clean-css library for improved reliability and offline support.
+
 **Enhanced Error Messages:**
+
 - **File too large**: Clear indication when files exceed 5MB limit with current file size
 - **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax  
 - **Rate limiting**: Informative message when hitting the 30 requests/minute limit
@@ -66,21 +85,21 @@ The extension uses [Toptal's free minification APIs](https://www.toptal.com/deve
 
 You can customize the extension's behavior through the available settings in VS Code:
 
--   `css-js-minifier.minifyOnSave`: Automatically minify CSS and JS files when saving them. (`true` or `false`, default is `false`).
--   `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
--   `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
--   `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
--   `css-js-minifier.showSizeReduction`: Show size reduction statistics in success messages. (`true` or `false`, default is `true`).
+- `css-js-minifier.minifyOnSave`: Automatically minify CSS and JS files when saving them. (`true` or `false`, default is `false`).
+- `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
+- `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
+- `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
+- `css-js-minifier.showSizeReduction`: Show size reduction statistics in success messages. (`true` or `false`, default is `true`).
 
 To adjust these settings, add the following lines to your `settings.json` file:
 
 ```json
 {
-	"css-js-minifier.minifyOnSave": true,
-	"css-js-minifier.minifyInNewFile": true,
-	"css-js-minifier.minifiedNewFilePrefix": ".min",
-	"css-js-minifier.autoOpenNewFile": false,
-	"css-js-minifier.showSizeReduction": true
+ "css-js-minifier.minifyOnSave": true,
+ "css-js-minifier.minifyInNewFile": true,
+ "css-js-minifier.minifiedNewFilePrefix": ".min",
+ "css-js-minifier.autoOpenNewFile": false,
+ "css-js-minifier.showSizeReduction": true
 }
 ```
 
@@ -97,6 +116,7 @@ The extension is fully internationalized and supports **7 languages**:
 - 🇨🇳 **Chinese Simplified** (zh-cn)
 
 The extension automatically uses your VS Code display language. All user-facing text is translated, including:
+
 - Commands and menu items
 - Configuration settings and descriptions
 - Error messages and notifications
@@ -129,12 +149,12 @@ For more information about internationalization, see the [Internationalization D
 
 The extension provides convenient keyboard shortcuts for quick access to its commands:
 
--   `Minify`:
-    -   `alt+ctrl+m` (Windows/Linux)
-    -   `option+ctrl+m` (Mac)
--   `Minify and Save as New File`:
-    -   `alt+ctrl+n` (Windows/Linux)
-    -   `option+ctrl+n` (Mac)
+- `Minify`:
+  - `alt+ctrl+m` (Windows/Linux)
+  - `option+ctrl+m` (Mac)
+- `Minify and Save as New File`:
+  - `alt+ctrl+n` (Windows/Linux)
+  - `option+ctrl+n` (Mac)
 
 ## Installation
 
