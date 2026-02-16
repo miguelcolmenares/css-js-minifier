@@ -10,6 +10,8 @@
  * @see {@link https://www.toptal.com/developers/javascript-minifier} JavaScript Minifier API
  */
 
+/* global AbortController, Response, setTimeout, clearTimeout */
+
 import * as vscode from "vscode";
 import { t } from "../../utils/l10nHelper";
 import { MinificationResult } from "../../types";
