@@ -1,8 +1,8 @@
 {
 	"name": "css-js-minifier",
 	"displayName": "JS & CSS Minifier Tool and Compressor",
-	"description": "Minify CSS and JS files directly within Visual Studio Code using the Toptal API. Supports 7 languages: English, Spanish, French, German, Portuguese, Japanese, and Chinese. Easy-to-use commands for code optimization.",
-	"version": "1.1.0",
+	"description": "Minify CSS locally with clean-css and JS via Toptal API directly within Visual Studio Code. Supports 7 languages: English, Spanish, French, German, Portuguese, Japanese, and Chinese. Easy-to-use commands for code optimization.",
+	"version": "1.2.0",
 	"publisher": "miguel-colmenares",
 	"l10n": "./l10n",
 	"sponsor": {
@@ -159,6 +159,7 @@
 		"test": "vscode-test"
 	},
 	"devDependencies": {
+		"@types/clean-css": "^4.2.11",
 		"@types/mocha": "^10.0.6",
 		"@types/node": "^25.2.2",
 		"@types/sinon": "^21.0.0",
@@ -183,5 +184,8 @@
 	"bugs": {
 		"url": "https://github.com/miguelcolmenares/css-js-minifier/issues"
 	},
-	"homepage": "https://github.com/miguelcolmenares/css-js-minifier#readme"
+	"homepage": "https://github.com/miguelcolmenares/css-js-minifier#readme",
+	"dependencies": {
+		"clean-css": "^5.3.3"
+	}
 }

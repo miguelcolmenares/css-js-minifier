@@ -17,5 +17,6 @@
 	"minificationService.error.invalidResponse": "Formato de respuesta inválido de la API de minificación",
 	"minificationService.error.timeout": "Tiempo de espera agotado: El servicio {0} está tardando más de lo esperado. Por favor, verifique su conexión a internet e intente nuevamente.",
 	"minificationService.error.network": "Error de red: No se puede conectar al servicio de minificación. Por favor, verifique su conexión a internet e intente nuevamente.",
-	"minificationService.error.generic": "Error al minificar archivo {0}: {1}"
+	"minificationService.error.generic": "Error al minificar archivo {0}: {1}",
+	"minificationService.error.cssLocal": "Error de minificación CSS: {0}"
 }

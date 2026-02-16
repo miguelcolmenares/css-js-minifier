@@ -17,5 +17,6 @@
 	"minificationService.error.invalidResponse": "縮小APIからの無効な応答形式",
 	"minificationService.error.timeout": "縮小タイムアウト：{0} サービスが予想よりも時間がかかっています。インターネット接続を確認して再試行してください。",
 	"minificationService.error.network": "ネットワークエラー：縮小サービスに接続できません。インターネット接続を確認して再試行してください。",
-	"minificationService.error.generic": "{0} ファイルの縮小に失敗しました：{1}"
+	"minificationService.error.generic": "{0} ファイルの縮小に失敗しました：{1}",
+	"minificationService.error.cssLocal": "CSS縮小エラー：{0}"
 }
