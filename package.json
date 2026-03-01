@@ -187,5 +187,8 @@
 	"homepage": "https://github.com/miguelcolmenares/css-js-minifier#readme",
 	"dependencies": {
 		"clean-css": "^5.3.3"
+	},
+	"overrides": {
+		"serialize-javascript": "^7.0.3"
 	}
 }
