@@ -155,7 +155,7 @@ To add support for a new language:
   /**
    * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
    * @author Miguel Colmenares
-   * @version 1.2.0  // ← UPDATE THIS when version changes
+   * @version 1.3.0  // ← UPDATE THIS when version changes
    * @since 0.1.0
    */
   ```

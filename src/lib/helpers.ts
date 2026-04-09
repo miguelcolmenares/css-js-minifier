@@ -6,7 +6,7 @@
  * specific task.
  *
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.2.0
  */
 

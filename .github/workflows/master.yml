@@ -17,6 +17,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Configure Git line endings
+        run: git config --global core.autocrlf false
       - name: Checkout
         uses: actions/checkout@v6
       - name: Cache dependencies

@@ -5,7 +5,7 @@
  * It handles HTTP requests, timeouts, error handling, and rate limiting.
  *
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 0.1.0
  * @see {@link https://www.toptal.com/developers/javascript-minifier} JavaScript Minifier API
  */

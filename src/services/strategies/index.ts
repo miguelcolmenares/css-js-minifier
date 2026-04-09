@@ -2,11 +2,11 @@
  * @fileoverview Minification strategies module exports.
  *
  * This module exports all available minification strategies:
- * - Local CSS minification using clean-css
+ * - Local CSS minification using LightningCSS (Rust-based)
  * - Remote JavaScript minification using Toptal API
  *
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.2.0
  *
  * @example

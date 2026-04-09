@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { MinificationStats } from './minificationService';
 import { t } from '@/utils/l10nHelper';
@@ -57,7 +58,7 @@ export async function saveAsNewFile(
 	}
 
 	// Provide user feedback about the successful operation with statistics
-	const fileName = newFileName.split('/').pop() || 'file';
+	const fileName = path.basename(newFileName);
 	const config = vscode.workspace.getConfiguration('css-js-minifier');
 	const showSizeReduction = config.get('showSizeReduction', true);
 
@@ -145,7 +146,7 @@ export async function replaceDocumentContent(
 
 	// Provide user feedback about the successful minification with statistics (if not suppressed)
 	if (showNotification) {
-		const fileName = document.fileName.split('/').pop() || 'file';
+		const fileName = path.basename(document.fileName);
 		const config = vscode.workspace.getConfiguration('css-js-minifier');
 		const showSizeReduction = config.get('showSizeReduction', true);
 

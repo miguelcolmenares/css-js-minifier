@@ -3,11 +3,11 @@
  *
  * This module serves as the main entry point for minification operations,
  * routing requests to the appropriate strategy based on file type:
- * - CSS files → Local minification using clean-css
+ * - CSS files → Local minification using LightningCSS
  * - JavaScript files → Remote minification using Toptal API
  *
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 0.1.0
  *
  * @example
@@ -36,10 +36,10 @@ export { MinificationResult, MinificationStats } from '@/types';
  * This function acts as a facade, routing minification requests to the
  * appropriate strategy based on the file type:
  *
- * **CSS Minification (Local - clean-css):**
+ * **CSS Minification (Local - LightningCSS):**
  * - No network required - works offline
- * - Level 2 optimizations for maximum compression
- * - Handles modern CSS features
+ * - Rust-based parser (~60x faster than JavaScript alternatives)
+ * - Full support for modern CSS features (@starting-style, CSS Nesting, etc.)
  *
  * **JavaScript Minification (Remote - Toptal API):**
  * - Maximum file size: 5MB per request

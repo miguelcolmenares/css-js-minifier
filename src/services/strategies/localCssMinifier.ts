@@ -56,8 +56,9 @@ export function minifyCss(text: string): MinificationResult | null {
 			minify: true,
 		});
 
-		const minifiedText = output.code.toString();
-		const minifiedSize = output.code.length;
+		const minifiedCode = Buffer.from(output.code);
+		const minifiedText = minifiedCode.toString('utf8');
+		const minifiedSize = minifiedCode.length;
 
 		// Calculate statistics
 		const stats: MinificationStats = {
