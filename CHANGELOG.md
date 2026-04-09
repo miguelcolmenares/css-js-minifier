@@ -14,6 +14,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - CSS entry animations now work correctly after minification
   - Full support for modern CSS features like CSS Nesting, Color Level 5, and more
 - New test fixture for `@starting-style` validation
+- **Local JavaScript minification using oxc-minify** ([#108](https://github.com/miguelcolmenares/css-js-minifier/issues/108))
+  - Replaced remote Toptal API with local oxc-minify library (Rust-based, from Oxc/Voidzero ecosystem)
+  - Fully offline JavaScript minification — no network or API dependency required
+  - Features: variable mangling, dead code elimination, constant folding, statement joining
+  - New translation key `minificationService.error.jsLocal` across all 7 languages
 
 ### Changed
 
@@ -22,6 +27,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Better support for modern CSS specifications
   - Smaller output sizes with smarter optimizations
   - Maintained offline minification capability (no network required)
+- **Migrated JS minification from Toptal API to oxc-minify**
+  - No network required — works completely offline
+  - No file size limit or rate limiting
+  - Synchronous API via `minifySync()` for fast processing
 - Updated tsconfig.json to include Node.js types explicitly
 
 ### Fixed
@@ -30,12 +39,23 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - This was a limitation of clean-css which had the fix merged but never released
   - LightningCSS properly handles all modern CSS at-rules
 
+### Removed
+
+- Removed Toptal API dependency for JavaScript minification
+- Removed `toptalApiMinifier.ts` strategy (replaced by `localJsMinifier.ts`)
+- Removed `ApiConfig`, `HttpRequestConfig` types (no longer needed)
+- Removed `TOPTAL_JS_API`, `HTTP_REQUEST_CONFIG`, `API_TIMEOUT_MS`, `MAX_FILE_SIZE_BYTES` constants
+
 ### Technical
 
 - Replaced `clean-css` v5.3.3 with `lightningcss` v1.32.0
+- Added `oxc-minify` as a production dependency
 - Removed `@types/clean-css` dev dependency
 - Removed `CLEAN_CSS_OPTIONS` constant (no longer needed)
 - Updated `localCssMinifier.ts` to use LightningCSS `transform()` API
+- Created `localJsMinifier.ts` with oxc-minify `minifySync()` API
+- `minificationService.ts` is now fully synchronous
+- Webpack externals configured for `oxc-minify`
 - Bundle size may increase slightly due to native Rust binaries
 
 ## [1.2.0] - 2026-02-16

@@ -15,4 +15,4 @@
  * ```
  */
 
-export { MinificationStats, MinificationResult, ApiConfig, HttpRequestConfig } from './minification';
+export { MinificationStats, MinificationResult } from './minification';

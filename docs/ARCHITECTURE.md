@@ -18,10 +18,14 @@ The CSS & JS Minifier extension follows a modular architecture pattern that sepa
   - `index.ts` - Command exports with comprehensive documentation
 
 ### 3. Services Layer (`src/services/`)
-- **Purpose**: Business logic and external API integrations
+- **Purpose**: Business logic and minification orchestration
 - **Components**:
-  - `minificationService.ts` - Toptal API communication with error handling
+  - `minificationService.ts` - Facade that routes to appropriate local minification strategy
   - `fileService.ts` - File system operations and filename utilities
+  - `strategies/` - Minification strategy implementations
+    - `localCssMinifier.ts` - CSS minification using LightningCSS (Rust-based)
+    - `localJsMinifier.ts` - JS minification using oxc-minify (Rust-based)
+    - `index.ts` - Strategy exports
   - `index.ts` - Service exports with module documentation
 
 ### 4. Utils Layer (`src/utils/`)
@@ -91,14 +95,14 @@ commands/minifyCommand.ts
 
 ### Layered Error Handling
 1. **Validation Layer**: Input validation with user-friendly messages
-2. **Service Layer**: API error handling with retry logic and specific error codes
+2. **Service Layer**: Minification error handling with specific error codes
 3. **Command Layer**: Coordination and user notification
 4. **Extension Layer**: Global error catching and logging
 
 ### User Experience Focus
 - All errors show appropriate VS Code notifications
-- Context-aware error messages (file type, network issues, API limits)
-- Graceful degradation when services are unavailable
+- Context-aware error messages (file type, syntax errors)
+- Both CSS and JS minification work fully offline
 
 ## Configuration Management
 
@@ -114,15 +118,12 @@ commands/minifyCommand.ts
 
 ## Performance Optimizations
 
-### Lazy Loading
-- Modules loaded only when needed
+### Efficient Processing
+- Local Rust-based minification (LightningCSS + oxc-minify)
+- No network latency — fully offline operation
+- Synchronous minification API for instant results
 - Webpack bundling for optimal distribution size
 - Tree shaking removes unused code
-
-### API Efficiency
-- Request debouncing for rapid user actions
-- Response caching where appropriate
-- Timeout handling for slow network conditions
 
 ## Future Extensibility
 
@@ -138,5 +139,5 @@ commands/minifyCommand.ts
 
 ---
 
-**Last Updated**: October 16, 2025
-**Extension Version**: 1.0.0
+**Last Updated**: April 2026
+**Extension Version**: 1.3.0

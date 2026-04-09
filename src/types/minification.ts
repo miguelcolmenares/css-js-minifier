@@ -38,27 +38,3 @@ export interface MinificationResult {
 	minifiedText: string;
 	stats: MinificationStats;
 }
-
-/**
- * Configuration for an API endpoint.
- *
- * @interface ApiConfig
- * @property {string} url - The API endpoint URL
- * @property {string} name - Human-readable name for the API
- */
-export interface ApiConfig {
-	readonly url: string;
-	readonly name: string;
-}
-
-/**
- * HTTP request configuration.
- *
- * @interface HttpRequestConfig
- * @property {string} method - HTTP method (GET, POST, etc.)
- * @property {Record<string, string>} headers - HTTP headers
- */
-export interface HttpRequestConfig {
-	readonly method: string;
-	readonly headers: Record<string, string>;
-}

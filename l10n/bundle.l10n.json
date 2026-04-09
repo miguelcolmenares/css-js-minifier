@@ -6,17 +6,6 @@
 	"fileService.inPlace.success": "{0} has been successfully minified.",
 	"fileService.inPlace.successWithStats": "{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)",
 	"minificationService.fileType.unsupported": "Unsupported file type for minification: {0}",
-	"minificationService.fileSize.tooLarge": "File too large: {0}MB. Maximum allowed size is 5MB. Please reduce the file size and try again.",
-	"minificationService.error.missingInput": "Missing input parameter. Please ensure the file has content.",
-	"minificationService.error.invalidMethod": "Invalid request method. This is an internal error, please try again.",
-	"minificationService.error.invalidContentType": "Invalid content type. This is an internal error, please try again.",
-	"minificationService.error.fileTooLarge": "File too large. Maximum allowed size is 5MB. Please reduce the file size.",
-	"minificationService.error.invalidSyntax": "Invalid {0} syntax. Please check your code for syntax errors.",
-	"minificationService.error.rateLimitExceeded": "Too many requests. API limit is 30 requests per minute. Please wait and try again.",
-	"minificationService.error.apiError": "{0} API error ({1}): {2}",
-	"minificationService.error.invalidResponse": "Invalid response format from minification API",
-	"minificationService.error.timeout": "Minification timeout: The {0} service is taking longer than expected. Please check your internet connection and try again.",
-	"minificationService.error.network": "Network error: Unable to connect to the minification service. Please check your internet connection and try again.",
-	"minificationService.error.generic": "Failed to minify {0} file: {1}",
-	"minificationService.error.cssLocal": "CSS minification error: {0}"
+	"minificationService.error.cssLocal": "CSS minification error: {0}",
+	"minificationService.error.jsLocal": "JavaScript minification error: {0}"
 }

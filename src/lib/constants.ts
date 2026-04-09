@@ -10,50 +10,6 @@
  * @since 1.2.0
  */
 
-import type { ApiConfig, HttpRequestConfig } from '@/types';
-
-// ============================================================================
-// API Configuration
-// ============================================================================
-
-/**
- * Configuration for Toptal JavaScript minification API.
- * @readonly
- */
-export const TOPTAL_JS_API: ApiConfig = {
-	url: 'https://www.toptal.com/developers/javascript-minifier/api/raw',
-	name: 'JavaScript Minifier',
-} as const;
-
-/**
- * HTTP configuration for API requests.
- * @readonly
- */
-export const HTTP_REQUEST_CONFIG: HttpRequestConfig = {
-	method: 'POST',
-	headers: {
-		'Content-Type': 'application/x-www-form-urlencoded',
-	},
-} as const;
-
-// ============================================================================
-// Timeouts and Limits
-// ============================================================================
-
-/**
- * Timeout duration for API requests in milliseconds.
- * Based on performance testing showing responses up to 1100ms.
- * @readonly
- */
-export const API_TIMEOUT_MS = 5000;
-
-/**
- * Maximum file size allowed by Toptal APIs (5MB in bytes).
- * Files larger than this will be rejected with HTTP 413 error.
- * @readonly
- */
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-
 // ============================================================================
 // File Size Constants
 // ============================================================================

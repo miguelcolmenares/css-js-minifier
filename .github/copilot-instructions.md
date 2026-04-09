@@ -1,7 +1,7 @@
 # CSS & JS Minifier Extension - AI Developer Guide
 
 ## Project Overview
-This is a VS Code extension that minifies CSS and JavaScript files. CSS minification is performed locally using LightningCSS (a fast Rust-based CSS parser), while JavaScript uses the Toptal API. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
+This is a VS Code extension that minifies CSS and JavaScript files. Both CSS and JavaScript minification are performed locally using Rust-based libraries: CSS uses LightningCSS and JavaScript uses oxc-minify. No network or API dependencies are required. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
 
 ## Architecture & Key Components
 
@@ -15,22 +15,22 @@ This is a VS Code extension that minifies CSS and JavaScript files. CSS minifica
   - `fileService.ts`: File system operations and filename utilities
   - `strategies/`: Minification strategy implementations
     - `localCssMinifier.ts`: Local CSS minification using LightningCSS
-    - `toptalApiMinifier.ts`: Remote JS minification via Toptal API
+    - `localJsMinifier.ts`: Local JS minification using oxc-minify
     - `index.ts`: Strategy exports
   - `index.ts`: Service exports with module documentation
 - **`src/lib/`**: Shared constants and utilities (DDD infrastructure layer)
-  - `constants.ts`: Centralized configuration (API configs, timeouts)
+  - `constants.ts`: Centralized configuration (file size constants)
   - `helpers.ts`: Utility functions (formatBytes, calculateStats)
   - `index.ts`: Library exports
 - **`src/types/`**: Type definitions (DDD domain layer)
-  - `minification.ts`: MinificationStats, MinificationResult, ApiConfig, HttpRequestConfig
+  - `minification.ts`: MinificationStats, MinificationResult
   - `index.ts`: Type exports
 - **`src/utils/`**: Reusable validation and utility functions
   - `validators.ts`: File type and content validation with user feedback
   - `l10nHelper.ts`: Internationalization helper
   - `index.ts`: Utility exports with module documentation
 - **Two primary commands**: `extension.minify` (in-place) and `extension.minifyInNewFile` (creates `.min` files)
-- **Hybrid minification**: CSS uses local LightningCSS library, JavaScript uses Toptal API
+- **Local minification**: CSS uses LightningCSS, JavaScript uses oxc-minify (both Rust-based, fully offline)
 - **File handling**: Supports both active editor and explorer context actions
 
 ### Command Registration Pattern (Modular)
@@ -55,7 +55,7 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 - **Enhanced Testability**: Strategies can be mocked independently
 - **Improved Maintainability**: 63% reduction in main file size (220→81 lines)
 - **Better Documentation**: Comprehensive JSDoc with examples throughout
-- **Extensibility**: Easy to add new strategies (e.g., localJsMinifier)
+- **Extensibility**: Easy to add new strategies or swap implementations
 
 ### Configuration System
 Four settings in `package.json` contribute section:
@@ -254,11 +254,12 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - Features: whitespace/comment removal, rule merging, shorthand optimization, color optimization
 - Strategy: `services/strategies/localCssMinifier.ts` → `minifyCss()`
 
-**JavaScript Minification (Remote):**
-- Uses Toptal API: `https://www.toptal.com/developers/javascript-minifier/api/raw`
-- HTTP POST with manually form-encoded body using `encodeURIComponent` to avoid `+` space-handling issues
-- 5-second timeout with AbortController for proper cleanup
-- Strategy: `services/strategies/toptalApiMinifier.ts` → `minifyJavaScript()`
+**JavaScript Minification (Local - v1.3.0+):**
+- Uses `oxc-minify` library (Rust-based, from the Oxc/Voidzero ecosystem)
+- Offline minification without network dependency
+- Features: variable mangling, dead code elimination, constant folding, statement joining
+- Synchronous API via `minifySync()` for fast processing
+- Strategy: `services/strategies/localJsMinifier.ts` → `minifyJs()`
 
 ### File Manipulation Approach
 - **In-place**: Uses `WorkspaceEdit` to replace entire document content
@@ -278,11 +279,11 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`.vscode/README.md`**: Complete guide for VS Code tasks usage and development workflows
 
 ### Modular Structure
-- **`src/lib/constants.ts`**: Centralized configuration (TOPTAL_JS_API, timeouts)
+- **`src/lib/constants.ts`**: Centralized configuration (file size constants)
 - **`src/lib/helpers.ts`**: Utility functions (formatBytes, calculateStats)
-- **`src/types/minification.ts`**: Type definitions (MinificationResult, MinificationStats, ApiConfig)
+- **`src/types/minification.ts`**: Type definitions (MinificationResult, MinificationStats)
 - **`src/services/strategies/localCssMinifier.ts`**: Local CSS minification with LightningCSS
-- **`src/services/strategies/toptalApiMinifier.ts`**: Remote JS minification via Toptal API
+- **`src/services/strategies/localJsMinifier.ts`**: Local JS minification with oxc-minify
 - **`src/services/minificationService.ts`**: Facade that routes to appropriate strategy
 - **`src/services/fileService.ts`**: File operations (save, replace content, filename generation)
 - **`src/commands/minifyCommand.ts`**: Main command handlers with processDocument() core logic

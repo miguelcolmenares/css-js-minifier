@@ -15,7 +15,7 @@ const SUPPORTED_FILE_TYPES = {
  * Validates if the provided file type is supported for minification.
  *
  * This function checks if the file type is either CSS or JavaScript,
- * which are the only file types supported by the Toptal minification APIs.
+ * which are the only file types supported for minification.
  *
  * @function isValidFileType
  * @param {string} fileType - The VS Code language identifier (e.g., 'css', 'javascript')
@@ -69,8 +69,8 @@ export function validateFileType(fileType: string): boolean {
 /**
  * Validates that the file content is not empty and displays appropriate user feedback.
  *
- * This function ensures that there is actual content to minify before making API calls.
- * Empty files would result in unnecessary API requests and should be handled gracefully.
+ * This function ensures that there is actual content to minify before processing.
+ * Empty files should be handled gracefully with appropriate user feedback.
  *
  * @function validateContentLength
  * @param {string} text - The complete text content of the file to validate
