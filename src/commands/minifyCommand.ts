@@ -10,9 +10,9 @@
  */
 
 import * as vscode from "vscode";
-import { validateFileType, validateContentLength } from "../utils/validators";
-import { getMinifiedText } from "../services/minificationService";
-import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from "../services/fileService";
+import { validateFileType, validateContentLength } from "@/utils/validators";
+import { getMinifiedText } from "@/services/minificationService";
+import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from "@/services/fileService";
 
 // Set to track documents currently being processed to prevent recursion
 // Uses document URI as key to allow per-document tracking

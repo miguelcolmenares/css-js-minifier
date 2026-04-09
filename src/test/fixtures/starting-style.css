@@ -1,0 +1,14 @@
+dialog {
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+dialog[open] {
+  opacity: 1;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+  }
+}

@@ -6,6 +6,38 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-XX
+
+### Added
+
+- **Support for `@starting-style` CSS at-rule** ([#104](https://github.com/miguelcolmenares/css-js-minifier/issues/104))
+  - CSS entry animations now work correctly after minification
+  - Full support for modern CSS features like CSS Nesting, Color Level 5, and more
+- New test fixture for `@starting-style` validation
+
+### Changed
+
+- **Migrated CSS minification from clean-css to LightningCSS**
+  - ~60x faster CSS minification (Rust-based parser)
+  - Better support for modern CSS specifications
+  - Smaller output sizes with smarter optimizations
+  - Maintained offline minification capability (no network required)
+- Updated tsconfig.json to include Node.js types explicitly
+
+### Fixed
+
+- **`@starting-style` at-rule was being stripped during minification** ([#104](https://github.com/miguelcolmenares/css-js-minifier/issues/104))
+  - This was a limitation of clean-css which had the fix merged but never released
+  - LightningCSS properly handles all modern CSS at-rules
+
+### Technical
+
+- Replaced `clean-css` v5.3.3 with `lightningcss` v1.32.0
+- Removed `@types/clean-css` dev dependency
+- Removed `CLEAN_CSS_OPTIONS` constant (no longer needed)
+- Updated `localCssMinifier.ts` to use LightningCSS `transform()` API
+- Bundle size may increase slightly due to native Rust binaries
+
 ## [1.2.0] - 2026-02-16
 
 ### Added

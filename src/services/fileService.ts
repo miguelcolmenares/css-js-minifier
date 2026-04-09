@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { MinificationStats } from "./minificationService";
-import { t } from "../utils/l10nHelper";
+import { t } from "@/utils/l10nHelper";
 
 /**
  * Saves minified content to a new file and opens it in the editor.

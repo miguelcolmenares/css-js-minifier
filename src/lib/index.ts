@@ -16,7 +16,7 @@
  *   API_TIMEOUT_MS, 
  *   formatBytes, 
  *   calculateStats 
- * } from '../lib';
+ * } from '@/lib';
  * ```
  */
 
@@ -26,7 +26,6 @@ export {
 	HTTP_REQUEST_CONFIG,
 	API_TIMEOUT_MS,
 	MAX_FILE_SIZE_BYTES,
-	CLEAN_CSS_OPTIONS,
 	BYTES_PER_KB,
 	BYTES_PER_MB
 } from './constants';

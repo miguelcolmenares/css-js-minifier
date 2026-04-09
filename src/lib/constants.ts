@@ -6,12 +6,11 @@
  * defined here and imported where needed.
  * 
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.2.0
  */
 
-import type CleanCSS from "clean-css";
-import type { ApiConfig, HttpRequestConfig } from "../types";
+import type { ApiConfig, HttpRequestConfig } from "@/types";
 
 // ============================================================================
 // API Configuration
@@ -54,29 +53,6 @@ export const API_TIMEOUT_MS = 5000;
  * @readonly
  */
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-
-// ============================================================================
-// Clean-CSS Configuration
-// ============================================================================
-
-/**
- * Configuration options for clean-css minification.
- * Level 2 provides aggressive optimizations while remaining safe.
- * 
- * Level 2 optimizations include:
- * - Removing whitespace and comments
- * - Merging adjacent rules with same selectors
- * - Combining longhand properties into shorthands
- * - Removing duplicate rules
- * - Optimizing colors, fonts, and other values
- * 
- * @readonly
- * @see {@link https://github.com/clean-css/clean-css#optimization-levels} Optimization levels
- */
-export const CLEAN_CSS_OPTIONS: CleanCSS.OptionsOutput = {
-	level: 2,
-	returnPromise: false
-};
 
 // ============================================================================
 // File Size Constants

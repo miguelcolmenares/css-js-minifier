@@ -1,7 +1,7 @@
 # CSS & JS Minifier Extension - AI Developer Guide
 
 ## Project Overview
-This is a VS Code extension that minifies CSS and JavaScript files. CSS minification is performed locally using clean-css, while JavaScript uses the Toptal API. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
+This is a VS Code extension that minifies CSS and JavaScript files. CSS minification is performed locally using LightningCSS (a fast Rust-based CSS parser), while JavaScript uses the Toptal API. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
 
 ## Architecture & Key Components
 
@@ -14,12 +14,12 @@ This is a VS Code extension that minifies CSS and JavaScript files. CSS minifica
   - `minificationService.ts`: Facade/orchestrator that routes to appropriate strategy
   - `fileService.ts`: File system operations and filename utilities
   - `strategies/`: Minification strategy implementations
-    - `localCssMinifier.ts`: Local CSS minification using clean-css
+    - `localCssMinifier.ts`: Local CSS minification using LightningCSS
     - `toptalApiMinifier.ts`: Remote JS minification via Toptal API
     - `index.ts`: Strategy exports
   - `index.ts`: Service exports with module documentation
 - **`src/lib/`**: Shared constants and utilities (DDD infrastructure layer)
-  - `constants.ts`: Centralized configuration (API configs, timeouts, clean-css options)
+  - `constants.ts`: Centralized configuration (API configs, timeouts)
   - `helpers.ts`: Utility functions (formatBytes, calculateStats)
   - `index.ts`: Library exports
 - **`src/types/`**: Type definitions (DDD domain layer)
@@ -30,7 +30,7 @@ This is a VS Code extension that minifies CSS and JavaScript files. CSS minifica
   - `l10nHelper.ts`: Internationalization helper
   - `index.ts`: Utility exports with module documentation
 - **Two primary commands**: `extension.minify` (in-place) and `extension.minifyInNewFile` (creates `.min` files)
-- **Hybrid minification**: CSS uses local clean-css library, JavaScript uses Toptal API
+- **Hybrid minification**: CSS uses local LightningCSS library, JavaScript uses Toptal API
 - **File handling**: Supports both active editor and explorer context actions
 
 ### Command Registration Pattern (Modular)
@@ -247,9 +247,10 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 
 ### Minification Architecture
 
-**CSS Minification (Local - v1.2.0+):**
-- Uses `clean-css` library v5.3.3 with Level 2 optimizations
+**CSS Minification (Local - v1.3.0+):**
+- Uses `lightningcss` library v1.32.0 (Rust-based, ~60x faster)
 - Offline minification without network dependency
+- Full support for modern CSS: `@starting-style`, CSS Nesting, Color Level 5, etc.
 - Features: whitespace/comment removal, rule merging, shorthand optimization, color optimization
 - Strategy: `services/strategies/localCssMinifier.ts` → `minifyCss()`
 
@@ -277,10 +278,10 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`.vscode/README.md`**: Complete guide for VS Code tasks usage and development workflows
 
 ### Modular Structure
-- **`src/lib/constants.ts`**: Centralized configuration (TOPTAL_JS_API, CLEAN_CSS_OPTIONS, timeouts)
+- **`src/lib/constants.ts`**: Centralized configuration (TOPTAL_JS_API, timeouts)
 - **`src/lib/helpers.ts`**: Utility functions (formatBytes, calculateStats)
 - **`src/types/minification.ts`**: Type definitions (MinificationResult, MinificationStats, ApiConfig)
-- **`src/services/strategies/localCssMinifier.ts`**: Local CSS minification with clean-css
+- **`src/services/strategies/localCssMinifier.ts`**: Local CSS minification with LightningCSS
 - **`src/services/strategies/toptalApiMinifier.ts`**: Remote JS minification via Toptal API
 - **`src/services/minificationService.ts`**: Facade that routes to appropriate strategy
 - **`src/services/fileService.ts`**: File operations (save, replace content, filename generation)

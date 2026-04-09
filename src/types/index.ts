@@ -11,7 +11,7 @@
  * 
  * @example
  * ```typescript
- * import { MinificationResult, MinificationStats } from '../types';
+ * import { MinificationResult, MinificationStats } from '@/types';
  * ```
  */
 

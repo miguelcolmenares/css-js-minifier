@@ -9,7 +9,7 @@
 
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 
-- **CSS files** are minified locally using [clean-css](https://github.com/clean-css/clean-css), providing fast, offline minification with no network required.
+- **CSS files** are minified locally using [LightningCSS](https://lightningcss.dev/), an extremely fast Rust-based CSS parser providing offline minification with full support for modern CSS features like `@starting-style`, CSS Nesting, and Color Level 5.
 - **JavaScript files** are minified using the service provided by [Toptal](https://www.toptal.com/developers/).
 
 This extension makes it quick and easy to optimize your files.
@@ -55,12 +55,14 @@ Minify and Save as New File through context menu
 
 ### CSS Minification (Local)
 
-CSS files are minified locally using the [clean-css](https://github.com/clean-css/clean-css) library:
+CSS files are minified locally using the [LightningCSS](https://lightningcss.dev/) library:
 
 - **No network required**: Works completely offline
 - **No file size limit**: Limited only by system memory
 - **No rate limiting**: Minify as many files as needed
-- **Level 2 optimizations**: Aggressive but safe optimizations including rule merging, property deduplication, and shorthand conversion
+- **~60x faster**: Rust-based parser provides extremely fast minification
+- **Modern CSS support**: Full support for `@starting-style`, CSS Nesting, Color Level 5, and other modern CSS features
+- **Smart optimizations**: Rule merging, property deduplication, shorthand conversion, color optimization, and more
 
 ### JavaScript Minification (Remote)
 
@@ -71,7 +73,7 @@ JavaScript files use [Toptal's minification API](https://www.toptal.com/develope
 - **Network required**: Internet connection needed
 - **Content type**: `application/x-www-form-urlencoded`
 
-> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local clean-css library for improved reliability and offline support.
+> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local LightningCSS library for improved reliability, offline support, and modern CSS feature compatibility.
 
 **Enhanced Error Messages:**
 

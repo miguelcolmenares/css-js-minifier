@@ -4,7 +4,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import assert from "assert";
 import { setTimeout } from "timers";
-import { t } from "../utils/l10nHelper";
+import { t } from "@/utils/l10nHelper";
 
 /**
  * Rate limiting configuration for Toptal API tests
@@ -112,6 +112,8 @@ async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]): Promis
 const cssMinifiedContent = "p{color:red}";
 const jsMinifiedContent =
 	'function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
+// Expected minified content for @starting-style CSS (issue #104)
+const startingStyleMinifiedContent = "dialog{opacity:0;transition:opacity .5s}dialog[open]{opacity:1}@starting-style{dialog[open]{opacity:0}}";
 // Define prefixes for new files
 	const prefixes = [".min", "-min", ".compressed", "-compressed", ".minified", "-minified"];
 
@@ -136,8 +138,10 @@ suite("JS & CSS Minifier Test Suite", function () {
 	this.afterAll(async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
 		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
+		const startingStyleUri = vscode.Uri.file(path.join(__dirname, "fixtures", "starting-style.css"));
 		await deleteGeneratedFiles(cssUri, prefixes);
 		await deleteGeneratedFiles(jsUri, prefixes);
+		await deleteGeneratedFiles(startingStyleUri, prefixes);
 	});
 
 	// Test for minifying a CSS file
@@ -148,6 +152,18 @@ suite("JS & CSS Minifier Test Suite", function () {
 		await vscode.commands.executeCommand("extension.minify");
 		const minifiedContent = cssDocument.getText();
 		assert.strictEqual(minifiedContent, cssMinifiedContent);
+	});
+
+	// Test for minifying CSS with @starting-style at-rule (issue #104)
+	test("Minify CSS with @starting-style at-rule", async function () {
+		const startingStyleUri = vscode.Uri.file(path.join(__dirname, "fixtures", "starting-style.css"));
+		const startingStyleDocument = await vscode.workspace.openTextDocument(startingStyleUri);
+		await vscode.window.showTextDocument(startingStyleDocument);
+		await vscode.commands.executeCommand("extension.minify");
+		const minifiedContent = startingStyleDocument.getText();
+		assert.strictEqual(minifiedContent, startingStyleMinifiedContent);
+		// Verify @starting-style is preserved (this was broken in clean-css)
+		assert(minifiedContent.includes("@starting-style"), "@starting-style at-rule should be preserved");
 	});
 
 	// Test for minifying a JS file
@@ -496,10 +512,12 @@ suite("Configuration Test Suite", async function () {
 		const cssUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.css"));
 		const jsUri = vscode.Uri.file(path.join(__dirname, "fixtures", "test.js"));
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, "fixtures", "nth-child-test.css"));
+		const startingStyleUri = vscode.Uri.file(path.join(__dirname, "fixtures", "starting-style.css"));
 		
 		await deleteGeneratedFiles(cssUri, prefixes);
 		await deleteGeneratedFiles(jsUri, prefixes);
 		await deleteGeneratedFiles(nthChildUri, prefixes);
+		await deleteGeneratedFiles(startingStyleUri, prefixes);
 		
 		// Also clean up any extra minified files that might have been created
 		const fixturesDir = path.join(__dirname, "fixtures");
@@ -530,7 +548,7 @@ suite("Configuration Test Suite", async function () {
 		const outFixturesDir = path.join(__dirname, "fixtures");
 		
 		// Copy fresh fixtures from source to restore original content
-		const fixturesToRestore = ["test.css", "test.js", "nth-child-test.css"];
+		const fixturesToRestore = ["test.css", "test.js", "nth-child-test.css", "starting-style.css"];
 		for (const fixture of fixturesToRestore) {
 			const srcPath = path.join(srcFixturesDir, fixture);
 			const outPath = path.join(outFixturesDir, fixture);

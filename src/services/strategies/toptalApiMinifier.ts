@@ -13,15 +13,15 @@
 /* global AbortController, Response, setTimeout, clearTimeout */
 
 import * as vscode from "vscode";
-import { t } from "../../utils/l10nHelper";
-import { MinificationResult } from "../../types";
+import { t } from "@/utils/l10nHelper";
+import { MinificationResult } from "@/types";
 import { 
 	TOPTAL_JS_API, 
 	HTTP_REQUEST_CONFIG, 
 	API_TIMEOUT_MS, 
 	MAX_FILE_SIZE_BYTES,
 	calculateStats 
-} from "../../lib";
+} from "@/lib";
 
 /**
  * Minifies JavaScript code using the Toptal minification API.

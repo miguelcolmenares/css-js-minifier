@@ -23,12 +23,12 @@
  */
 
 import * as vscode from "vscode";
-import { t } from "../utils/l10nHelper";
-import { MinificationResult } from "../types";
+import { t } from "@/utils/l10nHelper";
+import { MinificationResult } from "@/types";
 import { minifyCss, minifyJavaScript } from "./strategies";
 
 // Re-export types for backward compatibility
-export { MinificationResult, MinificationStats } from "../types";
+export { MinificationResult, MinificationStats } from "@/types";
 
 /**
  * Minifies CSS or JavaScript code using the appropriate strategy.

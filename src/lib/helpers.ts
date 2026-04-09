@@ -10,7 +10,7 @@
  * @since 1.2.0
  */
 
-import { MinificationStats } from "../types";
+import { MinificationStats } from "@/types";
 import { BYTES_PER_KB } from "./constants";
 
 /**
