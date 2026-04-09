@@ -4,6 +4,8 @@ out/**
 node_modules/**
 !node_modules/lightningcss/**
 !node_modules/lightningcss-*/**
+!node_modules/oxc-minify/**
+!node_modules/@oxc-minify/**
 src/**
 .gitignore
 .yarnrc

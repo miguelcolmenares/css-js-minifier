@@ -29,6 +29,7 @@ The extension uses two separate translation systems:
 #### 1. Package-Level Translations (`package.nls.*.json`)
 
 Used for static contributions in `package.json`:
+
 - Command titles
 - Configuration section titles
 - Configuration setting descriptions
@@ -39,6 +40,7 @@ Used for static contributions in `package.json`:
 **Usage in package.json:** `%key%` syntax
 
 **Example:**
+
 ```json
 // package.json
 {
@@ -64,6 +66,7 @@ Used for static contributions in `package.json`:
 #### 2. Runtime Message Bundles (`l10n/bundle.l10n.*.json`)
 
 Used for dynamic messages in TypeScript code:
+
 - Error messages
 - Success notifications
 - Validation messages
@@ -74,6 +77,7 @@ Used for dynamic messages in TypeScript code:
 **Usage in code:** `l10n.t('key', ...args)`
 
 **Example:**
+
 ```typescript
 // TypeScript code
 import * as l10n from '@vscode/l10n';
@@ -158,15 +162,18 @@ l10n.t('minificationService.error.apiError', 'CSS Minifier', '429', 'Too Many Re
 Three main modules were updated to use l10n:
 
 **`src/utils/validators.ts`**
+
 - 2 messages internationalized
 - File type validation errors
 - Content length validation errors
 
 **`src/services/fileService.ts`**
+
 - 2 messages internationalized
 - Success notifications for file operations
 
 **`src/services/minificationService.ts`**
+
 - 13 messages internationalized
 - API error messages
 - Network error messages
@@ -199,6 +206,7 @@ vscode.window.showErrorMessage(
 The extension includes comprehensive i18n tests in `src/test/i18n.test.ts`:
 
 **Test Coverage:**
+
 1. **File Existence**: Verify all translation files exist
 2. **JSON Validity**: Ensure all files are valid JSON
 3. **Key Consistency**: All languages have the same keys
@@ -208,6 +216,7 @@ The extension includes comprehensive i18n tests in `src/test/i18n.test.ts`:
 7. **Translation Quality**: No untranslated English text in other languages
 
 **Running i18n Tests:**
+
 ```bash
 # Run all i18n tests
 npm run pretest
@@ -246,6 +255,7 @@ Create `package.nls.it.json` in the root directory with all 13 keys:
 ```
 
 **Key Points:**
+
 - Must have exactly 13 keys (same as other languages)
 - Keys must match exactly (case-sensitive)
 - Use native language translations
@@ -278,6 +288,7 @@ Create `l10n/bundle.l10n.it.json` with all 17 runtime message keys:
 ```
 
 **Critical Requirements:**
+
 - Must have exactly 17 keys
 - Preserve all placeholders: `{0}`, `{1}`, `{2}` in correct positions
 - Maintain professional tone suitable for error messages
@@ -346,6 +357,7 @@ npx vscode-test --grep "Internationalization"
 ```
 
 **Expected Results:**
+
 - ✅ All language files exist
 - ✅ All language files are valid JSON
 - ✅ All language files have the same keys
@@ -375,6 +387,7 @@ npx vscode-test --grep "Internationalization"
 #### Step 7: Update Documentation
 
 Update the language support table in:
+
 - `README.md` - Add Italian flag and name
 - `docs/INTERNATIONALIZATION.md` - Add to supported languages table
 - `.github/copilot-instructions.md` - Add to language list
@@ -402,16 +415,19 @@ Update the language support table in:
 ### Translation Resources
 
 **Professional Translation Services:**
-- Crowdin (https://crowdin.com/)
-- Lokalise (https://lokalise.com/)
-- POEditor (https://poeditor.com/)
+
+- Crowdin (<https://crowdin.com/>)
+- Lokalise (<https://lokalise.com/>)
+- POEditor (<https://poeditor.com/>)
 
 **Terminology Databases:**
-- Microsoft Terminology: https://www.microsoft.com/en-us/language
-- Apple Style Guide: https://help.apple.com/applestyleguide/
+
+- Microsoft Terminology: <https://www.microsoft.com/en-us/language>
+- Apple Style Guide: <https://help.apple.com/applestyleguide/>
 - Google Developer Documentation Style Guide
 
 **Community Translation:**
+
 - Request translations in GitHub issues
 - Accept pull requests from native speakers
 - Use VS Code's built-in language packs as reference
@@ -437,11 +453,13 @@ Update the language support table in:
 ## Language Selection
 
 VS Code automatically selects the appropriate language based on:
+
 1. User's VS Code display language setting (`locale`)
 2. System locale if VS Code language not explicitly set
 3. Falls back to English if no matching translation exists
 
 Users can change their VS Code language:
+
 1. Open Command Palette (Ctrl/Cmd+Shift+P)
 2. Type "Configure Display Language"
 3. Select desired language
@@ -474,19 +492,23 @@ Users can change their VS Code language:
 When updating or modifying existing translations:
 
 #### Step 1: Identify Changed Messages
+
 ```bash
 # Compare translation keys between versions
 git diff v1.0.0..HEAD -- package.nls.json l10n/bundle.l10n.json
 ```
 
 #### Step 2: Update All Language Files
+
 For each changed key:
+
 1. Update English translation first as the reference
 2. Update all other language files (es, fr, de, pt-br, ja, zh-cn)
 3. Preserve parameter placeholders ({0}, {1}, etc.)
 4. Maintain consistent terminology
 
 #### Step 3: Verify Changes
+
 ```bash
 # Run i18n test suite
 npm run compile-tests
@@ -499,6 +521,7 @@ done
 ```
 
 #### Step 4: Test in VS Code
+
 1. Change VS Code display language to each supported language
 2. Test all commands and error scenarios
 3. Verify messages display correctly with proper formatting
@@ -507,6 +530,7 @@ done
 #### Example Migration
 
 **Before (v1.0.0):**
+
 ```json
 // l10n/bundle.l10n.json
 {
@@ -515,6 +539,7 @@ done
 ```
 
 **After (v1.1.0):**
+
 ```json
 // l10n/bundle.l10n.json
 {
@@ -523,6 +548,7 @@ done
 ```
 
 **Migration checklist:**
+
 - [ ] Update English bundle.l10n.json
 - [ ] Update all 6 other language bundles
 - [ ] Run i18n tests
@@ -542,13 +568,16 @@ done
 **Symptom:** Extension shows English messages even though VS Code is set to another language.
 
 **Possible Causes:**
+
 1. **Missing Translation File**
+
    ```bash
    # Verify all translation files exist
    ls -1 package.nls*.json l10n/bundle.l10n*.json
    ```
-   
+
 2. **Invalid JSON in Translation File**
+
    ```bash
    # Validate JSON syntax for each language
    for file in package.nls*.json l10n/bundle.l10n*.json; do
@@ -569,6 +598,7 @@ done
    - Ensure translation file matches exact locale code
 
 **Solution:**
+
 ```bash
 # Run i18n test suite to identify issues
 npm run compile-tests
@@ -580,7 +610,9 @@ npx vscode-test --grep "Internationalization"
 **Symptom:** Extension crashes or shows `[Missing translation]` errors.
 
 **Possible Causes:**
+
 1. **Key Mismatch Between Files**
+
    ```bash
    # Compare keys across all languages
    diff <(jq -r 'keys[]' package.nls.json | sort) \
@@ -588,6 +620,7 @@ npx vscode-test --grep "Internationalization"
    ```
 
 2. **Typo in l10n.t() Call**
+
    ```typescript
    // Wrong
    l10n.t('validators.fileType.unsupported')
@@ -597,6 +630,7 @@ npx vscode-test --grep "Internationalization"
    ```
 
 **Solution:**
+
 - Run i18n tests to verify key consistency
 - Check for typos in source code l10n.t() calls
 - Ensure all translation files have identical keys
@@ -606,7 +640,9 @@ npx vscode-test --grep "Internationalization"
 **Symptom:** Messages show `{0}` or `{1}` instead of actual values.
 
 **Possible Causes:**
+
 1. **Missing Parameters in l10n.t() Call**
+
    ```typescript
    // Wrong - missing parameter
    l10n.t('validators.fileType.unsupported')
@@ -616,6 +652,7 @@ npx vscode-test --grep "Internationalization"
    ```
 
 2. **Parameter Order Mismatch**
+
    ```typescript
    // Translation: "File {0} is too large: {1}MB"
    
@@ -627,6 +664,7 @@ npx vscode-test --grep "Internationalization"
    ```
 
 **Solution:**
+
 - Always pass required parameters to l10n.t()
 - Ensure parameter order matches placeholders in translation
 - Test with actual values, not just in development
@@ -636,6 +674,7 @@ npx vscode-test --grep "Internationalization"
 **Symptom:** Extension fails to activate or VS Code shows error.
 
 **Possible Causes:**
+
 1. **Syntax Error in JSON Files**
    - Missing commas between entries
    - Unescaped quotes in translations
@@ -646,6 +685,7 @@ npx vscode-test --grep "Internationalization"
    - Special characters must be properly encoded
 
 **Solution:**
+
 ```bash
 # Validate all JSON files
 npm run lint
@@ -663,17 +703,20 @@ npm run pretest
 **Symptom:** Translations are technically correct but sound unnatural or confusing.
 
 **Common Issues:**
+
 1. **Literal Translation**: Translated word-by-word without considering context
 2. **Missing Cultural Context**: Technical terms that don't translate directly
 3. **Inconsistent Terminology**: Same concept translated differently across messages
 
 **Best Practices:**
+
 - Use professional translators familiar with technical content
 - Maintain a glossary of technical terms for consistency
 - Have native speakers review translations for natural phrasing
 - Consider regional differences (e.g., European vs. Latin American Spanish)
 
 **Resources for Quality Translations:**
+
 - Microsoft Terminology Database
 - Apple Localization Guidelines
 - Google Developer Style Guides
@@ -683,10 +726,12 @@ npm run pretest
 **Symptom:** Extension works in development but not after packaging.
 
 **Possible Causes:**
+
 - Translation files not included in webpack config
 - `.vscodeignore` excluding translation files
 
 **Solution:**
+
 ```javascript
 // webpack.config.cjs - ensure l10n is included
 module.exports = {
@@ -698,6 +743,7 @@ module.exports = {
 ```
 
 Verify `.vscodeignore` doesn't exclude translation files:
+
 ```bash
 # Check what will be packaged
 vsce ls
@@ -708,12 +754,15 @@ vsce ls
 **Symptom:** Extension activation is slower after adding translations.
 
 **Analysis:**
+
 - Translation files are loaded once at activation
 - Each bundle is ~2KB, total ~14KB for all languages
 - This should have negligible impact (<50ms)
 
 **If Performance Degrades:**
+
 1. **Check Bundle Sizes**
+
    ```bash
    du -h l10n/*.json package.nls*.json
    ```
@@ -725,6 +774,7 @@ vsce ls
    - Look for l10n-related bottlenecks
 
 3. **Verify Webpack Configuration**
+
    ```bash
    # Check bundle size
    npm run package
@@ -732,6 +782,7 @@ vsce ls
    ```
 
 **Solution:**
+
 - Ensure webpack is properly minifying translations
 - Verify l10n package is using VS Code's cached translations
 - Consider lazy loading for rare languages (advanced)
@@ -749,6 +800,7 @@ vsce ls
 ## Support
 
 For translation issues or requests for additional languages:
+
 - Open an issue on [GitHub](https://github.com/miguelcolmenares/css-js-minifier/issues)
 - Tag with `i18n` label
 - Provide language code and any specific translation concerns

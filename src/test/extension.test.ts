@@ -7,22 +7,22 @@ import { setTimeout } from 'timers';
 import { t } from '../utils/l10nHelper';
 
 /**
- * Rate limiting configuration for Toptal API tests
- * Toptal allows 30 requests per minute, so we need delays between tests and suites
+ * Rate limiting configuration for tests
+ * Delays are used for UI stability and file watcher cleanup
  */
 const RATE_LIMIT_CONFIG = {
-	// Delay between tests in milliseconds (3 seconds)
-	TEST_DELAY_MS: 3000,
+	// Delay between tests in milliseconds (reduced - no API calls needed)
+	TEST_DELAY_MS: 500,
 	// Maximum retries for failed requests
 	MAX_RETRIES: 3,
-	// Timeout for individual tests (5 seconds - realistic for API calls)
+	// Timeout for individual tests (reduced - all minification is local)
 	TEST_TIMEOUT_MS: 5000,
 	// Timeout for config tests (30 seconds)
 	TEST_TIMEOUT_CONFIG_MS: 30000,
 	// Delay between configuration tests (increased for CI stability)
 	CONFIG_TEST_DELAY_MS: 5000,
-	// Delay between test suites (30 seconds to ensure API rate limit compliance while keeping CI under 5min)
-	SUITE_DELAY_MS: 30000,
+	// Delay between test suites (reduced - no API rate limit needed)
+	SUITE_DELAY_MS: 5000,
 	// Small delay for file watcher cleanup (100ms)
 	FILE_WATCHER_CLEANUP_MS: 100,
 	// Delay for message processing (300ms)
@@ -40,8 +40,8 @@ const RATE_LIMIT_CONFIG = {
 };
 
 /**
- * Adds a delay between tests to respect Toptal API rate limits (30 req/min)
- * @param ms - Delay in milliseconds (default: 3000ms)
+ * Adds a delay between tests for UI stability
+ * @param ms - Delay in milliseconds (default: 500ms)
  */
 async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): Promise<void> {
 	return new Promise((resolve) => {
@@ -113,7 +113,7 @@ async function deleteGeneratedFiles(uri: vscode.Uri, prefixes: string[]): Promis
 // Define expected minified content
 const cssMinifiedContent = 'p{color:red}';
 const jsMinifiedContent =
-	'function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}';
+	'function test(){for(var e=`Hello, World!`,t=``,n=0;n<e.length;n++)t+=String.fromCharCode(e.charCodeAt(n)+1);return t}';
 // Expected minified content for @starting-style CSS (issue #104)
 const startingStyleMinifiedContent =
 	'dialog{opacity:0;transition:opacity .5s}dialog[open]{opacity:1}@starting-style{dialog[open]{opacity:0}}';

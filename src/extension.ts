@@ -2,8 +2,9 @@
  * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
  *
  * This extension provides commands to minify CSS and JavaScript files.
- * CSS minification uses the local LightningCSS library (Rust-based, ~60x faster),
- * while JavaScript uses the Toptal minification API. It supports both in-place
+ * CSS minification uses the local LightningCSS library (Rust-based),
+ * while JavaScript uses the local oxc-minify library (Rust-based).
+ * Both work fully offline with no API dependencies. It supports both in-place
  * minification and creating new minified files with configurable prefixes.
  *
  * @author Miguel Colmenares

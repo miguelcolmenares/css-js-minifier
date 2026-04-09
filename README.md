@@ -10,9 +10,9 @@
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 
 - **CSS files** are minified locally using [LightningCSS](https://lightningcss.dev/), an extremely fast Rust-based CSS parser providing offline minification with full support for modern CSS features like `@starting-style`, CSS Nesting, and Color Level 5.
-- **JavaScript files** are minified using the service provided by [Toptal](https://www.toptal.com/developers/).
+- **JavaScript files** are minified locally using [oxc-minify](https://github.com/nicolo-ribaudo/oxc-minify), a fast Rust-based JavaScript minifier from the Oxc project.
 
-This extension makes it quick and easy to optimize your files.
+Both minification engines are Rust-based, work fully offline, and require no API dependencies.
 
 ## VS Code Compatibility Testing
 
@@ -43,15 +43,15 @@ Minify and Save as New File through context menu
 - **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
 - **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
 - **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
-- **File Size Validation**: Automatically validates files are under the 5MB API limit before processing.
-- **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors, rate limits, and connectivity issues.
+- **Fully Offline**: Both CSS and JS minification work locally with no network dependency.
+- **Enhanced Error Handling**: Clear, actionable error messages for various failure scenarios including syntax errors and invalid content.
 
 ## Available Commands
 
 - `Minify`: Minifies the current CSS or JS file and overwrites its content.
 - `Minify and Save as New File`: Minifies the current CSS or JS file and saves the result to a new file with the `.min` suffix.
 
-## API Limitations & Error Handling
+## Minification Engines & Error Handling
 
 ### CSS Minification (Local)
 
@@ -60,27 +60,23 @@ CSS files are minified locally using the [LightningCSS](https://lightningcss.dev
 - **No network required**: Works completely offline
 - **No file size limit**: Limited only by system memory
 - **No rate limiting**: Minify as many files as needed
-- **~60x faster**: Rust-based parser provides extremely fast minification
+- **Extremely fast**: Rust-based parser provides lightning-fast minification
 - **Modern CSS support**: Full support for `@starting-style`, CSS Nesting, Color Level 5, and other modern CSS features
 - **Smart optimizations**: Rule merging, property deduplication, shorthand conversion, color optimization, and more
 
-### JavaScript Minification (Remote)
+### JavaScript Minification (Local)
 
-JavaScript files use [Toptal's minification API](https://www.toptal.com/developers/) with the following limitations:
+JavaScript files are minified locally using the [oxc-minify](https://github.com/nicolo-ribaudo/oxc-minify) library:
 
-- **Maximum file size**: 5MB per request
-- **Rate limit**: 30 requests per minute
-- **Network required**: Internet connection needed
-- **Content type**: `application/x-www-form-urlencoded`
+- **No network required**: Works completely offline
+- **No file size limit**: Limited only by system memory
+- **No rate limiting**: Minify as many files as needed
+- **Extremely fast**: Rust-based minifier from the Oxc project (part of Voidzero ecosystem)
+- **Modern JS support**: Variable mangling, dead code elimination, constant folding, statement joining
 
-> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local LightningCSS library for improved reliability, offline support, and modern CSS feature compatibility.
+**Error Messages:**
 
-**Enhanced Error Messages:**
-
-- **File too large**: Clear indication when files exceed 5MB limit with current file size
 - **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax
-- **Rate limiting**: Informative message when hitting the 30 requests/minute limit
-- **Network issues**: Specific guidance for connectivity problems vs. API timeouts
 - **Invalid content**: Helpful feedback for unsupported file types or empty files
 
 ## Configuration
@@ -97,11 +93,11 @@ To adjust these settings, add the following lines to your `settings.json` file:
 
 ```json
 {
-	"css-js-minifier.minifyOnSave": true,
-	"css-js-minifier.minifyInNewFile": true,
-	"css-js-minifier.minifiedNewFilePrefix": ".min",
-	"css-js-minifier.autoOpenNewFile": false,
-	"css-js-minifier.showSizeReduction": true
+ "css-js-minifier.minifyOnSave": true,
+ "css-js-minifier.minifyInNewFile": true,
+ "css-js-minifier.minifiedNewFilePrefix": ".min",
+ "css-js-minifier.autoOpenNewFile": false,
+ "css-js-minifier.showSizeReduction": true
 }
 ```
 
@@ -176,10 +172,8 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 For detailed technical documentation, see the [`docs/`](docs/) directory:
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
-- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions
-- **[API Integration](docs/TOPTAL-API.md)** - Toptal API implementation details
+- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and testing workflows
 - **[Internationalization](docs/INTERNATIONALIZATION.md)** - Multi-language support and translation architecture
-- **[Publishing Workflow](docs/TEST-RATE-LIMITING.md)** - Release and deployment processes
 
 ## Contributing
 

@@ -6,17 +6,6 @@
 	"fileService.inPlace.success": "{0} foi minificado com sucesso.",
 	"fileService.inPlace.successWithStats": "{0} foi minificado com sucesso (Tamanho reduzido de {1} para {2}, {3}% de redução)",
 	"minificationService.fileType.unsupported": "Tipo de arquivo não suportado para minificação: {0}",
-	"minificationService.fileSize.tooLarge": "Arquivo muito grande: {0}MB. O tamanho máximo permitido é 5MB. Por favor, reduza o tamanho do arquivo e tente novamente.",
-	"minificationService.error.missingInput": "Parâmetro de entrada ausente. Por favor, certifique-se de que o arquivo tenha conteúdo.",
-	"minificationService.error.invalidMethod": "Método de requisição inválido. Este é um erro interno, por favor tente novamente.",
-	"minificationService.error.invalidContentType": "Tipo de conteúdo inválido. Este é um erro interno, por favor tente novamente.",
-	"minificationService.error.fileTooLarge": "Arquivo muito grande. O tamanho máximo permitido é 5MB. Por favor, reduza o tamanho do arquivo.",
-	"minificationService.error.invalidSyntax": "Sintaxe {0} inválida. Por favor, verifique seu código em busca de erros de sintaxe.",
-	"minificationService.error.rateLimitExceeded": "Muitas requisições. O limite da API é 30 requisições por minuto. Por favor, aguarde e tente novamente.",
-	"minificationService.error.apiError": "Erro da API {0} ({1}): {2}",
-	"minificationService.error.invalidResponse": "Formato de resposta inválido da API de minificação",
-	"minificationService.error.timeout": "Tempo limite de minificação: O serviço {0} está demorando mais do que o esperado. Por favor, verifique sua conexão com a internet e tente novamente.",
-	"minificationService.error.network": "Erro de rede: Não foi possível conectar ao serviço de minificação. Por favor, verifique sua conexão com a internet e tente novamente.",
-	"minificationService.error.generic": "Falha ao minificar arquivo {0}: {1}",
-	"minificationService.error.cssLocal": "Erro de minificação CSS: {0}"
+	"minificationService.error.cssLocal": "Erro de minificação CSS: {0}",
+	"minificationService.error.jsLocal": "Erro de minificação JavaScript: {0}"
 }

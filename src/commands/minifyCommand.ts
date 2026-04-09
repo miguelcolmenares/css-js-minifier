@@ -80,7 +80,7 @@ async function processDocument(
 	}
 
 	// Call the minification service to process the content
-	const result = await getMinifiedText(text, fileType);
+	const result = getMinifiedText(text, fileType);
 	if (!result) {
 		// Minification failed, error already reported to user
 		return;
@@ -250,7 +250,7 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 				// For in-place minification, track this document to prevent recursion
 				processingDocuments.add(documentUri);
 				try {
-					const result = await getMinifiedText(text, fileType);
+					const result = getMinifiedText(text, fileType);
 					if (result) {
 						const { minifiedText, stats } = result;
 						// Replace content and save (suppress notification for auto-save to avoid duplicates)

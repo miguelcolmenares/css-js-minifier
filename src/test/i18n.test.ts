@@ -68,20 +68,12 @@ const EXPECTED_BUNDLE_KEYS = [
 	'validators.fileType.unsupported',
 	'validators.content.empty',
 	'fileService.newFile.success',
+	'fileService.newFile.successWithStats',
 	'fileService.inPlace.success',
+	'fileService.inPlace.successWithStats',
 	'minificationService.fileType.unsupported',
-	'minificationService.fileSize.tooLarge',
-	'minificationService.error.missingInput',
-	'minificationService.error.invalidMethod',
-	'minificationService.error.invalidContentType',
-	'minificationService.error.fileTooLarge',
-	'minificationService.error.invalidSyntax',
-	'minificationService.error.rateLimitExceeded',
-	'minificationService.error.apiError',
-	'minificationService.error.invalidResponse',
-	'minificationService.error.timeout',
-	'minificationService.error.network',
-	'minificationService.error.generic',
+	'minificationService.error.cssLocal',
+	'minificationService.error.jsLocal',
 ];
 
 suite('Internationalization (i18n) Test Suite', function () {
@@ -232,13 +224,12 @@ suite('Internationalization (i18n) Test Suite', function () {
 					'validators.fileType.unsupported', // {0}
 					'validators.content.empty', // {0}
 					'fileService.newFile.success', // {0}
+					'fileService.newFile.successWithStats', // {0}, {1}, {2}, {3}
 					'fileService.inPlace.success', // {0}
+					'fileService.inPlace.successWithStats', // {0}, {1}, {2}, {3}
 					'minificationService.fileType.unsupported', // {0}
-					'minificationService.fileSize.tooLarge', // {0}
-					'minificationService.error.invalidSyntax', // {0}
-					'minificationService.error.apiError', // {0}, {1}, {2}
-					'minificationService.error.timeout', // {0}
-					'minificationService.error.generic', // {0}, {1}
+					'minificationService.error.cssLocal', // {0}
+					'minificationService.error.jsLocal', // {0}
 				];
 
 				keysWithPlaceholders.forEach((key) => {

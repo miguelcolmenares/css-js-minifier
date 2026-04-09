@@ -1,1 +1,1 @@
-function test(){for(var r="Hello, World!",o="",e=0;e<r.length;e++)o+=String.fromCharCode(r.charCodeAt(e)+1);return o}
+function test(){for(var e=`Hello, World!`,t=``,n=0;n<e.length;n++)t+=String.fromCharCode(e.charCodeAt(n)+1);return t}

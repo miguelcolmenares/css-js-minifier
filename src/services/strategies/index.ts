@@ -3,7 +3,7 @@
  *
  * This module exports all available minification strategies:
  * - Local CSS minification using LightningCSS (Rust-based)
- * - Remote JavaScript minification using Toptal API
+ * - Local JavaScript minification using oxc-minify (Rust-based)
  *
  * @author Miguel Colmenares
  * @version 1.3.0
@@ -11,15 +11,15 @@
  *
  * @example
  * ```typescript
- * import { minifyCss, minifyJavaScript } from './strategies';
+ * import { minifyCss, minifyJs } from './strategies';
  *
  * // Local CSS minification
  * const cssResult = minifyCss(cssCode);
  *
- * // Remote JavaScript minification
- * const jsResult = await minifyJavaScript(jsCode);
+ * // Local JavaScript minification
+ * const jsResult = minifyJs(jsCode);
  * ```
  */
 
 export { minifyCss } from './localCssMinifier';
-export { minifyJavaScript } from './toptalApiMinifier';
+export { minifyJs } from './localJsMinifier';
