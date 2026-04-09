@@ -37,12 +37,12 @@ export async function loadL10nBundle(extensionPath: string): Promise<void> {
 export function t(key: string, ...args: (string | number | boolean)[]): string {
 	// Use manual fallback with our bundle
 	let message = l10nBundle[key] || key;
-	
+
 	// Replace {0}, {1}, etc. with actual values
 	args.forEach((arg, index) => {
 		message = message.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg));
 	});
-	
+
 	return message;
 }
 
@@ -55,6 +55,6 @@ export function getL10nStatus() {
 		nativeBundle: vscode.l10n.bundle,
 		nativeUri: vscode.l10n.uri,
 		fallbackKeys: Object.keys(l10nBundle).length,
-		fallbackBundle: l10nBundle
+		fallbackBundle: l10nBundle,
 	};
 }

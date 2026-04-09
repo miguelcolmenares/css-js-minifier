@@ -3,9 +3,23 @@
 		"module": "Node16",
 		"target": "ES2022",
 		"lib": ["ES2022"],
+		"types": ["node", "mocha"],
 		"sourceMap": true,
 		"rootDir": "src",
 		"outDir": "out",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@/lib": ["./src/lib"],
+			"@/lib/*": ["./src/lib/*"],
+			"@/types": ["./src/types"],
+			"@/types/*": ["./src/types/*"],
+			"@/utils": ["./src/utils"],
+			"@/utils/*": ["./src/utils/*"],
+			"@/services": ["./src/services"],
+			"@/services/*": ["./src/services/*"],
+			"@/commands": ["./src/commands"],
+			"@/commands/*": ["./src/commands/*"]
+		},
 		"strict": true /* enable all strict type-checking options */
 		/* Additional Checks */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */

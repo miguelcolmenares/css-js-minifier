@@ -1,19 +1,19 @@
 /**
  * @fileoverview Internationalization (i18n) test suite for the CSS & JS Minifier extension.
- * 
+ *
  * This test suite verifies that:
  * 1. All translation files exist and are properly formatted
  * 2. All translation keys are consistent across languages
  * 3. Message interpolation works correctly
  * 4. Language files load properly in VS Code
- * 
+ *
  * @author Miguel Colmenares
  * @since 1.1.0
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as assert from "assert";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as assert from 'assert';
 
 /**
  * Supported languages for the extension
@@ -25,7 +25,7 @@ const SUPPORTED_LANGUAGES = [
 	{ code: 'de', name: 'German', file: 'package.nls.de.json' },
 	{ code: 'pt-br', name: 'Brazilian Portuguese', file: 'package.nls.pt-br.json' },
 	{ code: 'ja', name: 'Japanese', file: 'package.nls.ja.json' },
-	{ code: 'zh-cn', name: 'Chinese Simplified', file: 'package.nls.zh-cn.json' }
+	{ code: 'zh-cn', name: 'Chinese Simplified', file: 'package.nls.zh-cn.json' },
 ];
 
 /**
@@ -38,7 +38,7 @@ const RUNTIME_BUNDLES = [
 	{ code: 'de', name: 'German', file: 'bundle.l10n.de.json' },
 	{ code: 'pt-br', name: 'Brazilian Portuguese', file: 'bundle.l10n.pt-br.json' },
 	{ code: 'ja', name: 'Japanese', file: 'bundle.l10n.ja.json' },
-	{ code: 'zh-cn', name: 'Chinese Simplified', file: 'bundle.l10n.zh-cn.json' }
+	{ code: 'zh-cn', name: 'Chinese Simplified', file: 'bundle.l10n.zh-cn.json' },
 ];
 
 /**
@@ -58,7 +58,7 @@ const EXPECTED_PACKAGE_KEYS = [
 	'configuration.minifiedNewFilePrefix.enumDescriptions.5',
 	'configuration.minifiedNewFilePrefix.enumDescriptions.6',
 	'configuration.autoOpenNewFile',
-	'configuration.showSizeReduction'
+	'configuration.showSizeReduction',
 ];
 
 /**
@@ -81,15 +81,15 @@ const EXPECTED_BUNDLE_KEYS = [
 	'minificationService.error.invalidResponse',
 	'minificationService.error.timeout',
 	'minificationService.error.network',
-	'minificationService.error.generic'
+	'minificationService.error.generic',
 ];
 
-suite("Internationalization (i18n) Test Suite", function () {
+suite('Internationalization (i18n) Test Suite', function () {
 	const workspaceRoot = path.resolve(__dirname, '../../');
 
-	suite("Package.nls Files (Configuration & Commands)", function () {
-		test("All language files exist", function () {
-			SUPPORTED_LANGUAGES.forEach(lang => {
+	suite('Package.nls Files (Configuration & Commands)', function () {
+		test('All language files exist', function () {
+			SUPPORTED_LANGUAGES.forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				assert.ok(
 					fs.existsSync(filePath),
@@ -98,11 +98,11 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("All language files are valid JSON", function () {
-			SUPPORTED_LANGUAGES.forEach(lang => {
+		test('All language files are valid JSON', function () {
+			SUPPORTED_LANGUAGES.forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				const content = fs.readFileSync(filePath, 'utf8');
-				
+
 				try {
 					JSON.parse(content);
 				} catch (error) {
@@ -111,76 +111,56 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("All language files have the same keys", function () {
+		test('All language files have the same keys', function () {
 			// Load the English file as reference
 			const englishPath = path.join(workspaceRoot, 'package.nls.json');
 			const englishContent = JSON.parse(fs.readFileSync(englishPath, 'utf8'));
 			const englishKeys = Object.keys(englishContent).sort();
 
 			// Compare all other languages
-			SUPPORTED_LANGUAGES.slice(1).forEach(lang => {
+			SUPPORTED_LANGUAGES.slice(1).forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 				const keys = Object.keys(content).sort();
 
-				assert.deepStrictEqual(
-					keys,
-					englishKeys,
-					`${lang.name} translation file has different keys than English`
-				);
+				assert.deepStrictEqual(keys, englishKeys, `${lang.name} translation file has different keys than English`);
 			});
 		});
 
-		test("All expected configuration keys exist", function () {
-			SUPPORTED_LANGUAGES.forEach(lang => {
+		test('All expected configuration keys exist', function () {
+			SUPPORTED_LANGUAGES.forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-				
-				EXPECTED_PACKAGE_KEYS.forEach(key => {
-					assert.ok(
-						key in content,
-						`${lang.name} is missing key: ${key}`
-					);
-					assert.ok(
-						content[key].trim().length > 0,
-						`${lang.name} has empty value for key: ${key}`
-					);
+
+				EXPECTED_PACKAGE_KEYS.forEach((key) => {
+					assert.ok(key in content, `${lang.name} is missing key: ${key}`);
+					assert.ok(content[key].trim().length > 0, `${lang.name} has empty value for key: ${key}`);
 				});
 			});
 		});
 
-		test("All translation values are non-empty strings", function () {
-			SUPPORTED_LANGUAGES.forEach(lang => {
+		test('All translation values are non-empty strings', function () {
+			SUPPORTED_LANGUAGES.forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 				Object.entries(content).forEach(([key, value]) => {
-					assert.strictEqual(
-						typeof value,
-						'string',
-						`${lang.name} - Key '${key}' should be a string`
-					);
-					assert.ok(
-						(value as string).trim().length > 0,
-						`${lang.name} - Key '${key}' should not be empty`
-					);
+					assert.strictEqual(typeof value, 'string', `${lang.name} - Key '${key}' should be a string`);
+					assert.ok((value as string).trim().length > 0, `${lang.name} - Key '${key}' should not be empty`);
 				});
 			});
 		});
 	});
 
-	suite("Bundle.l10n Files (Runtime Messages)", function () {
+	suite('Bundle.l10n Files (Runtime Messages)', function () {
 		const l10nPath = path.join(workspaceRoot, 'l10n');
 
-		test("L10n directory exists", function () {
-			assert.ok(
-				fs.existsSync(l10nPath),
-				`L10n directory does not exist at: ${l10nPath}`
-			);
+		test('L10n directory exists', function () {
+			assert.ok(fs.existsSync(l10nPath), `L10n directory does not exist at: ${l10nPath}`);
 		});
 
-		test("All runtime bundle files exist", function () {
-			RUNTIME_BUNDLES.forEach(bundle => {
+		test('All runtime bundle files exist', function () {
+			RUNTIME_BUNDLES.forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				assert.ok(
 					fs.existsSync(filePath),
@@ -189,11 +169,11 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("All runtime bundle files are valid JSON", function () {
-			RUNTIME_BUNDLES.forEach(bundle => {
+		test('All runtime bundle files are valid JSON', function () {
+			RUNTIME_BUNDLES.forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = fs.readFileSync(filePath, 'utf8');
-				
+
 				try {
 					JSON.parse(content);
 				} catch (error) {
@@ -202,65 +182,48 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("All runtime bundle files have the same keys", function () {
+		test('All runtime bundle files have the same keys', function () {
 			// Load the English file as reference
 			const englishPath = path.join(l10nPath, 'bundle.l10n.json');
 			const englishContent = JSON.parse(fs.readFileSync(englishPath, 'utf8'));
 			const englishKeys = Object.keys(englishContent).sort();
 
 			// Compare all other languages
-			RUNTIME_BUNDLES.slice(1).forEach(bundle => {
+			RUNTIME_BUNDLES.slice(1).forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 				const keys = Object.keys(content).sort();
 
-				assert.deepStrictEqual(
-					keys,
-					englishKeys,
-					`${bundle.name} runtime bundle has different keys than English`
-				);
+				assert.deepStrictEqual(keys, englishKeys, `${bundle.name} runtime bundle has different keys than English`);
 			});
 		});
 
-		test("All expected runtime message keys exist", function () {
-			RUNTIME_BUNDLES.forEach(bundle => {
+		test('All expected runtime message keys exist', function () {
+			RUNTIME_BUNDLES.forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-				
-				EXPECTED_BUNDLE_KEYS.forEach(key => {
-					assert.ok(
-						key in content,
-						`${bundle.name} is missing runtime key: ${key}`
-					);
-					assert.ok(
-						content[key].trim().length > 0,
-						`${bundle.name} has empty value for runtime key: ${key}`
-					);
+
+				EXPECTED_BUNDLE_KEYS.forEach((key) => {
+					assert.ok(key in content, `${bundle.name} is missing runtime key: ${key}`);
+					assert.ok(content[key].trim().length > 0, `${bundle.name} has empty value for runtime key: ${key}`);
 				});
 			});
 		});
 
-		test("All runtime message values are non-empty strings", function () {
-			RUNTIME_BUNDLES.forEach(bundle => {
+		test('All runtime message values are non-empty strings', function () {
+			RUNTIME_BUNDLES.forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 				Object.entries(content).forEach(([key, value]) => {
-					assert.strictEqual(
-						typeof value,
-						'string',
-						`${bundle.name} - Key '${key}' should be a string`
-					);
-					assert.ok(
-						(value as string).trim().length > 0,
-						`${bundle.name} - Key '${key}' should not be empty`
-					);
+					assert.strictEqual(typeof value, 'string', `${bundle.name} - Key '${key}' should be a string`);
+					assert.ok((value as string).trim().length > 0, `${bundle.name} - Key '${key}' should not be empty`);
 				});
 			});
 		});
 
-		test("Runtime messages with placeholders use correct format", function () {
-			RUNTIME_BUNDLES.forEach(bundle => {
+		test('Runtime messages with placeholders use correct format', function () {
+			RUNTIME_BUNDLES.forEach((bundle) => {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
@@ -275,26 +238,23 @@ suite("Internationalization (i18n) Test Suite", function () {
 					'minificationService.error.invalidSyntax', // {0}
 					'minificationService.error.apiError', // {0}, {1}, {2}
 					'minificationService.error.timeout', // {0}
-					'minificationService.error.generic' // {0}, {1}
+					'minificationService.error.generic', // {0}, {1}
 				];
 
-				keysWithPlaceholders.forEach(key => {
+				keysWithPlaceholders.forEach((key) => {
 					const message = content[key];
-					assert.ok(
-						message.includes('{0}'),
-						`${bundle.name} - Key '${key}' should contain placeholder {0}`
-					);
+					assert.ok(message.includes('{0}'), `${bundle.name} - Key '${key}' should contain placeholder {0}`);
 				});
 			});
 		});
 	});
 
-	suite("VS Code Integration", function () {
-		test("Extension loads commands with localized titles", function () {
+	suite('VS Code Integration', function () {
+		test('Extension loads commands with localized titles', function () {
 			// Read package.json directly from filesystem for reliable testing
 			const packageJsonPath = path.join(workspaceRoot, 'package.json');
 			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-			
+
 			assert.ok(packageJson.contributes, 'Package.json missing contributes section');
 			assert.ok(packageJson.contributes.commands, 'Package.json missing commands');
 
@@ -308,14 +268,14 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("Extension configuration uses localized descriptions", function () {
+		test('Extension configuration uses localized descriptions', function () {
 			// Read package.json directly from filesystem for reliable testing
 			const packageJsonPath = path.join(workspaceRoot, 'package.json');
 			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-			
+
 			assert.ok(packageJson.contributes.configuration, 'Package.json missing configuration');
 			const config = packageJson.contributes.configuration;
-			
+
 			// Check that configuration title uses i18n key
 			assert.ok(
 				config.title.startsWith('%') && config.title.endsWith('%'),
@@ -332,22 +292,22 @@ suite("Internationalization (i18n) Test Suite", function () {
 		});
 	});
 
-	suite("Translation Quality", function () {
-		test("No translations contain only English text for non-English languages", function () {
+	suite('Translation Quality', function () {
+		test('No translations contain only English text for non-English languages', function () {
 			// Common English-only patterns that shouldn't appear in translations
 			const englishPatterns = [
 				/\bMinify this File\b/,
 				/\bMinify and Save as New File\b/,
 				/\bJS & CSS Minifier Tool Configuration\b/,
-				/\bMinify files automatically on save\b/
+				/\bMinify files automatically on save\b/,
 			];
 
-			SUPPORTED_LANGUAGES.slice(1).forEach(lang => {
+			SUPPORTED_LANGUAGES.slice(1).forEach((lang) => {
 				const filePath = path.join(workspaceRoot, lang.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 				Object.entries(content).forEach(([key, value]) => {
-					englishPatterns.forEach(pattern => {
+					englishPatterns.forEach((pattern) => {
 						assert.ok(
 							!pattern.test(value as string),
 							`${lang.name} - Key '${key}' appears to contain untranslated English text: '${value}'`
@@ -357,22 +317,22 @@ suite("Internationalization (i18n) Test Suite", function () {
 			});
 		});
 
-		test("Translations preserve placeholder format", function () {
+		test('Translations preserve placeholder format', function () {
 			// Load English bundle to get reference placeholders
 			const englishPath = path.join(workspaceRoot, 'l10n', 'bundle.l10n.json');
 			const englishContent = JSON.parse(fs.readFileSync(englishPath, 'utf8'));
 
-			RUNTIME_BUNDLES.slice(1).forEach(bundle => {
+			RUNTIME_BUNDLES.slice(1).forEach((bundle) => {
 				const filePath = path.join(workspaceRoot, 'l10n', bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 				Object.entries(englishContent).forEach(([key, englishValue]) => {
 					const translatedValue = content[key];
-					
+
 					// Check if English has placeholders
 					const placeholderMatches = (englishValue as string).match(/\{(\d+)\}/g);
 					if (placeholderMatches) {
-						placeholderMatches.forEach(placeholder => {
+						placeholderMatches.forEach((placeholder) => {
 							assert.ok(
 								(translatedValue as string).includes(placeholder),
 								`${bundle.name} - Key '${key}' is missing placeholder ${placeholder}`

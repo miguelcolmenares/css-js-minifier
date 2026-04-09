@@ -1,0 +1,17 @@
+# Build outputs
+dist/
+out/
+
+# Dependencies
+node_modules/
+
+# Package files
+*.vsix
+package-lock.json
+
+# Fixtures (preserve original formatting for tests)
+src/test/fixtures/
+
+# Generated files
+*.min.js
+*.min.css

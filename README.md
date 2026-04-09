@@ -3,27 +3,27 @@
 ![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/miguel-colmenares.css-js-minifier?style=flat-square)
 ![GitHub License](https://img.shields.io/github/license/miguelcolmenares/css-js-minifier?style=flat-square)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/master.yml?style=flat-square)
-[![CodeQL](https://github.com/miguelcolmenares/css-js-minifier/workflows/CodeQL/badge.svg)](https://github.com/miguelcolmenares/css-js-minifier/actions?query=workflow%3ACodeQL "Code quality workflow status")
+[![CodeQL](https://github.com/miguelcolmenares/css-js-minifier/workflows/CodeQL/badge.svg)](https://github.com/miguelcolmenares/css-js-minifier/actions?query=workflow%3ACodeQL 'Code quality workflow status')
 
 ## Description
 
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 
-- **CSS files** are minified locally using [clean-css](https://github.com/clean-css/clean-css), providing fast, offline minification with no network required.
+- **CSS files** are minified locally using [LightningCSS](https://lightningcss.dev/), an extremely fast Rust-based CSS parser providing offline minification with full support for modern CSS features like `@starting-style`, CSS Nesting, and Color Level 5.
 - **JavaScript files** are minified using the service provided by [Toptal](https://www.toptal.com/developers/).
 
 This extension makes it quick and easy to optimize your files.
 
 ## VS Code Compatibility Testing
 
-[![VS Code 1.109.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.109.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml "Minimum supported VS Code version - tested on all platforms")
-[![VS Code Stable Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-stable.yml?style=flat-square&label=VS%20Code%20Stable&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-stable.yml "Current stable VS Code version - tested on all platforms")
-[![VS Code Insiders Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-insiders.yml?style=flat-square&label=VS%20Code%20Insiders&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-insiders.yml "Pre-release VS Code version - tested on Ubuntu only")
+[![VS Code 1.109.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.109.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml 'Minimum supported VS Code version - tested on all platforms')
+[![VS Code Stable Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-stable.yml?style=flat-square&label=VS%20Code%20Stable&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-stable.yml 'Current stable VS Code version - tested on all platforms')
+[![VS Code Insiders Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-insiders.yml?style=flat-square&label=VS%20Code%20Insiders&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-insiders.yml 'Pre-release VS Code version - tested on Ubuntu only')
 
 This extension is thoroughly tested across multiple VS Code versions to ensure compatibility:
 
 - **1.109.0 (Minimum)**: Engine requirement baseline - tested on macOS, Ubuntu, and Windows
-- **Stable**: Current production release - tested on all platforms  
+- **Stable**: Current production release - tested on all platforms
 - **Insiders**: Pre-release builds - tested on Ubuntu for early compatibility validation
 
 ## Demo
@@ -55,28 +55,30 @@ Minify and Save as New File through context menu
 
 ### CSS Minification (Local)
 
-CSS files are minified locally using the [clean-css](https://github.com/clean-css/clean-css) library:
+CSS files are minified locally using the [LightningCSS](https://lightningcss.dev/) library:
 
 - **No network required**: Works completely offline
 - **No file size limit**: Limited only by system memory
 - **No rate limiting**: Minify as many files as needed
-- **Level 2 optimizations**: Aggressive but safe optimizations including rule merging, property deduplication, and shorthand conversion
+- **~60x faster**: Rust-based parser provides extremely fast minification
+- **Modern CSS support**: Full support for `@starting-style`, CSS Nesting, Color Level 5, and other modern CSS features
+- **Smart optimizations**: Rule merging, property deduplication, shorthand conversion, color optimization, and more
 
 ### JavaScript Minification (Remote)
 
 JavaScript files use [Toptal's minification API](https://www.toptal.com/developers/) with the following limitations:
 
 - **Maximum file size**: 5MB per request
-- **Rate limit**: 30 requests per minute  
+- **Rate limit**: 30 requests per minute
 - **Network required**: Internet connection needed
 - **Content type**: `application/x-www-form-urlencoded`
 
-> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local clean-css library for improved reliability and offline support.
+> **Note**: The Toptal CSS API was deprecated/discontinued in early 2026. CSS minification now uses the local LightningCSS library for improved reliability, offline support, and modern CSS feature compatibility.
 
 **Enhanced Error Messages:**
 
 - **File too large**: Clear indication when files exceed 5MB limit with current file size
-- **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax  
+- **Syntax errors**: Detailed error messages for invalid CSS/JavaScript syntax
 - **Rate limiting**: Informative message when hitting the 30 requests/minute limit
 - **Network issues**: Specific guidance for connectivity problems vs. API timeouts
 - **Invalid content**: Helpful feedback for unsupported file types or empty files
@@ -95,11 +97,11 @@ To adjust these settings, add the following lines to your `settings.json` file:
 
 ```json
 {
- "css-js-minifier.minifyOnSave": true,
- "css-js-minifier.minifyInNewFile": true,
- "css-js-minifier.minifiedNewFilePrefix": ".min",
- "css-js-minifier.autoOpenNewFile": false,
- "css-js-minifier.showSizeReduction": true
+	"css-js-minifier.minifyOnSave": true,
+	"css-js-minifier.minifyInNewFile": true,
+	"css-js-minifier.minifiedNewFilePrefix": ".min",
+	"css-js-minifier.autoOpenNewFile": false,
+	"css-js-minifier.showSizeReduction": true
 }
 ```
 
@@ -174,7 +176,7 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 For detailed technical documentation, see the [`docs/`](docs/) directory:
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
-- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions  
+- **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and rate limiting solutions
 - **[API Integration](docs/TOPTAL-API.md)** - Toptal API implementation details
 - **[Internationalization](docs/INTERNATIONALIZATION.md)** - Multi-language support and translation architecture
 - **[Publishing Workflow](docs/TEST-RATE-LIMITING.md)** - Release and deployment processes

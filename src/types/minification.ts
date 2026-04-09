@@ -1,17 +1,17 @@
 /**
  * @fileoverview Minification-related type definitions.
- * 
+ *
  * This module contains interfaces and types used across all minification
  * strategies and services.
- * 
+ *
  * @author Miguel Colmenares
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.2.0
  */
 
 /**
  * Statistics about the minification process.
- * 
+ *
  * @interface MinificationStats
  * @property {number} originalSize - Original file size in bytes
  * @property {number} minifiedSize - Minified file size in bytes
@@ -29,7 +29,7 @@ export interface MinificationStats {
 
 /**
  * Result of minification with statistics.
- * 
+ *
  * @interface MinificationResult
  * @property {string} minifiedText - The minified code
  * @property {MinificationStats} stats - Statistics about the minification
@@ -41,7 +41,7 @@ export interface MinificationResult {
 
 /**
  * Configuration for an API endpoint.
- * 
+ *
  * @interface ApiConfig
  * @property {string} url - The API endpoint URL
  * @property {string} name - Human-readable name for the API
@@ -53,7 +53,7 @@ export interface ApiConfig {
 
 /**
  * HTTP request configuration.
- * 
+ *
  * @interface HttpRequestConfig
  * @property {string} method - HTTP method (GET, POST, etc.)
  * @property {Record<string, string>} headers - HTTP headers
