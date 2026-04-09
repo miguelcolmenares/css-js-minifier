@@ -1,28 +1,28 @@
 /**
  * @fileoverview Local CSS minification strategy using LightningCSS.
- * 
+ *
  * This module provides offline CSS minification without requiring network access.
  * It uses LightningCSS (written in Rust) for extremely fast and modern CSS processing.
- * 
+ *
  * @author Miguel Colmenares
  * @version 1.3.0
  * @since 1.2.0
  * @see {@link https://lightningcss.dev/} LightningCSS documentation
  */
 
-import * as vscode from "vscode";
-import { Buffer } from "node:buffer";
-import { transform } from "lightningcss";
-import { t } from "@/utils/l10nHelper";
-import { MinificationResult, MinificationStats } from "@/types";
-import { formatBytes } from "@/lib";
+import * as vscode from 'vscode';
+import { Buffer } from 'node:buffer';
+import { transform } from 'lightningcss';
+import { t } from '@/utils/l10nHelper';
+import { MinificationResult, MinificationStats } from '@/types';
+import { formatBytes } from '@/lib';
 
 /**
  * Minifies CSS code locally using the LightningCSS library.
- * 
+ *
  * This function provides offline CSS minification without requiring network access.
  * LightningCSS is an extremely fast CSS parser, transformer, and minifier written in Rust.
- * 
+ *
  * Features include:
  * - Removing whitespace and comments
  * - Merging adjacent rules with same selectors
@@ -31,14 +31,14 @@ import { formatBytes } from "@/lib";
  * - Optimizing colors, fonts, and other values
  * - Full support for modern CSS features (@starting-style, CSS Nesting, etc.)
  * - ~60x faster than JavaScript-based minifiers
- * 
+ *
  * @function minifyCss
  * @param {string} text - The CSS source code to be minified
  * @returns {MinificationResult | null} The minified CSS with statistics, or null if minification failed
- * 
+ *
  * @sideEffects
  * - Shows error messages to the user via VS Code notifications on failure
- * 
+ *
  * @example
  * ```typescript
  * const cssCode = 'body { color: red; margin: 0; }';
@@ -49,37 +49,32 @@ import { formatBytes } from "@/lib";
 export function minifyCss(text: string): MinificationResult | null {
 	try {
 		const originalSize = Buffer.byteLength(text, 'utf8');
-		
+
 		const output = transform({
 			filename: 'style.css',
 			code: Buffer.from(text),
-			minify: true
+			minify: true,
 		});
-		
+
 		const minifiedText = output.code.toString();
 		const minifiedSize = output.code.length;
-		
+
 		// Calculate statistics
 		const stats: MinificationStats = {
 			originalSize,
 			minifiedSize,
-			reductionPercent: originalSize > 0 
-				? Math.round((1 - minifiedSize / originalSize) * 100) 
-				: 0,
+			reductionPercent: originalSize > 0 ? Math.round((1 - minifiedSize / originalSize) * 100) : 0,
 			originalSizeKB: formatBytes(originalSize),
-			minifiedSizeKB: formatBytes(minifiedSize)
+			minifiedSizeKB: formatBytes(minifiedSize),
 		};
-		
+
 		return {
 			minifiedText,
-			stats
+			stats,
 		};
-		
 	} catch (error: unknown) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		vscode.window.showErrorMessage(
-			t('minificationService.error.cssLocal', errorMessage)
-		);
+		vscode.window.showErrorMessage(t('minificationService.error.cssLocal', errorMessage));
 		return null;
 	}
 }

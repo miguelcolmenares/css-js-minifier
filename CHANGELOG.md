@@ -126,7 +126,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - Complete modular architecture with separation of concerns
-- Comprehensive JSDoc documentation across all modules  
+- Comprehensive JSDoc documentation across all modules
 - Issue #5 resolution: autoOpenNewFile configuration option
 - Issue #1 resolution: Enhanced error handling for CSS nth-child selectors
 - Comprehensive test suite for all issues and configuration scenarios

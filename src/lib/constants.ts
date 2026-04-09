@@ -1,16 +1,16 @@
 /**
  * @fileoverview Application-wide constants.
- * 
+ *
  * This module centralizes all constant values used throughout the extension.
  * Following Single Responsibility Principle, configuration values are
  * defined here and imported where needed.
- * 
+ *
  * @author Miguel Colmenares
  * @version 1.3.0
  * @since 1.2.0
  */
 
-import type { ApiConfig, HttpRequestConfig } from "@/types";
+import type { ApiConfig, HttpRequestConfig } from '@/types';
 
 // ============================================================================
 // API Configuration
@@ -22,7 +22,7 @@ import type { ApiConfig, HttpRequestConfig } from "@/types";
  */
 export const TOPTAL_JS_API: ApiConfig = {
 	url: 'https://www.toptal.com/developers/javascript-minifier/api/raw',
-	name: 'JavaScript Minifier'
+	name: 'JavaScript Minifier',
 } as const;
 
 /**
@@ -33,7 +33,7 @@ export const HTTP_REQUEST_CONFIG: HttpRequestConfig = {
 	method: 'POST',
 	headers: {
 		'Content-Type': 'application/x-www-form-urlencoded',
-	}
+	},
 } as const;
 
 // ============================================================================
