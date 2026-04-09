@@ -166,7 +166,7 @@
 		"@types/node": "^25.5.2",
 		"@types/sinon": "^21.0.1",
 		"@types/vscode": "^1.110.0",
-		"@typescript-eslint/eslint-plugin": "^8.57.2",
+		"@typescript-eslint/eslint-plugin": "^8.58.1",
 		"@typescript-eslint/parser": "^8.46.1",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
@@ -177,7 +177,7 @@
 		"mocha": "^11.7.5",
 		"prettier": "^3.8.1",
 		"sinon": "^21.0.3",
-		"ts-loader": "^9.5.4",
+		"ts-loader": "^9.5.7",
 		"typescript": "^5.9.3",
 		"webpack": "^5.105.4",
 		"webpack-cli": "^7.0.2"
