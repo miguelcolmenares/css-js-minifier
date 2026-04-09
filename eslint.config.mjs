@@ -11,6 +11,28 @@ export default [
 		ignores: ['out/**', 'dist/**', '**/*.d.ts'],
 	},
 	{
+		files: ['*.cjs', '*.mjs'],
+		languageOptions: {
+			ecmaVersion: 2022,
+			sourceType: 'script',
+			globals: {
+				__dirname: 'readonly',
+				__filename: 'readonly',
+				module: 'readonly',
+				require: 'readonly',
+				exports: 'readonly',
+				process: 'readonly',
+				console: 'readonly',
+			},
+		},
+		rules: {
+			'prettier/prettier': 'error',
+		},
+		plugins: {
+			prettier: prettier,
+		},
+	},
+	{
 		files: ['src/**/*.ts'],
 		languageOptions: {
 			parser: tsParser,
