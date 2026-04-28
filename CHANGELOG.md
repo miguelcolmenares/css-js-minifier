@@ -6,6 +6,27 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-04-28
+
+### Fixed
+
+- **Fix extension activation failure on VS Code 1.101+** ([#118](https://github.com/miguelcolmenares/css-js-minifier/issues/118))
+  - Updated `oxc-minify` from v0.124.0 to v0.128.0 to resolve `PendingMigrationError: navigator is now a global in nodejs`
+  - VS Code 1.101 introduced Electron 35 / Node.js 22 which adds `navigator` as a global, breaking extensions that use it for web environment detection
+
+### Added
+
+- **Output Channel for structured logging** ([#118](https://github.com/miguelcolmenares/css-js-minifier/issues/118))
+  - Extension now logs activation status to the "CSS & JS Minifier" Output panel
+  - Shows detailed error messages and stack traces when activation fails
+  - Users can diagnose issues via Output panel instead of silent failures
+
+### Changed
+
+- **Minimum VS Code version raised to 1.116.0** to match `@types/vscode` dependency
+- Updated `test-vscode-minimum` workflow to test against VS Code 1.116.0
+- Improved activation error handling with user-friendly messages directing to the Output panel
+
 ## [1.3.0] - 2026-04-09
 
 ### Added

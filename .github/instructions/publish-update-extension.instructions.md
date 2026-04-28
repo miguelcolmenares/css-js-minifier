@@ -41,8 +41,12 @@ vsce login miguel-colmenares
    - **PATCH** (x.x.1): Bug fixes, small improvements
    - **MINOR** (x.1.x): New features, backward compatible
    - **MAJOR** (1.x.x): Breaking changes, architecture changes
-4. ✅ Update `CHANGELOG.md` with release date and changes
-5. ✅ Commit version changes: `git commit -m "chore: Release version X.X.X"`
+4. ✅ **Verify `engines.vscode` matches `@types/vscode`** in `package.json`:
+   - If `@types/vscode` is `^1.116.0`, then `engines.vscode` must also be `^1.116.0`
+   - Update `.vscode-test.mjs` default version accordingly
+   - Update `test-vscode-minimum.yml` workflow to test against the same version
+5. ✅ Update `CHANGELOG.md` with release date and changes
+6. ✅ Commit version changes: `git commit -m "chore: Release version X.X.X"`
 
 ### Step 2: Create Pull Request and Merge
 1. Create PR from feature branch to `master`
@@ -201,6 +205,8 @@ code --install-extension ./css-js-minifier-X.X.X.vsix
 ### Pre-Release
 - [ ] All features implemented and tested
 - [ ] Version number updated in package.json
+- [ ] `engines.vscode` matches `@types/vscode` version
+- [ ] `test-vscode-minimum.yml` and `.vscode-test.mjs` updated to match
 - [ ] CHANGELOG.md updated with release date
 - [ ] All tests passing (`npm test`)
 - [ ] Code linted successfully (`npm run lint`)

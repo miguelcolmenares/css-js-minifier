@@ -21,4 +21,4 @@ This directory contains technical documentation for the CSS & JS Minifier VS Cod
 ---
 
 **Last Updated**: April 2026
-**Extension Version**: 1.3.0
+**Extension Version**: 1.3.1
