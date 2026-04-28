@@ -7,5 +7,6 @@
 	"fileService.inPlace.successWithStats": "{0} a été minifié avec succès (Taille réduite de {1} à {2}, {3}% de réduction)",
 	"minificationService.fileType.unsupported": "Type de fichier non pris en charge pour la minification : {0}",
 	"minificationService.error.cssLocal": "Erreur de minification CSS : {0}",
-	"minificationService.error.jsLocal": "Erreur de minification JavaScript : {0}"
+	"minificationService.error.jsLocal": "Erreur de minification JavaScript : {0}",
+	"extension.activation.failed": "CSS & JS Minifier n'a pas pu s'activer : {0}. Consultez le panneau de Sortie pour plus de détails."
 }

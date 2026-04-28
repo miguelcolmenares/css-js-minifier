@@ -7,5 +7,6 @@
 	"fileService.inPlace.successWithStats": "{0} が正常に縮小されました (サイズを{1}から{2}に削減、{3}%の縮小)",
 	"minificationService.fileType.unsupported": "縮小がサポートされていないファイルタイプ：{0}",
 	"minificationService.error.cssLocal": "CSS縮小エラー：{0}",
-	"minificationService.error.jsLocal": "JavaScript縮小エラー：{0}"
+	"minificationService.error.jsLocal": "JavaScript縮小エラー：{0}",
+	"extension.activation.failed": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。"
 }

@@ -7,5 +7,6 @@
 	"fileService.inPlace.successWithStats": "{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)",
 	"minificationService.fileType.unsupported": "Unsupported file type for minification: {0}",
 	"minificationService.error.cssLocal": "CSS minification error: {0}",
-	"minificationService.error.jsLocal": "JavaScript minification error: {0}"
+	"minificationService.error.jsLocal": "JavaScript minification error: {0}",
+	"extension.activation.failed": "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details."
 }

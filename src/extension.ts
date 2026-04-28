@@ -15,7 +15,7 @@
 
 import * as vscode from 'vscode';
 import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from './commands';
-import { loadL10nBundle } from './utils/l10nHelper';
+import { loadL10nBundle, t } from './utils/l10nHelper';
 
 /**
  * Output channel for extension logging.
@@ -86,9 +86,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			outputChannel.appendLine(`[ERROR] Stack trace: ${error.stack}`);
 		}
 		outputChannel.show(true);
-		vscode.window.showErrorMessage(
-			`CSS & JS Minifier failed to activate: ${errorMessage}. Check the Output panel for details.`
-		);
+		vscode.window.showErrorMessage(t('extension.activation.failed', errorMessage));
 	}
 }
 

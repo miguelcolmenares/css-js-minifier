@@ -11,7 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - **Fix extension activation failure on VS Code 1.101+** ([#118](https://github.com/miguelcolmenares/css-js-minifier/issues/118))
-  - Updated `oxc-minify` from v0.124.0 to v0.128.0 to resolve `PendingMigrationError: navigator is now a global in nodejs`
+  - Updated `oxc-minify` from v0.127.0 to v0.128.0 to resolve `PendingMigrationError: navigator is now a global in nodejs`
   - VS Code 1.101 introduced Electron 35 / Node.js 22 which adds `navigator` as a global, breaking extensions that use it for web environment detection
 
 ### Added
