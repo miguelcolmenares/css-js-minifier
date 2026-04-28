@@ -8,7 +8,7 @@
  * minification and creating new minified files with configurable prefixes.
  *
  * @author Miguel Colmenares
- * @version 1.3.0
+ * @version 1.3.1
  * @since 0.1.0
  * @see {@link https://github.com/miguelcolmenares/css-js-minifier} GitHub Repository
  */
@@ -16,6 +16,12 @@
 import * as vscode from 'vscode';
 import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from './commands';
 import { loadL10nBundle } from './utils/l10nHelper';
+
+/**
+ * Output channel for extension logging.
+ * Provides structured messages visible in the VS Code Output panel.
+ */
+let outputChannel: vscode.OutputChannel;
 
 /**
  * Activates the CSS & JS Minifier extension.
@@ -42,29 +48,47 @@ import { loadL10nBundle } from './utils/l10nHelper';
  * // - The user manually activates the extension
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-	// Initialize l10n fallback system
-	await loadL10nBundle(context.extensionPath);
+	// Create output channel for extension logging
+	outputChannel = vscode.window.createOutputChannel('CSS & JS Minifier');
+	context.subscriptions.push(outputChannel);
 
-	// Register the main minification command (in-place minification)
-	const minifyCommandDisposable = vscode.commands.registerCommand('extension.minify', minifyCommand);
+	try {
+		// Initialize l10n fallback system
+		await loadL10nBundle(context.extensionPath);
 
-	// Register the command for creating new minified files
-	const minifyInNewFileCommandDisposable = vscode.commands.registerCommand(
-		'extension.minifyInNewFile',
-		minifyInNewFileCommand
-	);
+		// Register the main minification command (in-place minification)
+		const minifyCommandDisposable = vscode.commands.registerCommand('extension.minify', minifyCommand);
 
-	// Add command disposables to context for proper cleanup on deactivation
-	context.subscriptions.push(minifyCommandDisposable);
-	context.subscriptions.push(minifyInNewFileCommandDisposable);
+		// Register the command for creating new minified files
+		const minifyInNewFileCommandDisposable = vscode.commands.registerCommand(
+			'extension.minifyInNewFile',
+			minifyInNewFileCommand
+		);
 
-	// Set up auto-minification on save if enabled in user settings
-	const config = vscode.workspace.getConfiguration('css-js-minifier');
-	if (config.get('minifyOnSave')) {
-		// Register event listener for document save events
-		const onSaveListener = vscode.workspace.onDidSaveTextDocument(onSaveMinify);
-		// Add listener to subscriptions for proper cleanup
-		context.subscriptions.push(onSaveListener);
+		// Add command disposables to context for proper cleanup on deactivation
+		context.subscriptions.push(minifyCommandDisposable);
+		context.subscriptions.push(minifyInNewFileCommandDisposable);
+
+		// Set up auto-minification on save if enabled in user settings
+		const config = vscode.workspace.getConfiguration('css-js-minifier');
+		if (config.get('minifyOnSave')) {
+			// Register event listener for document save events
+			const onSaveListener = vscode.workspace.onDidSaveTextDocument(onSaveMinify);
+			// Add listener to subscriptions for proper cleanup
+			context.subscriptions.push(onSaveListener);
+		}
+
+		outputChannel.appendLine('[INFO] CSS & JS Minifier extension activated successfully.');
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		outputChannel.appendLine(`[ERROR] Extension activation failed: ${errorMessage}`);
+		if (error instanceof Error && error.stack) {
+			outputChannel.appendLine(`[ERROR] Stack trace: ${error.stack}`);
+		}
+		outputChannel.show(true);
+		vscode.window.showErrorMessage(
+			`CSS & JS Minifier failed to activate: ${errorMessage}. Check the Output panel for details.`
+		);
 	}
 }
 

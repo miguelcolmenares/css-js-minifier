@@ -169,7 +169,7 @@ To add support for a new language:
 **CRITICAL Understanding for Copilot:**
 - **Task Success ≠ Completion:** When executing VS Code tasks via `run_task`, a "success" message indicates the task STARTED successfully, NOT that it completed
 - **Test Execution Time:** 
-  - "Test: Run All Tests" takes 3-4 minutes to complete (29 comprehensive tests)
+  - "Test: Run All Tests" takes 3-4 minutes to complete (52 comprehensive tests)
   - Other test suites take 20s-1.5 minutes depending on scope
 - **Status Interpretation:**
   - ✅ "Task succeeded with no problems" = Task started successfully
@@ -187,7 +187,7 @@ To add support for a new language:
 The project includes optimized VS Code tasks for efficient development. Access via `Ctrl/Cmd + Shift + P` → "Tasks: Run Task":
 
 #### Testing Tasks
-- **"Test: Run All Tests"** - Complete 29-test suite with compilation and linting (~2 min)
+- **"Test: Run All Tests"** - Complete 52-test suite with compilation and linting (~2 min)
 - **"Test: Configuration Suite Only"** - Configuration tests only (4 tests, ~20s)
 - **"Test: CSS nth-child Suite Only"** - CSS encoding tests only (2 tests, ~7s)  
 - **"Test: Keybinding Suite Only"** - Keyboard shortcut tests (2 tests, ~5s)
@@ -215,12 +215,12 @@ The project includes optimized VS Code tasks for efficient development. Access v
 
 **Pre-commit:**
 1. Build check: "Test: Compile and Build Only"
-2. Full validation: "Test: Run All Tests" (ensure 29/29 passing)
+2. Full validation: "Test: Run All Tests" (ensure 52/52 passing)
 
 ### Pre-Commit Testing
 - **CRITICAL**: Always run "Test: Run All Tests" before committing/pushing changes
 - **Validates**: TypeScript compilation, webpack build, ESLint rules, and all extension functionality
-- **Test Suite**: 29 comprehensive tests covering all minification scenarios and edge cases
+- **Test Suite**: 52 comprehensive tests covering all minification scenarios and edge cases
 - **Never commit**: Code that fails tests, has compilation errors, or doesn't pass linting
 
 ### Testing Strategy
