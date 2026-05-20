@@ -13,10 +13,9 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "06:00"
-    # Allow both direct and indirect updates
+    # Only update direct dependencies (indirect ones update via lock file automatically)
     allow:
       - dependency-type: "direct"
-      - dependency-type: "indirect"
     # Group minor and patch updates together to reduce PR noise
     groups:
       development-dependencies:
