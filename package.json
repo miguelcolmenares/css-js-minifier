@@ -166,7 +166,7 @@
 		"@types/node": "^25.9.1",
 		"@types/sinon": "^21.0.1",
 		"@types/vscode": "^1.120.0",
-		"@typescript-eslint/eslint-plugin": "^8.59.2",
+		"@typescript-eslint/eslint-plugin": "^8.59.4",
 		"@typescript-eslint/parser": "^8.58.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
@@ -196,6 +196,6 @@
 	},
 	"dependencies": {
 		"lightningcss": "^1.32.0",
-		"oxc-minify": "^0.129.0"
+		"oxc-minify": "^0.132.0"
 	}
 }
