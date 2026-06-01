@@ -166,7 +166,7 @@
 		"@types/node": "^25.9.1",
 		"@types/sinon": "^21.0.1",
 		"@types/vscode": "^1.120.0",
-		"@typescript-eslint/eslint-plugin": "^8.59.4",
+		"@typescript-eslint/eslint-plugin": "^8.60.1",
 		"@typescript-eslint/parser": "^8.58.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
@@ -177,7 +177,7 @@
 		"mocha": "^11.7.6",
 		"prettier": "^3.8.3",
 		"sinon": "^22.0.0",
-		"ts-loader": "^9.5.4",
+		"ts-loader": "^9.6.0",
 		"typescript": "^6.0.3",
 		"webpack": "^5.107.2",
 		"webpack-cli": "^7.0.3"
@@ -196,6 +196,6 @@
 	},
 	"dependencies": {
 		"lightningcss": "^1.32.0",
-		"oxc-minify": "^0.132.0"
+		"oxc-minify": "^0.134.0"
 	}
 }
