@@ -163,7 +163,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^10.0.6",
-		"@types/node": "^26.0.0",
+		"@types/node": "^26.0.1",
 		"@types/sinon": "^21.0.1",
 		"@types/vscode": "^1.125.0",
 		"@typescript-eslint/eslint-plugin": "^8.62.0",
@@ -179,8 +179,8 @@
 		"sinon": "^22.0.0",
 		"ts-loader": "^9.6.2",
 		"typescript": "^6.0.3",
-		"webpack": "^5.107.2",
-		"webpack-cli": "^7.0.3"
+		"webpack": "^5.108.1",
+		"webpack-cli": "^7.1.0"
 	},
 	"repository": {
 		"type": "git",
