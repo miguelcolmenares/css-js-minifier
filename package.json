@@ -198,6 +198,6 @@
 	},
 	"dependencies": {
 		"lightningcss": "^1.32.0",
-		"oxc-minify": "^0.138.0"
+		"oxc-minify": "^0.139.0"
 	}
 }
