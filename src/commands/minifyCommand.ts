@@ -110,14 +110,17 @@ async function processDocument(
  * shortcut, or command palette, no URI is provided and the active editor is used.
  *
  * @async
- * @param {vscode.Uri} [uri] - Optional URI passed by VS Code for explorer invocations
+ * @param {unknown} [uri] - Optional argument passed by VS Code. When invoked from the
+ *   file explorer with a single file selected, this is a `vscode.Uri`. For multi-select
+ *   or other invocation contexts, it may be an array or other type — in those cases
+ *   the function falls back to the active editor.
  * @returns {Promise<vscode.TextDocument | undefined>} The resolved document, or undefined if
  *   none is available (e.g., no active editor and no URI provided).
  *   Returns undefined after showing an error message if the URI document cannot be opened.
  */
-async function resolveTargetDocument(uri?: vscode.Uri): Promise<vscode.TextDocument | undefined> {
-	if (uri) {
-		// Invoked from the file explorer with a URI — open the document
+async function resolveTargetDocument(uri?: unknown): Promise<vscode.TextDocument | undefined> {
+	if (uri instanceof vscode.Uri) {
+		// Invoked from the file explorer with a single URI — open the document
 		try {
 			return await vscode.workspace.openTextDocument(uri);
 		} catch (error: unknown) {
@@ -126,7 +129,8 @@ async function resolveTargetDocument(uri?: vscode.Uri): Promise<vscode.TextDocum
 			return undefined;
 		}
 	}
-	// Invoked from editor context menu, keyboard shortcut, or command palette
+	// Invoked from editor context menu, keyboard shortcut, command palette,
+	// or multi-select (array of URIs) — fall back to active editor
 	return vscode.window.activeTextEditor?.document;
 }
 
@@ -143,10 +147,8 @@ async function resolveTargetDocument(uri?: vscode.Uri): Promise<vscode.TextDocum
  *
  * @async
  * @function minifyCommand
- * @param {vscode.Uri} [uri] - Optional URI of the file to minify. When invoked from
- *   the file explorer context menu, VS Code passes the clicked file's URI. When
- *   invoked from the editor context menu or command palette, this is undefined and
- *   the active editor document is used.
+ * @param {unknown} [uri] - Optional argument passed by VS Code. A `vscode.Uri` when
+ *   invoked from the file explorer; undefined or other types for other contexts.
  * @returns {Promise<void>} Resolves when the command execution is complete
  *
  * @sideEffects
@@ -161,7 +163,7 @@ async function resolveTargetDocument(uri?: vscode.Uri): Promise<vscode.TextDocum
  * // - Right-clicks in editor: "Minify this File"
  * // - Right-clicks a file in the explorer: "Minify this File"
  */
-export async function minifyCommand(uri?: vscode.Uri): Promise<void> {
+export async function minifyCommand(uri?: unknown): Promise<void> {
 	const document = await resolveTargetDocument(uri);
 
 	// Process the document if available
@@ -190,10 +192,8 @@ export async function minifyCommand(uri?: vscode.Uri): Promise<void> {
  *
  * @async
  * @function minifyInNewFileCommand
- * @param {vscode.Uri} [uri] - Optional URI of the file to minify. When invoked from
- *   the file explorer context menu, VS Code passes the clicked file's URI. When
- *   invoked from the editor context menu or command palette, this is undefined and
- *   the active editor document is used.
+ * @param {unknown} [uri] - Optional argument passed by VS Code. A `vscode.Uri` when
+ *   invoked from the file explorer; undefined or other types for other contexts.
  * @returns {Promise<void>} Resolves when the command execution is complete
  *
  * @sideEffects
@@ -208,7 +208,7 @@ export async function minifyCommand(uri?: vscode.Uri): Promise<void> {
  * // - Right-clicks in editor: "Minify and Save as New File"
  * // - Right-clicks a file in the explorer: "Minify and Save as New File"
  */
-export async function minifyInNewFileCommand(uri?: vscode.Uri): Promise<void> {
+export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
 	const document = await resolveTargetDocument(uri);
 
 	// Get user configuration for file naming

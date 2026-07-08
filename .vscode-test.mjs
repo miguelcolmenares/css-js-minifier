@@ -2,5 +2,5 @@ import { defineConfig } from '@vscode/test-cli';
 
 export default defineConfig({
 	files: 'out/test/**/*.test.js',
-	version: process.env.VSCODE_VERSION || '1.120.0',
+	version: process.env.VSCODE_VERSION || '1.125.0',
 });

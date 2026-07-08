@@ -23,8 +23,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- **Minimum VS Code version raised to 1.120.0** to match `@types/vscode` dependency
-- Updated `test-vscode-minimum` workflow to test against VS Code 1.120.0
+- **Minimum VS Code version raised to 1.125.0** to match `@types/vscode` dependency
+- Updated `test-vscode-minimum` workflow to test against VS Code 1.125.0
 - Added `permissions: contents: read` to `test-vscode-minimum` workflow for security hardening
 
 ## [1.3.1] - 2026-04-28
