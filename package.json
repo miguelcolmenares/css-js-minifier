@@ -2,7 +2,7 @@
 	"name": "css-js-minifier",
 	"displayName": "JS & CSS Minifier Tool and Compressor",
 	"description": "Minify CSS and JS locally within Visual Studio Code. CSS uses LightningCSS and JS uses oxc-minify — both Rust-based, fully offline, with no API dependencies. Full support for modern CSS features like @starting-style. Supports 7 languages: English, Spanish, French, German, Portuguese, Japanese, and Chinese.",
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"publisher": "miguel-colmenares",
 	"l10n": "./l10n",
 	"sponsor": {
