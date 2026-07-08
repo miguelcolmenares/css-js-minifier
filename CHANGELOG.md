@@ -6,6 +6,27 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-07-08
+
+### Fixed
+
+- **Fix commands not found when invoked from context menu or explorer** ([#145](https://github.com/miguelcolmenares/css-js-minifier/issues/145))
+  - Added `onCommand:extension.minify` and `onCommand:extension.minifyInNewFile` to `activationEvents` in `package.json`
+  - Extension now activates correctly when commands are invoked without a prior save event
+
+### Added
+
+- **File explorer context menu support** ([#145](https://github.com/miguelcolmenares/css-js-minifier/issues/145))
+  - Commands now accept a `uri` parameter, enabling minification directly from the file explorer
+  - New `resolveTargetDocument()` helper resolves the target document from explorer URI or active editor
+  - New i18n key `commands.openFile.failed` across all 7 supported languages
+
+### Changed
+
+- **Minimum VS Code version raised to 1.120.0** to match `@types/vscode` dependency
+- Updated `test-vscode-minimum` workflow to test against VS Code 1.120.0
+- Added `permissions: contents: read` to `test-vscode-minimum` workflow for security hardening
+
 ## [1.3.1] - 2026-04-28
 
 ### Fixed
