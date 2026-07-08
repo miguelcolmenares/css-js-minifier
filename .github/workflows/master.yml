@@ -50,7 +50,7 @@ jobs:
             sleep 20
             npm test
         env:
-          VSCODE_VERSION: '1.116.0'
+          VSCODE_VERSION: '1.125.0'
           TEST_DELAY_MS: 3000
           MAX_RETRIES: 3
         timeout-minutes: 10

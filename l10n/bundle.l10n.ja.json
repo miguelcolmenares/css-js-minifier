@@ -8,5 +8,6 @@
 	"minificationService.fileType.unsupported": "縮小がサポートされていないファイルタイプ：{0}",
 	"minificationService.error.cssLocal": "CSS縮小エラー：{0}",
 	"minificationService.error.jsLocal": "JavaScript縮小エラー：{0}",
-	"extension.activation.failed": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。"
+	"extension.activation.failed": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。",
+	"commands.openFile.failed": "ファイルを開けませんでした：{0}"
 }
