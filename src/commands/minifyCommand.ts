@@ -103,6 +103,34 @@ async function processDocument(
 }
 
 /**
+ * Resolves the target document for a minification command.
+ *
+ * When invoked from the file explorer, VS Code passes the clicked file's URI
+ * as the first argument. When invoked from the editor context menu, keyboard
+ * shortcut, or command palette, no URI is provided and the active editor is used.
+ *
+ * @async
+ * @param {vscode.Uri} [uri] - Optional URI passed by VS Code for explorer invocations
+ * @returns {Promise<vscode.TextDocument | undefined>} The resolved document, or undefined if
+ *   none is available (e.g., no active editor and no URI provided).
+ *   Returns undefined after showing an error message if the URI document cannot be opened.
+ */
+async function resolveTargetDocument(uri?: vscode.Uri): Promise<vscode.TextDocument | undefined> {
+	if (uri) {
+		// Invoked from the file explorer with a URI — open the document
+		try {
+			return await vscode.workspace.openTextDocument(uri);
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			vscode.window.showErrorMessage(t('commands.openFile.failed', errorMessage));
+			return undefined;
+		}
+	}
+	// Invoked from editor context menu, keyboard shortcut, or command palette
+	return vscode.window.activeTextEditor?.document;
+}
+
+/**
  * Command handler for the 'extension.minify' VS Code command.
  *
  * This function handles in-place minification of CSS and JavaScript files.
@@ -134,21 +162,7 @@ async function processDocument(
  * // - Right-clicks a file in the explorer: "Minify this File"
  */
 export async function minifyCommand(uri?: vscode.Uri): Promise<void> {
-	let document: vscode.TextDocument | undefined;
-
-	if (uri) {
-		// Invoked from the file explorer with a URI — open the document
-		try {
-			document = await vscode.workspace.openTextDocument(uri);
-		} catch (error: unknown) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			vscode.window.showErrorMessage(t('commands.openFile.failed', errorMessage));
-			return;
-		}
-	} else {
-		// Invoked from editor context menu, keyboard shortcut, or command palette
-		document = vscode.window.activeTextEditor?.document;
-	}
+	const document = await resolveTargetDocument(uri);
 
 	// Process the document if available
 	if (document) {
@@ -195,21 +209,7 @@ export async function minifyCommand(uri?: vscode.Uri): Promise<void> {
  * // - Right-clicks a file in the explorer: "Minify and Save as New File"
  */
 export async function minifyInNewFileCommand(uri?: vscode.Uri): Promise<void> {
-	let document: vscode.TextDocument | undefined;
-
-	if (uri) {
-		// Invoked from the file explorer with a URI — open the document
-		try {
-			document = await vscode.workspace.openTextDocument(uri);
-		} catch (error: unknown) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			vscode.window.showErrorMessage(t('commands.openFile.failed', errorMessage));
-			return;
-		}
-	} else {
-		// Invoked from editor context menu, keyboard shortcut, or command palette
-		document = vscode.window.activeTextEditor?.document;
-	}
+	const document = await resolveTargetDocument(uri);
 
 	// Get user configuration for file naming
 	const settings = vscode.workspace.getConfiguration('css-js-minifier');
