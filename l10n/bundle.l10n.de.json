@@ -8,5 +8,6 @@
 	"minificationService.fileType.unsupported": "Nicht unterstützter Dateityp für Minimierung: {0}",
 	"minificationService.error.cssLocal": "CSS-Minimierungsfehler: {0}",
 	"minificationService.error.jsLocal": "JavaScript-Minimierungsfehler: {0}",
-	"extension.activation.failed": "CSS & JS Minifier konnte nicht aktiviert werden: {0}. Überprüfen Sie das Ausgabe-Panel für Details."
+	"extension.activation.failed": "CSS & JS Minifier konnte nicht aktiviert werden: {0}. Überprüfen Sie das Ausgabe-Panel für Details.",
+	"commands.openFile.failed": "Datei konnte nicht geöffnet werden: {0}"
 }

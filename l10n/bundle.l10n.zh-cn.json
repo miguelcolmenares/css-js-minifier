@@ -8,5 +8,6 @@
 	"minificationService.fileType.unsupported": "不支持压缩的文件类型：{0}",
 	"minificationService.error.cssLocal": "CSS压缩错误：{0}",
 	"minificationService.error.jsLocal": "JavaScript压缩错误：{0}",
-	"extension.activation.failed": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。"
+	"extension.activation.failed": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。",
+	"commands.openFile.failed": "无法打开文件：{0}"
 }

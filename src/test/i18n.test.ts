@@ -74,6 +74,7 @@ const EXPECTED_BUNDLE_KEYS = [
 	'minificationService.fileType.unsupported',
 	'minificationService.error.cssLocal',
 	'minificationService.error.jsLocal',
+	'commands.openFile.failed',
 ];
 
 suite('Internationalization (i18n) Test Suite', function () {
@@ -230,6 +231,7 @@ suite('Internationalization (i18n) Test Suite', function () {
 					'minificationService.fileType.unsupported', // {0}
 					'minificationService.error.cssLocal', // {0}
 					'minificationService.error.jsLocal', // {0}
+					'commands.openFile.failed', // {0}
 				];
 
 				keysWithPlaceholders.forEach((key) => {

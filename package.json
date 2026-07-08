@@ -19,7 +19,7 @@
 		"theme": "dark"
 	},
 	"engines": {
-		"vscode": "^1.116.0"
+		"vscode": "^1.120.0"
 	},
 	"categories": [
 		"Other"
@@ -40,6 +40,8 @@
 		"localization"
 	],
 	"activationEvents": [
+		"onCommand:extension.minify",
+		"onCommand:extension.minifyInNewFile",
 		"onSaveTextDocument"
 	],
 	"main": "./dist/extension.js",
