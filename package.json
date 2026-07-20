@@ -168,7 +168,7 @@
 		"@types/node": "^26.1.1",
 		"@types/sinon": "^22.0.0",
 		"@types/vscode": "^1.125.0",
-		"@typescript-eslint/eslint-plugin": "^8.63.0",
+		"@typescript-eslint/eslint-plugin": "^8.64.0",
 		"@typescript-eslint/parser": "^8.58.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.15",
@@ -197,7 +197,7 @@
 		"@sinonjs/fake-timers": "15.1.1"
 	},
 	"dependencies": {
-		"lightningcss": "^1.32.0",
-		"oxc-minify": "^0.139.0"
+		"lightningcss": "^1.33.0",
+		"oxc-minify": "^0.140.0"
 	}
 }
