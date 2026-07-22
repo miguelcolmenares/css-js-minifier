@@ -15,8 +15,10 @@
  *
  * Portability:
  *   - Requires Node 20+ (ESM, `fs.rmSync`, `fs.mkdtempSync`).
- *   - Uses `tar -xf` for archive extraction (available natively on macOS,
- *     Linux, and Windows 10 1803+ / all GitHub Actions runners).
+ *   - A .vsix is a ZIP archive, so extraction uses `unzip` on Linux/macOS
+ *     (preinstalled on every GitHub Actions Linux/macOS runner) and
+ *     PowerShell `Expand-Archive` on Windows (built-in cmdlet on every
+ *     Windows Server / Windows 11 GitHub Actions runner).
  *   - No npm dependencies of its own.
  */
 
@@ -45,13 +47,27 @@ console.log(`host:   ${platform}-${process.arch}   node ${process.version}`);
 console.log(`vsix:   ${basename(vsixPath)}`);
 
 // ---------------------------------------------------------------------------
-// Extract the .vsix
+// Extract the .vsix (a ZIP archive) into a temp dir. Windows gets
+// PowerShell's Expand-Archive; every other platform gets `unzip -q`.
 // ---------------------------------------------------------------------------
 const workDir = mkdtempSync(join(tmpdir(), "vsix-verify-"));
 try {
-  execFileSync("tar", ["-xf", vsixPath, "-C", workDir], { stdio: "inherit" });
+  if (platform === "win32") {
+    execFileSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `Expand-Archive -LiteralPath '${vsixPath.replace(/'/g, "''")}' -DestinationPath '${workDir.replace(/'/g, "''")}' -Force`,
+      ],
+      { stdio: "inherit" }
+    );
+  } else {
+    execFileSync("unzip", ["-q", vsixPath, "-d", workDir], { stdio: "inherit" });
+  }
 } catch (err) {
-  console.error(`error: failed to extract vsix with 'tar -xf': ${err.message}`);
+  console.error(`error: failed to extract vsix: ${err.message}`);
   rmSync(workDir, { recursive: true, force: true });
   exit(2);
 }
