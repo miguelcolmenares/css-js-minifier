@@ -7,22 +7,19 @@ import { setTimeout } from 'timers';
 import { t } from '../utils/l10nHelper';
 
 /**
- * Rate limiting configuration for tests
- * Delays are used for UI stability and file watcher cleanup
+ * Timing configuration for tests.
+ *
+ * Every entry here exists to work around VS Code UI, workspace, or filesystem
+ * async behavior (file watchers flushing, config changes propagating, notifications
+ * being processed, Windows CI I/O latency, …). None of these delays exist to
+ * throttle requests against an external API — the extension has minified CSS/JS
+ * locally since v1.3.0.
  */
 const RATE_LIMIT_CONFIG = {
-	// Delay between tests in milliseconds (reduced - no API calls needed)
-	TEST_DELAY_MS: 500,
-	// Maximum retries for failed requests
-	MAX_RETRIES: 3,
-	// Timeout for individual tests (reduced - all minification is local)
+	// Timeout for individual tests (all minification is local, so this is UI/FS budget only)
 	TEST_TIMEOUT_MS: 5000,
-	// Timeout for config tests (30 seconds)
+	// Timeout for configuration tests (they open/close many editors and wait for FS)
 	TEST_TIMEOUT_CONFIG_MS: 30000,
-	// Delay between configuration tests (increased for CI stability)
-	CONFIG_TEST_DELAY_MS: 5000,
-	// Delay between test suites (reduced - no API rate limit needed)
-	SUITE_DELAY_MS: 5000,
 	// Small delay for file watcher cleanup (100ms)
 	FILE_WATCHER_CLEANUP_MS: 100,
 	// Delay for message processing (300ms)
@@ -40,10 +37,13 @@ const RATE_LIMIT_CONFIG = {
 };
 
 /**
- * Adds a delay between tests for UI stability
- * @param ms - Delay in milliseconds (default: 500ms)
+ * Waits `ms` milliseconds. Used to give VS Code UI, file watchers, or the FS
+ * enough time to settle between test steps.
+ *
+ * @param ms - Delay in milliseconds. There is no default — every call site must
+ *   pass an explicit value tied to the specific async behavior it is waiting on.
  */
-async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): Promise<void> {
+async function delayBetweenTests(ms: number): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
@@ -122,7 +122,7 @@ const prefixes = ['.min', '-min', '.compressed', '-compressed', '.minified', '-m
 
 // Main suite that groups all tests
 suite('JS & CSS Minifier Test Suite', function () {
-	// Set a maximum timeout for each test (increased for rate limiting)
+	// Set a maximum timeout for each test
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
@@ -131,11 +131,6 @@ suite('JS & CSS Minifier Test Suite', function () {
 	// Clean up sinon spies after each test to prevent conflicts
 	this.afterEach(function () {
 		sinon.restore();
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
 	});
 
 	this.afterAll(async function () {
@@ -392,22 +387,10 @@ suite('JS & CSS Minifier Test Suite', function () {
 // These tests fail inconsistently due to Toptal API not minifying nth-child selectors reliably
 // See: https://github.com/miguelcolmenares/css-js-minifier/issues/XXX
 suite.skip('CSS nth-child Test Suite', function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
-
-	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
-	this.beforeAll(async function () {
-		vscode.window.showInformationMessage('Waiting 30 seconds before CSS nth-child tests to avoid API rate limiting...');
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
-	});
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage('Start CSS nth-child tests.');
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
-	});
 
 	this.afterAll(async function () {
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, 'fixtures', 'nth-child-test.css'));
@@ -484,19 +467,7 @@ suite.skip('CSS nth-child Test Suite', function () {
 
 // Keybinding Test Suite
 suite('Keybinding Test Suite', function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
-
-	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
-	this.beforeAll(async function () {
-		vscode.window.showInformationMessage('Waiting 30 seconds before Keybinding tests to avoid API rate limiting...');
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
-	});
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage('Start keybinding tests.');
@@ -549,8 +520,8 @@ suite('Keybinding Test Suite', function () {
 
 // Configuration Test Suite
 suite('Configuration Test Suite', async function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
+	// Configuration tests open/close many editors and wait for FS + config propagation.
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_CONFIG_MS);
 
 	// Clean up any existing files before starting configuration tests
 	this.beforeAll(async function () {
@@ -624,11 +595,6 @@ suite('Configuration Test Suite', async function () {
 		}
 
 		vscode.window.showInformationMessage('File cleanup completed for configuration tests.');
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
 	});
 
 	// Show an informational message when starting the tests
@@ -737,7 +703,7 @@ suite('Configuration Test Suite', async function () {
 		await vscode.commands.executeCommand('extension.minifyInNewFile');
 
 		// Wait for file creation (significantly increased for Windows CI)
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS / 3); // 10 seconds
+		await delayBetweenTests(RATE_LIMIT_CONFIG.FILE_OPERATION_MS);
 
 		// Verify the new file exists (auto-open behavior is tested via file creation)
 		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, '.min$1'));

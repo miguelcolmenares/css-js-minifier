@@ -44,15 +44,10 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm ci
-      - name: Run tests with VS Code 1.125.0 and rate limit handling
+      - name: Run tests with VS Code 1.125.0
         uses: coactions/setup-xvfb@v1
         with:
-          run: |
-            echo "Waiting 20 seconds before running tests to avoid rate limiting..."
-            sleep 20
-            npm test
+          run: npm test
         env:
           VSCODE_VERSION: '1.125.0'
-          TEST_DELAY_MS: 3000
-          MAX_RETRIES: 3
         timeout-minutes: 10

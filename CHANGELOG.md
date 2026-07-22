@@ -36,6 +36,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Rewrote the "Overview", "Runtime Message Bundles", "Runtime Bundle Keys", "Message Interpolation", "Implementation Details", "Translation Pattern", and "Adding a New Language" sections of [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md) to describe the canonical `vscode.l10n` flow (English-as-key), replace outdated `import * as l10n from '@vscode/l10n'` examples with the correct `import { t } from '../utils/l10nHelper'` pattern, and add a new "Testing Under a Specific Locale" guide.
 
+### Removed
+
+- Removed the legacy pre-test `sleep 20` step and the `TEST_DELAY_MS` / `MAX_RETRIES` environment variables from every `.github/workflows/test-vscode-*.yml` workflow (`master.yml`, `test-vscode-stable.yml`, `test-vscode-insiders.yml`, `test-vscode-minimum.yml`). These existed to throttle requests against the Toptal minification API, which was removed in v1.3.0 when minification moved fully local via LightningCSS and oxc-minify.
+- Removed the corresponding rate-limit legacy constants (`TEST_DELAY_MS`, `MAX_RETRIES`, `SUITE_DELAY_MS`, `CONFIG_TEST_DELAY_MS`) from `RATE_LIMIT_CONFIG` in `src/test/extension.test.ts`, along with the four `afterEach(delayBetweenTests())` hooks and the two 30-second `beforeAll` "avoid API rate limiting" waits in the `CSS nth-child` and `Keybinding` test suites. The remaining entries are legitimate UI, filesystem, and Windows-CI stability waits. Total test-suite runtime dropped by roughly one minute.
+
 ## [1.3.2] - 2026-07-08
 
 ### Fixed
