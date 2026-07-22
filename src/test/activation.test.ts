@@ -25,7 +25,20 @@ suite('Activation Events (regression guard for #168)', function () {
 	const workspaceRoot = path.resolve(__dirname, '../../');
 	const packageJsonPath = path.join(workspaceRoot, 'package.json');
 	const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-	const activationEvents: string[] = packageJson.activationEvents ?? [];
+	const rawActivationEvents: unknown = packageJson.activationEvents;
+
+	test('activationEvents is declared as an array in package.json', function () {
+		assert.ok(
+			Array.isArray(rawActivationEvents),
+			`activationEvents must be an array of strings in package.json. ` +
+				`Got: ${JSON.stringify(rawActivationEvents)} (type: ${typeof rawActivationEvents})`
+		);
+	});
+
+	// Downstream tests only run meaningfully when the type invariant above holds.
+	// Fall back to an empty array so those tests still fail with a clear message
+	// rather than throwing an unrelated TypeError on `.includes` / `.filter`.
+	const activationEvents: string[] = Array.isArray(rawActivationEvents) ? (rawActivationEvents as string[]) : [];
 
 	test('activationEvents contains onLanguage:css', function () {
 		assert.ok(
