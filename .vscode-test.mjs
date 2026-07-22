@@ -26,7 +26,7 @@ const config = {
 };
 
 if (locale) {
-	config.launchArgs = ['--locale', locale];
+	config.launchArgs = [`--locale=${locale}`];
 }
 
 export default defineConfig(config);

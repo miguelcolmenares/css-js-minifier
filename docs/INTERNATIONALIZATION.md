@@ -242,7 +242,7 @@ npx vscode-test --grep "Internationalization"
 
 ### Testing Under a Specific Locale
 
-The test runner supports launching VS Code under a specific display language via the `VSCODE_LOCALE` environment variable (wired through `.vscode-test.mjs` → `launchArgs: ['--locale', <lang>]`):
+The test runner supports launching VS Code under a specific display language via the `VSCODE_LOCALE` environment variable (wired through `.vscode-test.mjs` → `launchArgs: ['--locale=<lang>']`):
 
 ```bash
 # Run the full test suite as if VS Code were set to Spanish
