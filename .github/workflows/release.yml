@@ -1,0 +1,196 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.vscodeignore'
+      - 'src/**'
+      - 'scripts/verify-vsix-activation.mjs'
+      - '.github/workflows/release.yml'
+      - 'webpack.config.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: darwin-x64,   os: macos-15-intel }
+          - { target: darwin-arm64, os: macos-latest }
+          - { target: linux-x64,    os: ubuntu-latest }
+          - { target: linux-arm64,  os: ubuntu-24.04-arm }
+          - { target: win32-x64,    os: windows-latest }
+          - { target: win32-arm64,  os: windows-11-arm }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Configure Git line endings
+        run: git config --global core.autocrlf false
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension bundle (webpack production)
+        run: npm run package
+
+      - name: Read extension version
+        id: version
+        shell: bash
+        # Use single-quoted `node -p` arg to avoid nested double quotes
+        # inside the outer command-substitution string — it works either
+        # way in POSIX shells but the split form is easier to review.
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Package .vsix for ${{ matrix.target }}
+        shell: bash
+        run: |
+          npx vsce package \
+            --target ${{ matrix.target }} \
+            --out css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
+
+      - name: Verify native bindings can activate on ${{ matrix.target }}
+        shell: bash
+        run: |
+          node scripts/verify-vsix-activation.mjs \
+            css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
+
+      - name: Upload .vsix artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-${{ matrix.target }}
+          path: css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
+          retention-days: 30
+          if-no-files-found: error
+
+  release:
+    name: Attach .vsix files to GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all .vsix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: vsix-*
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: ls -lh dist/
+
+      - name: Publish .vsix files to release ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        # Release/asset immutability policy: this step does NOT use --clobber.
+        # `gh release upload` will attempt to upload every file we pass and
+        # fail loudly on the first asset whose name already exists on the
+        # release — it does NOT silently skip duplicates. That's the intended
+        # behaviour: a rerun on the same tag with the same .vsix set exits
+        # non-zero, forcing whoever is republishing to make a conscious
+        # decision (delete the affected assets or the whole release by hand
+        # first, or bump to a fresh version). Combined with the tag-protection
+        # ruleset on refs/tags/v* this guarantees that a given tag → release
+        # → .vsix mapping is stable forever.
+        run: |
+          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
+            echo "Release ${{ github.ref_name }} already exists — uploading .vsix assets"
+            gh release upload "${{ github.ref_name }}" dist/*.vsix
+          else
+            echo "Creating release ${{ github.ref_name }} with generated notes + all .vsix"
+            gh release create "${{ github.ref_name }}" \
+              --title "${{ github.ref_name }}" \
+              --generate-notes \
+              dist/*.vsix
+          fi
+
+  publish:
+    name: Publish .vsix files to VS Code Marketplace
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (for vsce)
+        run: npm ci
+
+      - name: Download all .vsix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: vsix-*
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: ls -lh dist/
+
+      - name: Check whether VSCE_PAT is configured
+        id: preflight
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # Marketplace publish is opt-in: if the maintainer hasn't configured
+        # the PAT yet we emit a warning and skip the publish step so the tag
+        # build stays green. The .vsix files are already attached to the GH
+        # Release by the previous job, so users can still install manually
+        # via `code --install-extension` while the secret is being provisioned.
+        # Configure it under Settings → Secrets and variables → Actions →
+        # New repository secret, using a PAT from https://dev.azure.com with
+        # 'Marketplace (Manage)' scope.
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::warning::VSCE_PAT is not configured — skipping Marketplace publish."
+            echo "::warning::The .vsix files remain attached to the GitHub Release."
+            echo "can_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
+            echo "can_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish all .vsix files to VS Code Marketplace
+        if: steps.preflight.outputs.can_publish == 'true'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # `vsce publish --packagePath` accepts any number of pre-built .vsix
+        # files and uploads each one. The Marketplace uses the `--target`
+        # baked into each .vsix by the packaging step (see the `build` job)
+        # to serve the right binary per platform. Fails fast on the first
+        # rejected upload (e.g. duplicate version), which is desirable given
+        # our immutability policy — a failed publish here means the tag
+        # needs a fresh version, not a retry with the same one.
+        run: |
+          set -euo pipefail
+          count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
+          echo "Publishing $count .vsix files to Marketplace..."
+          npx vsce publish --packagePath dist/*.vsix
