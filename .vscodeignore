@@ -6,6 +6,7 @@ node_modules/**
 !node_modules/lightningcss-*/**
 !node_modules/oxc-minify/**
 !node_modules/@oxc-minify/**
+!node_modules/detect-libc/**
 src/**
 .gitignore
 .yarnrc
