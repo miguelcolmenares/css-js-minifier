@@ -1,9 +1,34 @@
 name: Build & Release
 
+# Trigger model
+# =============
+# Two entry points, deliberately no `push: tags: v*`:
+#
+# 1. `pull_request` on master → validate cross-platform builds on incoming PRs
+#    (matrix runs on the paths that affect packaging). This is what tells a
+#    contributor's PR "yes, your change also works on Linux ARM and Win x64".
+#
+# 2. `workflow_dispatch` → the maintainer manually cuts a release. The tag,
+#    the GitHub Release and the Marketplace publish all happen from inside
+#    this workflow, gated on a preflight that includes `vsce verify-pat`.
+#    This guarantees that a tag is NEVER created if the PAT is expired or
+#    the version metadata is inconsistent — which, combined with the tag
+#    immutability ruleset, means we can't burn a version on GitHub while
+#    failing to reach the Marketplace.
+#
+# There is intentionally no `push: tags: v*` trigger. All tags must originate
+# from a workflow_dispatch run; hand-pushed tags will not produce a release.
+
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Version to release (must match package.json exactly, e.g. 1.3.3).
+          A tag v<version> will be created only after the preflight and the
+          full build matrix succeed.
+        required: true
+        type: string
   pull_request:
     branches: [master]
     paths:
@@ -19,8 +44,119 @@ permissions:
   contents: read
 
 jobs:
+  preflight:
+    # Only runs on workflow_dispatch. On pull_request it is skipped and the
+    # `build` job's `if:` picks that up so PR validation still runs.
+    name: Preflight — validate version, changelog and VSCE_PAT
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Full history is needed by `git rev-parse -q --verify refs/tags/…`
+          # in the tag-existence check below — otherwise the shallow clone
+          # would silently claim every tag is missing.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate input version matches package.json
+        id: parse
+        shell: bash
+        run: |
+          set -euo pipefail
+          input="${{ inputs.version }}"
+          pkg=$(node -p 'require("./package.json").version')
+          if [ "$input" != "$pkg" ]; then
+            echo "::error::Input version ($input) does not match package.json version ($pkg)."
+            echo "::error::Bump package.json first, commit to master, then re-run this workflow with the matching version."
+            exit 1
+          fi
+          echo "Input version and package.json agree on $input."
+          echo "version=$input" >> "$GITHUB_OUTPUT"
+          echo "tag=v$input" >> "$GITHUB_OUTPUT"
+
+      - name: Validate CHANGELOG.md has an entry for this version
+        shell: bash
+        # We look for a top-level heading of the form `## [<version>]` at the
+        # start of a line. This catches typos and forgotten changelog updates
+        # before a tag is ever created.
+        run: |
+          set -euo pipefail
+          version="${{ steps.parse.outputs.version }}"
+          if ! grep -Eq "^## \[${version}\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md is missing an entry '## [${version}]'."
+            echo "::error::Add release notes for ${version} to CHANGELOG.md and commit before re-running."
+            exit 1
+          fi
+          echo "CHANGELOG.md has an entry for ${version}."
+
+      - name: Validate tag does not already exist on the remote
+        shell: bash
+        # We refuse to overwrite existing tags because the repository ruleset
+        # already blocks deletion/force-push on refs/tags/v*. If the tag is
+        # already there, either the release finished already (nothing to do)
+        # or a previous run created the tag and stopped before publishing —
+        # in that case the fix is to bump to a fresh version, not to retry.
+        run: |
+          set -euo pipefail
+          tag="${{ steps.parse.outputs.tag }}"
+          if git ls-remote --tags --exit-code origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "::error::Tag ${tag} already exists on origin. Immutability policy forbids reusing tags."
+            echo "::error::Bump package.json to the next version and re-run."
+            exit 1
+          fi
+          echo "Tag ${tag} does not exist yet."
+
+      - name: Install dependencies (for vsce)
+        run: npm ci
+
+      - name: Verify VSCE_PAT is present
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # Empty PAT would make `vsce verify-pat` prompt interactively and
+        # hang the runner. Fail fast with a clear message pointing at the
+        # secrets UI.
+        run: |
+          if [ -z "${VSCE_PAT:-}" ]; then
+            echo "::error::VSCE_PAT secret is not configured on this repository."
+            echo "::error::Add it under Settings → Secrets and variables → Actions → New repository secret."
+            echo "::error::The value must be a PAT from https://dev.azure.com with 'Marketplace (Manage)' scope for publisher 'miguel-colmenares'."
+            exit 1
+          fi
+          echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
+
+      - name: Verify VSCE_PAT is still valid and scoped correctly
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # `vsce verify-pat` authenticates against the Marketplace API without
+        # publishing anything. If it succeeds we know the token is not
+        # expired, the scope is correct, and the publisher name matches. If
+        # it fails we exit BEFORE any tag or GitHub Release is created, so
+        # nothing gets burned on GitHub for a broken PAT.
+        run: |
+          set -euo pipefail
+          npx vsce verify-pat miguel-colmenares
+
   build:
     name: Build ${{ matrix.target }}
+    # Runs unconditionally on pull_request; on workflow_dispatch it waits
+    # for preflight to succeed. `always()` is needed because otherwise
+    # `needs: preflight` would cascade the "skipped" status from PR runs.
+    needs: [preflight]
+    if: |
+      always() && (
+        (github.event_name == 'pull_request' && needs.preflight.result == 'skipped') ||
+        (github.event_name == 'workflow_dispatch' && needs.preflight.result == 'success')
+      )
     strategy:
       fail-fast: false
       matrix:
@@ -82,14 +218,61 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-  release:
-    name: Attach .vsix files to GitHub Release
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+  tag-and-release:
+    name: Create tag and GitHub Release
+    needs: [preflight, build]
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      needs.preflight.result == 'success' &&
+      needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
+      # Required for creating and pushing the annotated tag, and for
+      # creating the GitHub Release via `gh`.
       contents: write
     steps:
+      - name: Checkout master
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          # A shallow clone is fine; we only need to place a tag on HEAD.
+          fetch-depth: 1
+
+      - name: Verify HEAD matches package.json version
+        shell: bash
+        # Guards against the race where master moved between preflight and
+        # here (someone merged another PR that bumped package.json in the
+        # meantime). If HEAD's package.json disagrees with the requested
+        # version, we bail before tagging the wrong commit.
+        run: |
+          set -euo pipefail
+          expected="${{ needs.preflight.outputs.version }}"
+          actual=$(node -p 'require("./package.json").version')
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::master's package.json version ($actual) no longer matches the requested version ($expected)."
+            echo "::error::Someone likely pushed a version bump between preflight and now. Re-run the workflow with the current version."
+            exit 1
+          fi
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag ${{ needs.preflight.outputs.tag }}
+        env:
+          TAG: ${{ needs.preflight.outputs.tag }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+        # Annotated tag so the release commit shows up cleanly in `git log`.
+        # Push uses the default GITHUB_TOKEN, which has `contents: write` via
+        # the job-level permissions block above. The tag immutability ruleset
+        # allows tag CREATION but blocks deletion/force-push, which is exactly
+        # what we want here.
+        run: |
+          set -euo pipefail
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
       - name: Download all .vsix artifacts
         uses: actions/download-artifact@v4
         with:
@@ -100,36 +283,30 @@ jobs:
       - name: List downloaded artifacts
         run: ls -lh dist/
 
-      - name: Publish .vsix files to release ${{ github.ref_name }}
+      - name: Create GitHub Release with all .vsix assets
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        # Release/asset immutability policy: this step does NOT use --clobber.
-        # `gh release upload` will attempt to upload every file we pass and
-        # fail loudly on the first asset whose name already exists on the
-        # release — it does NOT silently skip duplicates. That's the intended
-        # behaviour: a rerun on the same tag with the same .vsix set exits
-        # non-zero, forcing whoever is republishing to make a conscious
-        # decision (delete the affected assets or the whole release by hand
-        # first, or bump to a fresh version). Combined with the tag-protection
-        # ruleset on refs/tags/v* this guarantees that a given tag → release
-        # → .vsix mapping is stable forever.
+          TAG: ${{ needs.preflight.outputs.tag }}
+        # We create the release from scratch here — the tag was just pushed
+        # by the previous step, so no prior release exists for it. If for
+        # some reason a release already exists (manual creation, replayed
+        # run), `gh release create` will fail loudly, which is intended:
+        # our immutability policy says a tag/release pair is stable, so a
+        # collision means something is off and needs human review.
         run: |
-          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
-            echo "Release ${{ github.ref_name }} already exists — uploading .vsix assets"
-            gh release upload "${{ github.ref_name }}" dist/*.vsix
-          else
-            echo "Creating release ${{ github.ref_name }} with generated notes + all .vsix"
-            gh release create "${{ github.ref_name }}" \
-              --title "${{ github.ref_name }}" \
-              --generate-notes \
-              dist/*.vsix
-          fi
+          set -euo pipefail
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            dist/*.vsix
 
   publish:
     name: Publish .vsix files to VS Code Marketplace
-    needs: release
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [preflight, tag-and-release]
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      needs.tag-and-release.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -156,39 +333,19 @@ jobs:
       - name: List downloaded artifacts
         run: ls -lh dist/
 
-      - name: Check whether VSCE_PAT is configured
-        id: preflight
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        # Marketplace publish is opt-in: if the maintainer hasn't configured
-        # the PAT yet we emit a warning and skip the publish step so the tag
-        # build stays green. The .vsix files are already attached to the GH
-        # Release by the previous job, so users can still install manually
-        # via `code --install-extension` while the secret is being provisioned.
-        # Configure it under Settings → Secrets and variables → Actions →
-        # New repository secret, using a PAT from https://dev.azure.com with
-        # 'Marketplace (Manage)' scope.
-        run: |
-          if [ -z "$VSCE_PAT" ]; then
-            echo "::warning::VSCE_PAT is not configured — skipping Marketplace publish."
-            echo "::warning::The .vsix files remain attached to the GitHub Release."
-            echo "can_publish=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
-            echo "can_publish=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Publish all .vsix files to VS Code Marketplace
-        if: steps.preflight.outputs.can_publish == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         # `vsce publish --packagePath` accepts any number of pre-built .vsix
         # files and uploads each one. The Marketplace uses the `--target`
         # baked into each .vsix by the packaging step (see the `build` job)
-        # to serve the right binary per platform. Fails fast on the first
-        # rejected upload (e.g. duplicate version), which is desirable given
-        # our immutability policy — a failed publish here means the tag
-        # needs a fresh version, not a retry with the same one.
+        # to serve the right binary per platform. Preflight already ran
+        # `vsce verify-pat` in this workflow, so authentication failures
+        # here would indicate the PAT was revoked mid-run — extremely
+        # unlikely but not impossible. Fails fast in that case; the tag
+        # and GitHub Release remain, so users can install manually via
+        # `code --install-extension` from the release assets while the PAT
+        # is being rotated.
         run: |
           set -euo pipefail
           count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')

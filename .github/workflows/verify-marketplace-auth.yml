@@ -35,7 +35,7 @@ jobs:
         run: |
           if [ -z "$VSCE_PAT" ]; then
             echo "::error::VSCE_PAT is not configured on this repository."
-            echo "::error::Add it under Settings \u2192 Secrets and variables \u2192 Actions"
+            echo "::error::Add it under Settings → Secrets and variables → Actions"
             echo "::error::using a PAT from https://dev.azure.com with 'Marketplace (Manage)' scope."
             exit 1
           fi
@@ -54,7 +54,7 @@ jobs:
         run: npx vsce verify-pat miguel-colmenares
 
       - name: Show current Marketplace record for miguel-colmenares.css-js-minifier
-        # Read-only Marketplace query \u2014 confirms the extension is registered
+        # Read-only Marketplace query — confirms the extension is registered
         # under the expected publisher/id combination and prints the current
         # published version, install count, etc. Independent of the PAT
         # (uses the public API), so if this succeeds but verify-pat fails
@@ -66,10 +66,10 @@ jobs:
           {
             echo "## Marketplace auth verification"
             echo ""
-            echo "\u2705 VSCE_PAT is configured on this repository."
-            echo "\u2705 PAT has publish rights for publisher \`miguel-colmenares\`."
-            echo "\u2705 Extension \`miguel-colmenares.css-js-minifier\` is registered on Marketplace."
+            echo "✅ VSCE_PAT is configured on this repository."
+            echo "✅ PAT has publish rights for publisher \`miguel-colmenares\`."
+            echo "✅ Extension \`miguel-colmenares.css-js-minifier\` is registered on Marketplace."
             echo ""
             echo "The token is ready to be used by the \`publish\` job in \`release.yml\`."
-            echo "Push a \`v*\` tag to trigger a real release."
+            echo "Dispatch \`release.yml\` with the target version to cut a release."
           } >> "$GITHUB_STEP_SUMMARY"

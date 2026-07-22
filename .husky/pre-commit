@@ -1,0 +1,80 @@
+# Husky pre-commit hook — lightweight local safety net.
+#
+# Two checks:
+#
+# 1. Lint the whole `src/` tree with ESLint. This project is small
+#    enough (~30 TS files) that `npm run lint` finishes in a couple of
+#    seconds, so we skip lint-staged and its extra devDependency in
+#    favour of a simpler, more predictable check.
+#
+# 2. Release-bump consistency: if this commit changes the `version`
+#    field in `package.json`, require that CHANGELOG.md is also staged
+#    AND contains a matching `## [X.Y.Z]` heading. This is the local
+#    equivalent of the release workflow's preflight — it stops a bump
+#    commit from being created in the first place if the changelog is
+#    forgotten, and matches the exact regex the workflow uses so if it
+#    passes here it will pass there.
+#
+# If you need to bypass this hook temporarily (e.g. WIP commit on a
+# feature branch that you'll clean up later), use `git commit --no-verify`.
+# CI will still catch anything you skipped, so this hook is a
+# convenience, not a gate.
+
+set -e
+
+echo "🔍 Running ESLint on src/…"
+npm run lint
+
+# ---- Release-bump consistency check --------------------------------------
+
+# Only run when package.json is part of the commit.
+if git diff --cached --name-only --diff-filter=AM | grep -qx 'package.json'; then
+  # Get the staged version and, if HEAD exists, the previous version.
+  staged_version=$(git show :package.json | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')
+
+  if git rev-parse --verify --quiet HEAD >/dev/null; then
+    head_version=$(git show HEAD:package.json 2>/dev/null | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version' 2>/dev/null || echo "")
+  else
+    head_version=""
+  fi
+
+  if [ -n "$head_version" ] && [ "$staged_version" != "$head_version" ]; then
+    echo "📦 Detected package.json version bump: $head_version → $staged_version"
+
+    # CHANGELOG.md must be part of the same commit.
+    if ! git diff --cached --name-only --diff-filter=AM | grep -qx 'CHANGELOG.md'; then
+      cat <<EOF >&2
+❌ Version bump detected but CHANGELOG.md is not staged in the same commit.
+
+Please:
+  1. Add a '## [$staged_version] - YYYY-MM-DD' entry at the top of CHANGELOG.md
+  2. git add CHANGELOG.md
+  3. Retry the commit.
+
+The release workflow's preflight will reject a release that lacks this entry,
+so this check keeps you out of that trap early.
+
+Bypass with 'git commit --no-verify' only if you know what you're doing.
+EOF
+      exit 1
+    fi
+
+    # And it must actually mention the new version.
+    if ! git show :CHANGELOG.md | grep -Eq "^## \[${staged_version}\]"; then
+      cat <<EOF >&2
+❌ CHANGELOG.md is staged but has no '## [${staged_version}]' heading.
+
+The release workflow's preflight looks for the exact regex:
+  ^## \[${staged_version}\]
+
+Please add that heading (with a date and release notes) at the top of
+CHANGELOG.md, re-stage, and retry the commit.
+
+Bypass with 'git commit --no-verify' only if you know what you're doing.
+EOF
+      exit 1
+    fi
+
+    echo "✅ CHANGELOG.md has an entry for $staged_version."
+  fi
+fi

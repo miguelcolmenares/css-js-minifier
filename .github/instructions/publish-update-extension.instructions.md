@@ -4,264 +4,232 @@ applyTo: '**'
 
 # VS Code Extension Publishing Instructions
 
-This document outlines the complete process for publishing updates to the CSS & JS Minifier extension on the Visual Studio Code Marketplace.
+This document is the runbook for publishing updates to the CSS & JS Minifier extension on the Visual Studio Code Marketplace.
 
-## Prerequisites
+**As of v1.3.3 the entire release flow — build, tag, GitHub Release, Marketplace publish — is orchestrated from a single GitHub Actions workflow (`Build & Release`, `.github/workflows/release.yml`). There is no local `vsce publish` in the primary path anymore. See "Emergency procedures" at the end for the offline fallback.**
 
-### 1. Install VSCE (Visual Studio Code Extension Manager)
+## Why this workflow-driven flow
+
+Two hard constraints shape everything below:
+
+1. **Tag immutability.** The repository ruleset on `refs/tags/v*` blocks deletion and force-push. Once a `v1.x.y` tag exists it is permanent, and any release tied to it is permanent too. This is a feature (immutable audit trail), but it means a mistake that pushes a bad tag burns that version number forever.
+
+2. **VSCE_PAT expires.** Azure DevOps PATs have a maximum lifespan of one year. If the PAT expires between two releases and nobody notices, a naïve "push tag → workflow publishes" flow would burn the tag on GitHub while failing to reach the Marketplace, leaving the two out of sync.
+
+The preflight-first workflow solves both: the tag is created **from inside** the workflow, and only **after** `vsce verify-pat` confirms the PAT is still valid and correctly scoped. If the PAT is broken, nothing gets created on GitHub, no version is burned, and the maintainer can rotate the PAT and re-run the workflow with the same version number.
+
+## Prerequisites (one-time setup)
+
+### 1. `VSCE_PAT` repository secret
+
+The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
+
+1. Sign in at <https://dev.azure.com> with the account that owns the `miguel-colmenares` Marketplace publisher.
+2. User Settings → Personal Access Tokens → **New Token**.
+3. Configure:
+   - **Name**: `VS Code Marketplace — miguel-colmenares (GitHub Actions)`
+   - **Organization**: **All accessible organizations** (do NOT scope to a single org — Marketplace lookups fail otherwise).
+   - **Scopes**: Custom defined → **Marketplace (Manage)**.
+   - **Expiration**: 1 year (the maximum allowed).
+4. Copy the token immediately (it is shown only once).
+5. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
+   - **Name**: `VSCE_PAT`
+   - **Secret**: paste the PAT verbatim, no wrapping quotes.
+
+### 2. Local tooling (only if you plan to run the emergency fallback)
+
 ```bash
 npm install -g @vscode/vsce
 ```
 
-### 2. Azure DevOps Personal Access Token (PAT)
-You need a Personal Access Token from Azure DevOps with Marketplace permissions:
+## Verifying `VSCE_PAT` any time (without publishing)
 
-1. Go to https://dev.azure.com
-2. Click on your profile → User Settings → Personal Access Tokens
-3. Create new token with:
-   - **Name**: VS Code Extension Publishing
-   - **Organization**: All accessible organizations
-   - **Scopes**: Custom defined → Marketplace (Manage)
-   - **Expiration**: Set appropriate duration (recommend 1 year)
-4. **IMPORTANT**: Copy the token immediately (only shown once)
-5. Store securely (password manager recommended)
+Before every release, and any time you rotate the PAT, run the standalone verification workflow. It uses `vsce verify-pat`, which authenticates against the Marketplace API without publishing:
 
-### 3. Login to VSCE
 ```bash
-vsce login miguel-colmenares
-# Enter your PAT token when prompted
+# From your local checkout, on any branch (workflow file must exist on master).
+gh workflow run verify-marketplace-auth.yml
+
+# Poll the latest run:
+RUN_ID=$(gh run list --workflow=verify-marketplace-auth.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+gh run watch "$RUN_ID" --exit-status
 ```
 
-## Publishing Process
+A green run confirms the PAT is present, unexpired, correctly scoped and matches the `miguel-colmenares` publisher. **No version is burned; the Marketplace state is untouched.**
 
-### Step 1: Complete Development Work
-1. ✅ Ensure all code changes are complete
-2. ✅ All tests pass: `npm test`
-3. ✅ Update version in `package.json` following Semantic Versioning:
-   - **PATCH** (x.x.1): Bug fixes, small improvements
-   - **MINOR** (x.1.x): New features, backward compatible
-   - **MAJOR** (1.x.x): Breaking changes, architecture changes
-4. ✅ **Verify `engines.vscode` matches `@types/vscode`** in `package.json`:
-   - If `@types/vscode` is `^1.116.0`, then `engines.vscode` must also be `^1.116.0`
-   - Update `.vscode-test.mjs` default version accordingly
-   - Update `test-vscode-minimum.yml` workflow to test against the same version
-5. ✅ Update `CHANGELOG.md` with release date and changes
-6. ✅ Commit version changes: `git commit -m "chore: Release version X.X.X"`
+The release workflow (`Build & Release`) also runs this check in its preflight step, so even if you skip the standalone verification the release is still safe. Running it manually is a fast smoke test after rotating the PAT.
 
-### Step 2: Create Pull Request and Merge
-1. Create PR from feature branch to `master`
-2. Review and merge PR
-3. Switch to master branch: `git checkout master`
-4. Pull latest changes: `git pull origin master`
+## The release runbook
 
-### Step 3: Create Git Tag
+### Step 1 — Prepare the release commit (on a feature branch → PR)
+
+1. Bump the version in `package.json` following SemVer:
+   - **PATCH** (1.3.**4**): bug fixes only, no user-visible feature changes.
+   - **MINOR** (1.**4**.0): new features, backwards compatible.
+   - **MAJOR** (**2**.0.0): breaking changes.
+2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`.
+3. Add a new entry at the top of `CHANGELOG.md` following the existing style: `## [X.Y.Z] - YYYY-MM-DD` with `### Added` / `### Fixed` / `### Changed` sections describing user-visible impact. **The release workflow verifies this entry exists before creating the tag** — a missing entry aborts the release.
+4. Run the full local check:
+   ```bash
+   npm test
+   npm run lint
+   ```
+5. Commit:
+   ```bash
+   git checkout -b chore/release-X.Y.Z
+   git add package.json CHANGELOG.md
+   git commit -m "chore: Release version X.Y.Z"
+   git push -u origin chore/release-X.Y.Z
+   gh pr create --title "chore: Release X.Y.Z" --base master | cat
+   ```
+6. Merge the PR (squash). The 6-platform build matrix runs automatically on the PR because `package.json` is in the workflow's path filter.
+
+### Step 2 — Verify `VSCE_PAT` is healthy
+
 ```bash
-# Create annotated tag (replace X.X.X with actual version)
-git tag -a vX.X.X -m "Release version X.X.X"
-
-# Push tag to remote
-git push origin vX.X.X
-
-# Verify tag was created
-git tag -l
+gh workflow run verify-marketplace-auth.yml
 ```
 
-### Step 4: Build for Production
-The extension has automated build configuration:
+Wait for the run to complete green. If it fails, rotate the PAT (see [Prerequisites](#1-vsce_pat-repository-secret)) before continuing.
+
+### Step 3 — Trigger the release workflow
+
+The release is dispatched manually with the version number as input. The version **must** match `package.json` on `master` exactly.
+
+**Via the GitHub UI:**
+
+1. Repository → **Actions** → **Build & Release** → **Run workflow**.
+2. Branch: `master`.
+3. `version`: the exact version from `package.json` (e.g. `1.3.4`), without the leading `v`.
+4. **Run workflow**.
+
+**Via the CLI:**
+
 ```bash
-# This runs automatically during publish, but you can test it:
-npm run vscode:prepublish
+gh workflow run release.yml -f version=X.Y.Z
 ```
 
-This executes:
-- `npm run package` → `webpack --mode production --devtool hidden-source-map`
-- Creates optimized bundle in `dist/extension.js`
-- Removes development dependencies
-- Generates source maps for debugging
+### Step 4 — Wait for the workflow to finish
 
-### Step 5: Publish to Marketplace
+The workflow runs four jobs in order:
 
-#### Option A: Direct Publish (Recommended)
-```bash
-vsce publish
-```
+1. **Preflight** (~1 min). Validates:
+   - The `version` input matches `package.json` on `master`.
+   - `CHANGELOG.md` has a `## [X.Y.Z]` entry.
+   - The tag `vX.Y.Z` does not already exist on `origin`.
+   - `VSCE_PAT` is present.
+   - `vsce verify-pat miguel-colmenares` succeeds.
+2. **Build matrix** (~10–15 min). Packages one `.vsix` per platform (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each.
+3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all six `.vsix` files attached and auto-generated release notes.
+4. **Publish** (~2 min). Uploads all six `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
 
-#### Option B: Auto-increment Version While Publishing
-```bash
-# Automatically increment and publish (SemVer)
-vsce publish patch   # 1.0.0 -> 1.0.1
-vsce publish minor   # 1.0.0 -> 1.1.0
-vsce publish major   # 1.0.0 -> 2.0.0
-vsce publish 1.0.1   # Specific version
-```
+If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
-#### Option C: Package First, Then Publish
-```bash
-# Create .vsix package for testing/validation
-vsce package
+If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and GitHub Release stay in place, and users can install manually from the release assets via `code --install-extension` while the maintainer investigates. Re-running just the publish job is not currently supported — a manual `vsce publish` from the maintainer's machine using the already-attached `.vsix` files is the recovery path (see [Emergency procedures](#emergency-procedures) below).
 
-# Test the package locally (optional)
-code --install-extension css-js-minifier-X.X.X.vsix
+### Step 5 — Verify publication
 
-# Publish the package
-vsce publish
-```
+1. Wait 5–10 minutes for the Marketplace CDN to update.
+2. Confirm the new version is live: <https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier>.
+3. Install and smoke-test:
+   ```bash
+   code --install-extension miguel-colmenares.css-js-minifier
+   ```
+4. If any GitHub issues were fixed in this release, close them referencing the release tag.
 
-### Step 6: Verify Publication
-1. Check VS Code Marketplace: https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier
-2. Verify version number updated
-3. Test installation: `code --install-extension miguel-colmenares.css-js-minifier`
-4. Update README.md badges if needed
+## Local safety nets (Husky hooks)
 
-## Project Configuration
+The repository ships with Husky-managed Git hooks that catch common mistakes locally, before they turn into CI failures or burned tag versions. See [`AGENTS.md`](../../AGENTS.md#git-hooks-husky) for the full list, including the reasoning behind the "no `pre-tag`" design choice. The ones relevant to publishing:
 
-### Current Extension Settings
-- **Publisher**: `miguel-colmenares`
-- **Extension ID**: `css-js-minifier`
-- **Main Entry**: `./dist/extension.js` (webpack bundled)
-- **Pre-publish Script**: `npm run package`
-
-### Package.json Configuration
-```json
-{
-  "publisher": "miguel-colmenares",
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "package": "webpack --mode production --devtool hidden-source-map"
-  }
-}
-```
+- **`pre-push`** — refuses to push any `refs/tags/v*` from a local machine. Tags belong to the release workflow. If you need to release, dispatch `release.yml` instead.
+- **`pre-commit`** — runs `npm run lint` on the whole `src/` tree, and if the commit changes `package.json` version, requires `CHANGELOG.md` to be staged in the same commit with a matching `## [X.Y.Z]` heading. This mirrors the workflow's preflight check exactly, so a bump commit that passes locally is guaranteed to pass in CI.
+- **`commit-msg`** — enforces Conventional Commit format on the subject line.
 
 ## Troubleshooting
 
-### Common Issues
+### Preflight fails on "Input version does not match package.json"
 
-#### 1. Authentication Errors (403 Forbidden / 401 Unauthorized)
+You dispatched the workflow with a version that doesn't match what's on `master`. Either you forgot to merge the bump PR, or you typed the wrong number. Confirm with `git show master:package.json | jq -r .version` and dispatch again with the matching value.
+
+### Preflight fails on "CHANGELOG.md is missing an entry"
+
+Open a follow-up PR that adds `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG.md`, merge, and re-dispatch.
+
+### Preflight fails on "Tag vX.Y.Z already exists"
+
+The tag was created by a previous run and cannot be reused (immutability policy). Bump `package.json` to the next available version on a new PR, merge, and dispatch with the new number.
+
+### Preflight fails on `vsce verify-pat`
+
+The PAT is expired, has the wrong scope, or does not belong to the `miguel-colmenares` publisher. Rotate the PAT (see [Prerequisites](#1-vsce_pat-repository-secret)) and re-dispatch. **No tag was created**, so nothing is burned.
+
+### Build matrix fails on a specific platform
+
+Look at the failing job's log. Common causes:
+
+- Native binding regression: `scripts/verify-vsix-activation.mjs` will report exactly which `require()` failed. Usually points at a missing entry in `optionalDependencies` or `.vscodeignore`.
+- Test flake: retry the job. If it fails twice, treat it as a real failure.
+
+### Publish fails after tag was created
+
+The tag and GitHub Release are in place; the Marketplace is missing the version. Recovery:
+
+1. Investigate the failure (`vsce publish` output is in the job log). If it's a transient Marketplace error, wait and re-run manually (see [Emergency procedures](#emergency-procedures)).
+2. If the PAT was revoked mid-run, rotate it, then run the emergency manual publish using the `.vsix` files from the GitHub Release.
+3. Do **not** try to re-cut the release under a different tag — the tag/release pair is immutable and users may already have installed from the GitHub assets.
+
+## Emergency procedures
+
+### Manual publish from a local machine
+
+Use this only when the workflow's publish step failed and you cannot re-run it (e.g. GitHub Actions outage, or Marketplace requires interactive confirmation). It assumes the tag and GitHub Release already exist.
+
 ```bash
-# Error: Failed to login
-vsce logout
-vsce login miguel-colmenares
-# Re-enter PAT token
+# 1. Authenticate vsce locally with a fresh PAT.
+export VSCE_PAT=<your-pat>
+
+# 2. Download all six .vsix files from the GitHub Release.
+mkdir -p /tmp/release-X.Y.Z
+gh release download vX.Y.Z --repo miguelcolmenares/css-js-minifier --dir /tmp/release-X.Y.Z --pattern '*.vsix'
+
+# 3. Publish them all in one shot.
+cd /tmp/release-X.Y.Z
+npx @vscode/vsce publish --packagePath *.vsix
 ```
 
-**Common causes:**
-- PAT token created for specific organization instead of "All accessible organizations"
-- Incorrect scope - must be "Marketplace (Manage)"
-- Expired PAT token
+### Rotating a compromised PAT
 
-#### 2. Version Conflicts
+1. Revoke the PAT at <https://dev.azure.com> immediately.
+2. Create a fresh PAT (see [Prerequisites](#1-vsce_pat-repository-secret)).
+3. Update the `VSCE_PAT` secret in the repository.
+4. Run `gh workflow run verify-marketplace-auth.yml` to confirm the new PAT works.
+
+### Unpublishing (extreme caution)
+
+Unpublishing breaks every existing installation of the affected version. Use only for security-critical bugs.
+
 ```bash
-# Error: Version already exists
-# Update version in package.json and commit
-git add package.json
-git commit -m "chore: Bump version to X.X.X"
+# Unpublish a specific version.
+npx @vscode/vsce unpublish miguel-colmenares.css-js-minifier@X.Y.Z
+
+# Unpublish the entire extension (last resort).
+npx @vscode/vsce unpublish miguel-colmenares.css-js-minifier
 ```
 
-#### 3. Build Failures
-```bash
-# Clean and rebuild
-rm -rf dist/ out/ node_modules/
-npm install
-npm run vscode:prepublish
-```
+The tag and GitHub Release remain untouched by unpublishing — they must be dealt with separately if the intent is to fully erase a version, but the immutability ruleset blocks tag deletion.
 
-#### 4. Marketplace Delays
-- Publication can take 5-10 minutes to appear
-- Check https://marketplace.visualstudio.com/manage/publishers/miguel-colmenares
+## Reference
 
-#### 5. Extension Name Conflicts
-```bash
-# Error: The extension 'name' already exists in the Marketplace
-# Solution: Change 'name' or 'displayName' in package.json to be unique
-```
-
-#### 6. Too Many Keywords
-```bash
-# Error: You exceeded the number of allowed tags of 30
-# Solution: Limit keywords in package.json to maximum 30
-```
-
-### Validation Commands
-```bash
-# Check extension validity
-vsce package --no-dependencies
-
-# Verify webpack bundle
-npm run package
-ls -la dist/
-
-# Test extension locally
-npm run compile-tests && npm test
-
-# Check available vsce commands
-vsce --help
-
-# Test package installation locally
-code --install-extension ./css-js-minifier-X.X.X.vsix
-```
-
-## Release Checklist
-
-### Pre-Release
-- [ ] All features implemented and tested
-- [ ] Version number updated in package.json
-- [ ] `engines.vscode` matches `@types/vscode` version
-- [ ] `test-vscode-minimum.yml` and `.vscode-test.mjs` updated to match
-- [ ] CHANGELOG.md updated with release date
-- [ ] All tests passing (`npm test`)
-- [ ] Code linted successfully (`npm run lint`)
-- [ ] Documentation updated if needed
-
-### Release
-- [ ] PR created and merged to master
-- [ ] Git tag created (vX.X.X)
-- [ ] Tag pushed to remote
-- [ ] VSCE authentication valid
-- [ ] Extension published successfully
-- [ ] Marketplace updated (5-10 min delay)
-
-### Post-Release
-- [ ] Installation tested from marketplace
-- [ ] Version badges updated in README
-- [ ] Release notes communicated if major version
-- [ ] Issues closed if this release addresses them
-
-## Security Notes
-
-1. **PAT Token Security**:
-   - Never commit PAT tokens to version control
-   - Store in secure password manager
-   - Regenerate if compromised
-   - Set appropriate expiration dates
-
-2. **Publishing Access**:
-   - Only authorized maintainers should have publishing access
-   - Use organization accounts for team projects
-   - Monitor marketplace activity
-
-## Emergency Procedures
-
-### Unpublish Extension (Use with extreme caution)
-```bash
-vsce unpublish miguel-colmenares.css-js-minifier
-```
-
-### Unpublish Specific Version
-```bash
-vsce unpublish miguel-colmenares.css-js-minifier@X.X.X
-```
-
-**Note**: Unpublishing can break user installations. Only use for critical security issues.
-
-## Resources
-
+- [`.github/workflows/release.yml`](../workflows/release.yml) — the release workflow.
+- [`.github/workflows/verify-marketplace-auth.yml`](../workflows/verify-marketplace-auth.yml) — the standalone PAT check.
+- [`AGENTS.md`](../../AGENTS.md) — agent-oriented summary of the release flow and Husky hooks.
+- [`CONTRIBUTING.md`](../../CONTRIBUTING.md) — contributor onboarding and CI matrix explanation.
 - [VS Code Extension Publishing Guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
-- [VSCE CLI Documentation](https://github.com/microsoft/vscode-vsce)
-- [Azure DevOps PAT Management](https://dev.azure.com)
-- [VS Code Marketplace Publisher Portal](https://marketplace.visualstudio.com/manage)
-- [Semantic Versioning Specification](https://semver.org/)
+- [vsce CLI documentation](https://github.com/microsoft/vscode-vsce)
+- [Azure DevOps PAT management](https://dev.azure.com)
+- [Marketplace Publisher Portal](https://marketplace.visualstudio.com/manage)
+- [Semantic Versioning](https://semver.org/)
 
 ---
 
-**Last Updated**: October 8, 2025
-**Next Review**: Before next major release
+**Last Updated**: 2026-07-22 (v1.3.3 introduced the workflow-driven release flow).
