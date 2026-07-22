@@ -1,4 +1,4 @@
-name: Release
+name: Build & Release
 
 on:
   push:
@@ -54,7 +54,12 @@ jobs:
       - name: Read extension version
         id: version
         shell: bash
-        run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        # Use single-quoted `node -p` arg to avoid nested double quotes
+        # inside the outer command-substitution string — it works either
+        # way in POSIX shells but the split form is easier to review.
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          echo "value=$version" >> "$GITHUB_OUTPUT"
 
       - name: Package .vsix for ${{ matrix.target }}
         shell: bash
@@ -149,20 +154,30 @@ jobs:
       - name: List downloaded artifacts
         run: ls -lh dist/
 
-      - name: Verify VSCE_PAT secret is configured
+      - name: Check whether VSCE_PAT is configured
+        id: preflight
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # Marketplace publish is opt-in: if the maintainer hasn't configured
+        # the PAT yet we emit a warning and skip the publish step so the tag
+        # build stays green. The .vsix files are already attached to the GH
+        # Release by the previous job, so users can still install manually
+        # via `code --install-extension` while the secret is being provisioned.
+        # Configure it under Settings → Secrets and variables → Actions →
+        # New repository secret, using a PAT from https://dev.azure.com with
+        # 'Marketplace (Manage)' scope.
         run: |
           if [ -z "$VSCE_PAT" ]; then
-            echo "::error::VSCE_PAT secret is not configured on this repository."
-            echo "::error::Add it under Settings → Secrets and variables → Actions →"
-            echo "::error::New repository secret, using a Personal Access Token from"
-            echo "::error::https://dev.azure.com with 'Marketplace (Manage)' scope."
-            exit 1
+            echo "::warning::VSCE_PAT is not configured — skipping Marketplace publish."
+            echo "::warning::The .vsix files remain attached to the GitHub Release."
+            echo "can_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
+            echo "can_publish=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
 
       - name: Publish all .vsix files to VS Code Marketplace
+        if: steps.preflight.outputs.can_publish == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         # `vsce publish --packagePath` accepts any number of pre-built .vsix

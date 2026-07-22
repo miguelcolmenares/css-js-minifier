@@ -15,10 +15,14 @@
  *
  * Portability:
  *   - Requires Node 20+ (ESM, `fs.rmSync`, `fs.mkdtempSync`).
- *   - A .vsix is a ZIP archive, so extraction uses `unzip` on Linux/macOS
+ *   - A .vsix is a ZIP archive. Extraction uses `unzip` on Linux/macOS
  *     (preinstalled on every GitHub Actions Linux/macOS runner) and
- *     PowerShell `Expand-Archive` on Windows (built-in cmdlet on every
- *     Windows Server / Windows 11 GitHub Actions runner).
+ *     .NET's `System.IO.Compression.ZipFile::ExtractToDirectory` invoked
+ *     from PowerShell on Windows. `Expand-Archive` was avoided on purpose:
+ *     it rejects files whose extension is not `.zip`, so it can't unpack a
+ *     `.vsix` directly. `ZipFile::ExtractToDirectory` is extension-agnostic
+ *     and available via `System.IO.Compression.FileSystem` on every
+ *     Windows Server / Windows 11 GitHub Actions runner (.NET 4.6.1+).
  *   - No npm dependencies of its own.
  */
 
