@@ -118,3 +118,62 @@ jobs:
               --generate-notes \
               dist/*.vsix
           fi
+
+  publish:
+    name: Publish .vsix files to VS Code Marketplace
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (for vsce)
+        run: npm ci
+
+      - name: Download all .vsix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: vsix-*
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: ls -lh dist/
+
+      - name: Verify VSCE_PAT secret is configured
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::VSCE_PAT secret is not configured on this repository."
+            echo "::error::Add it under Settings → Secrets and variables → Actions →"
+            echo "::error::New repository secret, using a Personal Access Token from"
+            echo "::error::https://dev.azure.com with 'Marketplace (Manage)' scope."
+            exit 1
+          fi
+          echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
+
+      - name: Publish all .vsix files to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # `vsce publish --packagePath` accepts any number of pre-built .vsix
+        # files and uploads each one. The Marketplace uses the `--target`
+        # baked into each .vsix by the packaging step (see the `build` job)
+        # to serve the right binary per platform. Fails fast on the first
+        # rejected upload (e.g. duplicate version), which is desirable given
+        # our immutability policy — a failed publish here means the tag
+        # needs a fresh version, not a retry with the same one.
+        run: |
+          set -euo pipefail
+          count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
+          echo "Publishing $count .vsix files to Marketplace..."
+          npx vsce publish --packagePath dist/*.vsix

@@ -47,20 +47,23 @@ console.log(`host:   ${platform}-${process.arch}   node ${process.version}`);
 console.log(`vsix:   ${basename(vsixPath)}`);
 
 // ---------------------------------------------------------------------------
-// Extract the .vsix (a ZIP archive) into a temp dir. Windows gets
-// PowerShell's Expand-Archive; every other platform gets `unzip -q`.
+// Extract the .vsix (a ZIP archive) into a temp dir. Windows gets .NET's
+// System.IO.Compression.ZipFile (works with any file extension, unlike
+// Expand-Archive which insists on `.zip`); every other platform gets
+// `unzip -q`.
 // ---------------------------------------------------------------------------
 const workDir = mkdtempSync(join(tmpdir(), "vsix-verify-"));
 try {
   if (platform === "win32") {
+    // ExtractToDirectory(src, dst, overwrite) — third arg requires
+    // .NET Framework 4.6.1+, which is present on every Windows GitHub
+    // Actions runner image.
+    const psCommand =
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
+      `[System.IO.Compression.ZipFile]::ExtractToDirectory('${vsixPath.replace(/'/g, "''")}', '${workDir.replace(/'/g, "''")}', $true)`;
     execFileSync(
       "powershell.exe",
-      [
-        "-NoProfile",
-        "-NonInteractive",
-        "-Command",
-        `Expand-Archive -LiteralPath '${vsixPath.replace(/'/g, "''")}' -DestinationPath '${workDir.replace(/'/g, "''")}' -Force`,
-      ],
+      ["-NoProfile", "-NonInteractive", "-Command", psCommand],
       { stdio: "inherit" }
     );
   } else {
