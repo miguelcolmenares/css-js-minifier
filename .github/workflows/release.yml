@@ -56,11 +56,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          # Full history is needed by `git rev-parse -q --verify refs/tags/…`
-          # in the tag-existence check below — otherwise the shallow clone
-          # would silently claim every tag is missing.
-          fetch-depth: 0
+        # A shallow clone (the default `fetch-depth: 1`) is enough here:
+        # the tag-existence check below uses `git ls-remote --tags` against
+        # origin, which never touches local history.
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

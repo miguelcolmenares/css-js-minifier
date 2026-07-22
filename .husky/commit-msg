@@ -14,7 +14,11 @@
 # Special cases that bypass the check:
 #   - Merge commits (Git prepends "Merge …")
 #   - Revert commits from `git revert` (start with "Revert ")
-#   - Automated release commits from workflows (start with "chore: Release ")
+#   - Fixup / squash commits (`fixup! …`, `squash! …`)
+#
+# Note: automated release commits (`chore: Release X.Y.Z`) already match the
+# Conventional Commits pattern below, so they are accepted by the regular
+# check — no special-case bypass is needed for them.
 #
 # Escape hatch: commit with `--no-verify` to skip locally. CI does not
 # re-check commit messages, so squash-and-merge lets maintainers rewrite
