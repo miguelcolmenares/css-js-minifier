@@ -77,6 +77,10 @@ Before opening a PR, please make sure:
 - [ ] Documentation in `README.md` or `docs/` is updated if you added or changed user-visible behavior
 - [ ] If you added a new user-visible string, all seven `l10n/bundle.l10n.*.json` files have the corresponding key (see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md))
 
+### Why you must open a PR (branch protection)
+
+`master` is protected by the `Protect master` repository ruleset. Direct pushes are rejected — every change, including maintainer changes, must arrive via pull request. The ruleset requires four checks to pass before a PR can be merged: three cross-platform tests (`Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest`) and CodeQL (`Analyze (javascript-typescript)`). These run automatically on every PR to `master`, so you don't need to trigger anything manually. See [AGENTS.md → Branch protection](AGENTS.md#branch-protection-master) for the full ruleset breakdown.
+
 ## Release process (maintainer only)
 
 Releases are gated behind two safeguards that contributors don't need to worry about but should be aware of:

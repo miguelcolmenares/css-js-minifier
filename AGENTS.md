@@ -60,6 +60,24 @@ The workflow re-checks all four in its `preflight` job, so you can't accidentall
 - ❌ Do **not** try to delete or re-tag a `v*` — the ruleset blocks it and the fix is always "bump to the next version".
 - ❌ Do **not** add a `push: tags: v*` trigger back to `release.yml`. It defeats the purpose of preflight-gated tag creation.
 - ❌ Do **not** use `git commit --amend --no-edit` on a tagged commit — the tag now points to an old sha.
+- ❌ Do **not** attempt to push directly to `master`. A repository ruleset (`Protect master`, id `19564892`) blocks it — every change must arrive via pull request, even for the owner. See [Branch protection](#branch-protection-master).
+
+---
+
+## Branch protection (`master`)
+
+Enforced by repository ruleset **`Protect master`** (id `19564892`, target = default branch, `bypass_actors = []` → no one bypasses, not even the owner):
+
+| Rule | Effect |
+| --- | --- |
+| `deletion` | `master` cannot be deleted. |
+| `non_fast_forward` | Force-pushes to `master` are rejected. |
+| `pull_request` (approvals = 0) | Every change must arrive via PR. Direct `git push origin master` is refused. Zero approvals required — the maintainer can self-merge — but the PR object must exist so checks can run and the history is auditable. |
+| `required_status_checks` | The PR cannot be merged until all four of these checks pass: `Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest` (from `Build - Master`), and `Analyze (javascript-typescript)` (from CodeQL). These four run on **every** PR to `master` regardless of what files it touches, so they never cause "waiting for a check that never runs" deadlocks. |
+
+**Not required (deliberate):** the six `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR.
+
+**Rules companion:** the tag ruleset **`Immutable release tags (v*)`** (id `19533762`) blocks `deletion` and `non_fast_forward` on `refs/tags/v*`, making every published version permanent.
 
 ---
 
