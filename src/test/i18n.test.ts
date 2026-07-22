@@ -351,19 +351,23 @@ suite('Internationalization (i18n) Test Suite', function () {
 		const englishBundlePath = path.join(workspaceRoot, 'l10n', 'bundle.l10n.json');
 		const englishBundle = JSON.parse(fs.readFileSync(englishBundlePath, 'utf8')) as Record<string, string>;
 
-		test('l10nHelper.t() returns the English source text under the default locale', function () {
+		test('l10nHelper.t() returns interpolated text regardless of active locale', function () {
 			// Under VS Code's canonical l10n pattern the first argument to `t()` is the
 			// English source string, and `vscode.l10n.t(message, ...args)` returns
-			// `message` (with placeholders substituted) when no locale bundle matches.
+			// either the interpolated English source (default locale) or the interpolated
+			// translation from `bundle.l10n.<locale>.json` (when a matching language pack
+			// is active). This assertion is locale-agnostic: it only requires that the
+			// `{0}` placeholder was substituted with the provided argument.
 			// Regression guard for issue #169: the previous helper served English strings
 			// from an in-memory bundle regardless of the active locale, breaking every
 			// non-English user.
 			const source = "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.";
 			const resolved = t(source, 'txt');
 
+			assert.ok(!resolved.includes('{0}'), `t() should substitute the {0} placeholder (got: '${resolved}')`);
 			assert.ok(
-				resolved.includes("File type 'txt' is not supported"),
-				`t() should either return the interpolated English source or a translated equivalent (got: '${resolved}')`
+				resolved.includes('txt'),
+				`t() should interpolate the argument 'txt' into the resolved message (got: '${resolved}')`
 			);
 		});
 
