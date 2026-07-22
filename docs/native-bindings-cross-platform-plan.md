@@ -69,58 +69,100 @@ No CI job produces or validates the `.vsix`. No cross-platform activation smoke 
 
 **Rationale:** Even a correctly targeted `--target linux-x64` `.vsix` fails without this. Verified in Docker: adding `detect-libc` alone to a linux-targeted `.vsix` moved results from 2/3 to 4/4 passing.
 
-### Change 2 — Multi-target build script
+### Change 2 — CI-native release workflow (`release.yml`)
 
-New file: `scripts/build-vsix.sh`
+New workflow file: `.github/workflows/release.yml`
 
-Iterates over the six supported VS Code marketplace targets. For each target it:
+Replaces any local multi-target build ritual. GitHub Actions runs a matrix over the six supported VS Code Marketplace targets, each on its own **native** runner (no QEMU, no cross-compile, no `npm install --force` juggling). `npm ci` on each runner materialises the correct `optionalDependencies` pair automatically.
 
-1. Removes any previously-installed platform-specific `lightningcss-*` and `@oxc-minify/binding-*` packages from `node_modules` (npm accumulates them otherwise).
-2. Force-installs the target's specific pair via `npm install --no-save --force`.
-3. Runs `npx vsce package --target <target> --out dist/css-js-minifier-<version>-<target>.vsix`.
-4. Verifies (via `unzip -l`) that the resulting `.vsix` contains only the expected bindings.
+Runner labels (verified July 2026, all free for public repos):
 
-Targets:
-
-| Target | lightningcss binding | oxc-minify binding |
+| Target | Runner label | Native arch |
 |---|---|---|
-| `darwin-x64` | `lightningcss-darwin-x64` | `@oxc-minify/binding-darwin-x64` |
-| `darwin-arm64` | `lightningcss-darwin-arm64` | `@oxc-minify/binding-darwin-arm64` |
-| `linux-x64` | `lightningcss-linux-x64-gnu` | `@oxc-minify/binding-linux-x64-gnu` |
-| `linux-arm64` | `lightningcss-linux-arm64-gnu` | `@oxc-minify/binding-linux-arm64-gnu` |
-| `win32-x64` | `lightningcss-win32-x64-msvc` | `@oxc-minify/binding-win32-x64-msvc` |
-| `win32-arm64` | `lightningcss-win32-arm64-msvc` | `@oxc-minify/binding-win32-arm64-msvc` |
+| `darwin-x64` | `macos-13` | Intel x64 |
+| `darwin-arm64` | `macos-latest` (`macos-14`+) | Apple Silicon |
+| `linux-x64` | `ubuntu-latest` | x64 |
+| `linux-arm64` | `ubuntu-24.04-arm` | arm64 |
+| `win32-x64` | `windows-latest` | x64 |
+| `win32-arm64` | `windows-11-arm` | arm64 |
 
-Script must also restore the host's own binding pair at the end so local dev is not broken.
+Workflow structure:
 
-### Change 3 — Cross-platform activation smoke test
+```yaml
+name: Release
 
-New file: `scripts/verify-vsix-activation.sh`
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - '.github/workflows/release.yml'
+      - 'scripts/verify-vsix-activation.*'
 
-Given a `.vsix` path and a Docker image, extracts the archive and runs a Node script that reproduces extension activation:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: darwin-x64,   os: macos-13 }
+          - { target: darwin-arm64, os: macos-latest }
+          - { target: linux-x64,    os: ubuntu-latest }
+          - { target: linux-arm64,  os: ubuntu-24.04-arm }
+          - { target: win32-x64,    os: windows-latest }
+          - { target: win32-arm64,  os: windows-11-arm }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - checkout
+      - setup-node@20
+      - npm ci                              # ← auto-picks the runner's native bindings
+      - npm run package                     # webpack production build
+      - npx vsce package --target ${{ matrix.target }} --out css-js-minifier-${{ matrix.target }}.vsix
+      - node scripts/verify-vsix-activation.mjs css-js-minifier-${{ matrix.target }}.vsix   # smoke test
+      - upload-artifact  css-js-minifier-${{ matrix.target }}.vsix  (retention 30d)
 
-```js
-require('lightningcss').transform({filename:'t.css',code:Buffer.from('a{color:red}'),minify:true});
-require('oxc-minify').minifySync('t.js','const x=1;');
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - download all 6 artifacts
+      - gh release upload ${{ github.ref_name }} *.vsix --clobber
 ```
 
-Exits non-zero on any failure. Callable both locally and from CI.
+Key properties:
 
-### Change 4 — CI workflow: `verify-vsix.yml`
+- **On tag push (`v*`)**: builds 6, smoke-tests each, attaches all 6 to the corresponding GitHub Release.
+- **On PR**: builds 6, smoke-tests each, uploads as workflow artifacts (no release). Fails the PR if any binding cannot activate.
+- **On `workflow_dispatch`**: same as tag push; useful for re-running against an existing tag.
+- **Publishing to Marketplace stays manual for v1.3.3** (per non-goal below). Maintainer downloads the 6 artifacts from the GitHub Release and runs `npx vsce publish --packagePath` locally. Adding automated publish later is ~10 lines.
 
-New workflow file: `.github/workflows/verify-vsix.yml`
+### Change 3 — Cross-platform activation smoke test (`verify-vsix-activation.mjs`)
 
-Triggers on `pull_request` to `master` and on manual `workflow_dispatch`. Steps:
+New file: `scripts/verify-vsix-activation.mjs`
 
-1. Checkout, setup Node 20, install deps.
-2. Run `scripts/build-vsix.sh` (produces six `.vsix` files).
-3. Matrix job over targets that Docker/Actions runners can validate natively:
-   - `linux-x64` — `node:22-slim` container
-   - `linux-arm64` — `node:22-slim` with `--platform linux/arm64` via QEMU
-   - `darwin-x64`, `darwin-arm64` — `macos-latest` / `macos-13` runners (no Docker needed; run the smoke script directly against the extracted `.vsix`).
-   - `win32-x64` — `windows-latest` runner (run smoke script directly).
-   - `win32-arm64` — no public CI runner; validate manifest presence only (bindings existence in `.vsix`).
-4. Upload all six `.vsix` files as workflow artifacts for the maintainer to download and manually upload to Marketplace.
+Node script (Node 20+, ESM) invoked by the CI workflow after packaging. Contract:
+
+```
+node scripts/verify-vsix-activation.mjs <path-to-vsix>
+```
+
+Steps:
+
+1. Extract the `.vsix` to a temp directory.
+2. `require('lightningcss')` and call `transform({...})`.
+3. `require('oxc-minify')` and call `minifySync(...)`.
+4. Assert both bindings loaded and produced non-empty output.
+5. Exit 0 on all pass, non-zero on any failure.
+
+Runs directly on the CI runner (no Docker) because the runner's OS/arch matches the target being tested.
 
 ### Change 5 — Update CHANGELOG.md
 
@@ -140,14 +182,21 @@ Extend the existing `[1.3.3] - 2026-07-22` entry with:
 ### Changed
 - Release process now produces six platform-specific `.vsix` files
   (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`,
-  `win32-arm64`). No more universal fallback build.
+  `win32-arm64`), each built on its own native GitHub Actions runner and
+  attached to the GitHub Release automatically. No more universal fallback
+  build, no more local packaging.
 - Added `detect-libc` as a direct runtime dependency so it is bundled into
   every `.vsix` regardless of target.
 ```
 
 ### Change 6 — Update publishing instructions
 
-Update `.copilot/instructions/publish-update-extension.instructions.md` (in the user's global copilot config) — or, if not permissible, add a new `docs/PUBLISHING.md` in this repo — describing the multi-target build + publish flow.
+Update `.copilot/instructions/publish-update-extension.instructions.md` (in the user's global copilot config) — or, if not permissible, add a new `docs/PUBLISHING.md` in this repo — describing the new flow:
+
+1. Land the release commit on `master`.
+2. `git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z` — this alone triggers CI to build 6 `.vsix` and attach them to the auto-created GitHub Release.
+3. Download the 6 `.vsix` from the Release page.
+4. Run `npx vsce publish --packagePath <file>` for each (or configure `VSCE_PAT` secret to automate).
 
 ---
 
@@ -161,33 +210,29 @@ Update `.copilot/instructions/publish-update-extension.instructions.md` (in the 
 - [ ] Run the Docker `linux/amd64` smoke test against the packaged `.vsix` targeting `--target linux-x64` — expect 4/4 pass.
 - [ ] Commit: `fix: Bundle detect-libc runtime dependency for lightningcss (#176)`
 
-### Phase 2 — Multi-target build script
+### Phase 2 — Activation smoke test script
 
-- [ ] Create `scripts/build-vsix.sh` (bash, `set -euo pipefail`, portable enough for macOS + Ubuntu CI).
-- [ ] Add npm script alias: `"build:vsix": "bash scripts/build-vsix.sh"`.
-- [ ] Locally build all six `.vsix` files, inspect each with `unzip -l`, confirm each contains only its target's bindings + shared `detect-libc`.
-- [ ] Commit: `build: Add multi-target vsix build script (#176)`
+- [ ] Create `scripts/verify-vsix-activation.mjs` (Node 20+ ESM). Accepts a `.vsix` path, extracts to temp dir, requires + calls lightningcss + oxc-minify, exits non-zero on any failure.
+- [ ] Verify locally on darwin-arm64 against a `.vsix` built with `npx vsce package --target darwin-arm64`.
+- [ ] Commit: `test: Add vsix activation smoke test (#176)`
 
-### Phase 3 — Cross-platform activation smoke test
+### Phase 3 — CI-native release workflow
 
-- [ ] Create `scripts/verify-vsix-activation.sh` (accepts `--vsix PATH --docker-image IMAGE` or `--vsix PATH --native` for host-native validation).
-- [ ] Include the reusable Node smoke script (extracted from PR discussion).
-- [ ] Commit: `test: Add cross-platform vsix activation smoke test (#176)`
+- [ ] Create `.github/workflows/release.yml`:
+  - Triggers: tag push `v*`, `workflow_dispatch`, and PR paths-filtered (packaging-relevant files only).
+  - Build matrix over 6 runners × targets. Each runner: `npm ci` → `npm run package` → `vsce package --target <t>` → smoke test → upload artifact.
+  - Release job (only on tag): download 6 artifacts, `gh release upload <tag> *.vsix --clobber`.
+  - Pin all actions to full SHA per repo convention.
+- [ ] Trigger workflow via `workflow_dispatch` on the fix branch to verify all 6 targets build + smoke-test cleanly.
+- [ ] Commit: `ci: Add cross-platform release workflow (#176)`
 
-### Phase 4 — CI workflow
+### Phase 4 — CHANGELOG + docs
 
-- [ ] Create `.github/workflows/verify-vsix.yml` (pin actions to SHA per repo convention).
-- [ ] Matrix over 5 validatable targets (linux-x64, linux-arm64 via QEMU, darwin-x64, darwin-arm64, win32-x64). `win32-arm64` verified only by manifest presence.
-- [ ] Upload all six `.vsix` as artifacts.
-- [ ] Commit: `ci: Add cross-platform vsix activation matrix (#176)`
-
-### Phase 5 — CHANGELOG + docs + prepare v1.3.3 re-tag
-
-- [ ] Update `CHANGELOG.md` `[1.3.3]` entry.
-- [ ] Update `docs/ARCHITECTURE.md` "Distribution" section (if present) with the multi-target model.
+- [ ] Update `CHANGELOG.md` `[1.3.3]` entry with Fixed/Changed sections above.
+- [ ] Update `docs/ARCHITECTURE.md` "Distribution" section (if present) with the new per-platform model.
 - [ ] Commit: `docs: Document multi-target packaging for v1.3.3 (#176)`
 
-### Phase 6 — Release execution (post-merge)
+### Phase 5 — Release execution (post-merge)
 
 Executed by maintainer after PR merge to `master`:
 
@@ -196,11 +241,11 @@ Executed by maintainer after PR merge to `master`:
    git tag -f v1.3.3 <merge-commit-sha>
    git push -f origin v1.3.3
    ```
-2. Trigger `verify-vsix.yml` workflow_dispatch on the tag.
-3. Download the six `.vsix` artifacts from the workflow run.
+2. `release.yml` runs automatically — builds 6 `.vsix`, smoke-tests each, attaches all 6 to the existing `v1.3.3` GitHub Release.
+3. Download the 6 `.vsix` from the Release page (or via `gh release download v1.3.3`).
 4. Publish each one:
    ```bash
-   for f in css-js-minifier-1.3.3-*.vsix; do
+   for f in css-js-minifier-*.vsix; do
      npx vsce publish --packagePath "$f"
    done
    ```
@@ -214,41 +259,35 @@ Executed by maintainer after PR merge to `master`:
 
 Every phase must keep `npm test` (52-test VS Code extension suite) passing on darwin-arm64.
 
-### Docker matrix (Phase 3 script)
+### Local smoke test (Phase 2)
 
-For each platform we can spin up in Docker:
+`scripts/verify-vsix-activation.mjs` runs against a locally-built `.vsix` targeting the host platform. Used to validate the script itself before wiring into CI.
 
-| Platform | Docker image | Expected result |
-|---|---|---|
-| `linux-x64` (glibc) | `node:22-slim` `--platform linux/amd64` | 4/4 pass with `.vsix` for `linux-x64` target |
-| `linux-arm64` (glibc) | `node:22-slim` `--platform linux/arm64` | 4/4 pass with `.vsix` for `linux-arm64` target |
+### CI matrix (Phase 3 workflow)
 
-Note: musl (Alpine) is not currently a published target; documenting this gap in the plan but not addressing it in v1.3.3.
+Every PR (and every tag) runs the 6-target build matrix. The smoke test executes on each target's native runner. Any failure blocks the PR / release.
 
-### CI matrix (Phase 4 workflow)
+### Pre-publish validation (Phase 5)
 
-Runs on every PR. Fails the build if any `.vsix` cannot activate on its declared target.
+Before running `vsce publish`, the maintainer should:
 
-### Manual pre-publish validation (Phase 6)
-
-Before the maintainer runs `vsce publish`, they must:
-
-1. Download all six workflow artifacts.
-2. Run `scripts/verify-vsix-activation.sh` locally against each artifact.
-3. Only proceed to publish if all six pass.
+1. Confirm the CI matrix passed on the tag build.
+2. Download the 6 `.vsix` from the GitHub Release page.
+3. Optionally: install one locally via `code --install-extension <file>` on the host platform's target to sanity-check the UX.
 
 ---
 
 ## Non-Goals for v1.3.3
 
 - **Alpine/musl support.** `lightningcss` and `oxc-minify` both ship `-musl` bindings but VS Code Marketplace does not have a `linux-x64-musl` target distinct from `linux-x64`. Alpine users are historically unsupported; leaving as-is.
-- **Automated `vsce publish` from CI.** Requires storing a Marketplace PAT as an org/repo secret. Out of scope for the fix; can be a follow-up issue.
+- **Automated `vsce publish` from CI.** Requires storing a Marketplace PAT as `VSCE_PAT` repo secret. Out of scope for the fix; can be a follow-up issue. The `release.yml` workflow is structured so that adding a publish job later is trivial (~10 lines).
 - **Lazy loading of native modules.** Moving the `require('lightningcss')` and `require('oxc-minify')` calls into the command handlers would make failures visible via `showErrorMessage` instead of silent activation failure. Worth considering as a defence-in-depth follow-up but not required to fix the immediate bug.
 
 ---
 
 ## Risks
 
-- **Force-updating tag `v1.3.3`.** Tag was pushed but no artifact was ever published to Marketplace, so no user has consumed it. Repository maintainers should still be notified before the force-push.
+- **Force-updating tag `v1.3.3`.** Tag was pushed but no artifact was ever published to Marketplace, so no user has consumed it. The force-push retriggers `release.yml`, which will attach 6 `.vsix` to the existing GH Release.
 - **Package size.** Each per-target `.vsix` will be ~4-10 MB (vs the current single 4.5 MB). Marketplace supports this fine; six artifacts is well within normal for extensions using native modules.
-- **CI runner cost.** New workflow adds ~5-8 min of runner time per PR. Acceptable given the severity of the bug it prevents.
+- **CI runner cost.** New workflow adds ~5-10 min of runner time per PR. Acceptable given the severity of the bug it prevents; free for public repos across all six matrix runners.
+- **`ubuntu-24.04-arm` and `windows-11-arm` availability.** Both are generally available for public repos as of 2025. If either is retired or renamed, the workflow needs updating — pinned matrix makes this obvious in CI logs.
