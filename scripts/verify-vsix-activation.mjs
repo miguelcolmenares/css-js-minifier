@@ -55,12 +55,16 @@ console.log(`vsix:   ${basename(vsixPath)}`);
 const workDir = mkdtempSync(join(tmpdir(), "vsix-verify-"));
 try {
   if (platform === "win32") {
-    // ExtractToDirectory(src, dst, overwrite) — third arg requires
-    // .NET Framework 4.6.1+, which is present on every Windows GitHub
-    // Actions runner image.
+    // Use the 2-arg ExtractToDirectory(src, dst) overload deliberately:
+    // Windows PowerShell 5.1 (bundled on every windows-* GitHub Actions
+    // runner) mis-resolves the 3-arg overload — it can pick
+    // (String, String, Encoding) instead of (String, String, Boolean)
+    // and fail with "Cannot convert value 'True' to System.Text.Encoding".
+    // workDir was just returned by mkdtempSync, so it is guaranteed empty
+    // and we do not need the `overwrite` flag anyway.
     const psCommand =
       "Add-Type -AssemblyName System.IO.Compression.FileSystem; " +
-      `[System.IO.Compression.ZipFile]::ExtractToDirectory('${vsixPath.replace(/'/g, "''")}', '${workDir.replace(/'/g, "''")}', $true)`;
+      `[System.IO.Compression.ZipFile]::ExtractToDirectory('${vsixPath.replace(/'/g, "''")}', '${workDir.replace(/'/g, "''")}')`;
     execFileSync(
       "powershell.exe",
       ["-NoProfile", "-NonInteractive", "-Command", psCommand],
