@@ -75,7 +75,7 @@ export function minifyJs(text: string): MinificationResult | null {
 		// Check for errors returned by oxc-minify
 		if (result.errors.length > 0) {
 			const errorMessages = result.errors.map((e) => e.message).join('; ');
-			vscode.window.showErrorMessage(t('minificationService.error.jsLocal', errorMessages));
+			vscode.window.showErrorMessage(t('JavaScript minification error: {0}', errorMessages));
 			return null;
 		}
 
@@ -96,7 +96,7 @@ export function minifyJs(text: string): MinificationResult | null {
 		};
 	} catch (error: unknown) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		vscode.window.showErrorMessage(t('minificationService.error.jsLocal', errorMessage));
+		vscode.window.showErrorMessage(t('JavaScript minification error: {0}', errorMessage));
 		return null;
 	}
 }

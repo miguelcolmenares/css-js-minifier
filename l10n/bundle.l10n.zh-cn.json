@@ -1,14 +1,14 @@
 {
-	"validators.fileType.unsupported": "不支持文件类型 '{0}'。只能压缩CSS和JavaScript文件。",
-	"validators.content.empty": "无法压缩空的 {0} 文件。请先添加内容。",
-	"fileService.newFile.success": "文件已成功压缩并保存为：{0}",
-	"fileService.newFile.successWithStats": "文件已成功压缩并保存为：{0} (大小从{1}减少到{2}，减少{3}%)",
-	"fileService.inPlace.success": "{0}已成功压缩。",
-	"fileService.inPlace.successWithStats": "{0}已成功压缩 (大小从{1}减少到{2}，减少{3}%)",
-	"minificationService.fileType.unsupported": "不支持压缩的文件类型：{0}",
-	"minificationService.error.cssLocal": "CSS压缩错误：{0}",
-	"minificationService.error.jsLocal": "JavaScript压缩错误：{0}",
-	"extension.activation.failed": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。",
-	"commands.openFile.failed": "无法打开文件：{0}",
-	"commands.minifyInNewFile.untitled": "请先将文件保存到磁盘,然后再使用“压缩并另存为新文件”。新的压缩文件需要一个现有位置以在其旁边创建。"
+	"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "不支持文件类型 '{0}'。只能压缩CSS和JavaScript文件。",
+	"Cannot minify empty {0} file. Please add some content first.": "无法压缩空的 {0} 文件。请先添加内容。",
+	"File successfully minified and saved as: {0}": "文件已成功压缩并保存为：{0}",
+	"File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)": "文件已成功压缩并保存为：{0} (大小从{1}减少到{2}，减少{3}%)",
+	"{0} has been successfully minified.": "{0}已成功压缩。",
+	"{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)": "{0}已成功压缩 (大小从{1}减少到{2}，减少{3}%)",
+	"Unsupported file type for minification: {0}": "不支持压缩的文件类型：{0}",
+	"CSS minification error: {0}": "CSS压缩错误：{0}",
+	"JavaScript minification error: {0}": "JavaScript压缩错误：{0}",
+	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。",
+	"Failed to open file: {0}": "无法打开文件：{0}",
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "请先将文件保存到磁盘,然后再使用“压缩并另存为新文件”。新的压缩文件需要一个现有位置以在其旁边创建。"
 }

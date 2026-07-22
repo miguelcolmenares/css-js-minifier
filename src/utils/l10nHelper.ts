@@ -1,5 +1,22 @@
 /**
- * @fileoverview L10n helper utilities for fallback localization support.
+ * @fileoverview Thin re-export of `vscode.l10n.t()` — the extension follows
+ * VS Code's canonical localization pattern where the English source string is
+ * passed as the first argument to `t()` and non-English translations live in
+ * `l10n/bundle.l10n.<locale>.json` (loaded automatically because `package.json`
+ * declares `"l10n": "./l10n"`).
+ *
+ * When the display language is English (or no bundle matches the locale),
+ * `vscode.l10n.t(message, ...args)` returns `message` with positional
+ * placeholders substituted — so English "just works" without shipping a
+ * `bundle.l10n.en.json`. See:
+ * https://github.com/microsoft/vscode-extension-samples/tree/main/l10n-sample
+ *
+ * Regression guard: issue [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169)
+ * — a previous implementation loaded the English source bundle unconditionally
+ * and broke translations for every non-English user. The current helper
+ * delegates directly to VS Code so the runtime picks the right bundle for the
+ * user's locale.
+ *
  * @author Miguel Colmenares
  * @since 1.1.0
  */
@@ -7,54 +24,19 @@
 import * as vscode from 'vscode';
 
 /**
- * Global l10n bundle loaded manually as fallback
+ * Return the localized string for the given English source `message` in the
+ * user's current display language, substituting positional arguments (`{0}`,
+ * `{1}`, …) with the values in `args`.
+ *
+ * The first argument must be the English source text — VS Code uses it both as
+ * the lookup key against the loaded locale bundle and as the fallback value
+ * when no translation is available.
+ *
+ * @param message English source string. Also the key used in bundle files.
+ * @param args    Optional positional values to interpolate into `{0}`, `{1}`, …
+ * @returns The translated message when a bundle matches, otherwise `message`
+ *          with placeholders substituted.
  */
-let l10nBundle: Record<string, string> = {};
-
-/**
- * Load l10n bundle manually from extension files
- * @param extensionPath - Path to the extension directory
- */
-export async function loadL10nBundle(extensionPath: string): Promise<void> {
-	try {
-		const l10nFile = vscode.Uri.file(`${extensionPath}/l10n/bundle.l10n.json`);
-		const content = await vscode.workspace.fs.readFile(l10nFile);
-		l10nBundle = JSON.parse(content.toString());
-	} catch {
-		// Failed to load l10n bundle - file may not exist or be malformed
-		// Falling back to empty bundle (native VS Code l10n will be used)
-		l10nBundle = {};
-	}
-}
-
-/**
- * Localization function with fallback support
- * Uses native VS Code l10n if available, otherwise falls back to manual bundle loading
- * @param key - The localization key
- * @param args - Arguments to substitute in the message
- * @returns Localized message
- */
-export function t(key: string, ...args: (string | number | boolean)[]): string {
-	// Use manual fallback with our bundle
-	let message = l10nBundle[key] || key;
-
-	// Replace {0}, {1}, etc. with actual values
-	args.forEach((arg, index) => {
-		message = message.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg));
-	});
-
-	return message;
-}
-
-/**
- * Get the current l10n bundle status for debugging
- * @returns Object with bundle status information
- */
-export function getL10nStatus() {
-	return {
-		nativeBundle: vscode.l10n.bundle,
-		nativeUri: vscode.l10n.uri,
-		fallbackKeys: Object.keys(l10nBundle).length,
-		fallbackBundle: l10nBundle,
-	};
+export function t(message: string, ...args: (string | number | boolean)[]): string {
+	return vscode.l10n.t(message, ...args);
 }

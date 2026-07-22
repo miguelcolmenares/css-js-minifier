@@ -263,7 +263,10 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.fileType.unsupported', 'plaintext');
+		const expectedMessage = t(
+			"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
+			'plaintext'
+		);
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('plaintext') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show unsupported file type message. Got: ${errorMessage}`);
@@ -282,7 +285,7 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.content.empty', 'css');
+		const expectedMessage = t('Cannot minify empty {0} file. Please add some content first.', 'css');
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('css') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty CSS file message. Got: ${errorMessage}`);
@@ -301,7 +304,7 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.content.empty', 'javascript');
+		const expectedMessage = t('Cannot minify empty {0} file. Please add some content first.', 'javascript');
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('javascript') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty JavaScript file message. Got: ${errorMessage}`);
@@ -961,13 +964,7 @@ suite('Configuration Test Suite', async function () {
 			// Verify the message includes size reduction information
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if it's using the correct translation key for stats or contains percentage info
-			// In test environment, we might get translation keys instead of translated text
-			const hasStatsInfo =
-				message.includes('successWithStats') ||
-				message.includes('%') ||
-				message.includes('reduced') ||
-				message === 'fileService.inPlace.successWithStats';
+			const hasStatsInfo = message.includes('%') || message.includes('reduced');
 			assert(hasStatsInfo, `Message should include size reduction info. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -993,9 +990,7 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 			// Should use regular success message, not the stats version
-			const isBasicMessage =
-				message.includes('fileService.inPlace.success') ||
-				(message.includes('successfully minified') && !message.includes('%'));
+			const isBasicMessage = message.includes('successfully minified') && !message.includes('%');
 			assert(isBasicMessage, `Message should be a basic success message. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1026,10 +1021,7 @@ suite('Configuration Test Suite', async function () {
 			// Verify the message includes size reduction information
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if it's using the correct translation key for stats or contains size info
-			// In test environment, we might get translation keys instead of translated text
-			const hasStatsInfo =
-				message.includes('successWithStats') || message.includes('Size reduced') || message.includes('No size change');
+			const hasStatsInfo = message.includes('Size reduced') || message.includes('No size change');
 			assert(hasStatsInfo, `Message should include size info. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1080,8 +1072,8 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 
-			// Verify the message contains either size units or is using stats translation key
-			const hasUnits = message.includes(' KB') || message.includes(' B') || message.includes('successWithStats');
+			// Verify the message contains size units
+			const hasUnits = message.includes(' KB') || message.includes(' B');
 			assert(hasUnits, `Message should include size units. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1103,14 +1095,10 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 
-			// Should include percentage if there was reduction or use stats translation key
+			// Should include percentage if there was reduction or a `No size change` notice.
 			const hasPercentage = message.includes('%');
 			const hasNoReduction = message.includes('No size change');
-			const hasStatsKey = message.includes('successWithStats');
-			assert(
-				hasPercentage || hasNoReduction || hasStatsKey,
-				`Message should show percentage or no change. Got: ${message}`
-			);
+			assert(hasPercentage || hasNoReduction, `Message should show percentage or no change. Got: ${message}`);
 
 			showMessageStub.restore();
 		});
@@ -1130,9 +1118,7 @@ suite('Configuration Test Suite', async function () {
 
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if filename is included or if it's using translation key
-			const hasFilename = message.includes('test.js') || message.includes('fileService.inPlace');
-			assert(hasFilename, `Message should include filename. Got: ${message}`);
+			assert(message.includes('test.js'), `Message should include filename. Got: ${message}`);
 
 			showMessageStub.restore();
 		});
@@ -1152,9 +1138,7 @@ suite('Configuration Test Suite', async function () {
 
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if filename is included or if it's using translation key
-			const hasFilename = message.includes('test.css') || message.includes('fileService.inPlace');
-			assert(hasFilename, `Message should include filename. Got: ${message}`);
+			assert(message.includes('test.css'), `Message should include filename. Got: ${message}`);
 
 			showMessageStub.restore();
 		});

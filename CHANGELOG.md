@@ -13,13 +13,28 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - **Fix "command not found" and hangs on unsaved (untitled) documents** ([#145](https://github.com/miguelcolmenares/css-js-minifier/issues/145))
   - `extension.minify` no longer calls `document.save()` on untitled documents — this previously triggered a blocking "Save As" dialog that made the command appear broken. Minified content is now applied to the editor buffer, letting the user decide when to save.
   - `extension.minifyInNewFile` now detects untitled documents and shows a clear, localized error asking the user to save the file first, instead of throwing a cryptic `EROFS: read-only file system` error when attempting to write `/Untitled-1`.
-  - Extension activation was refactored to register commands **synchronously** at the top of `activate()`, before the asynchronous `loadL10nBundle` call. This eliminates a race condition where a fast user action could invoke a command before it was registered, surfacing as "command 'extension.minifyInNewFile' not found".
-  - The l10n bundle now loads in the background (non-blocking), keeping commands available immediately.
+  - Extension activation was refactored to register commands **synchronously** at the top of `activate()`. This eliminates a race condition where a fast user action could invoke a command before it was registered, surfacing as "command 'extension.minifyInNewFile' not found".
+
+- **Fix runtime translations always displaying in English regardless of the user's display language** ([#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169))
+  - Migrated the entire runtime i18n layer to VS Code's canonical `vscode.l10n` pattern: every `t()` call site now passes the **English source string** as its first argument (e.g., `t("File type '{0}' is not supported...", type)`) instead of a symbolic dotted key. VS Code returns the source string as-is when running under the default English locale and looks it up in `bundle.l10n.<locale>.json` for every other language — matching the [official VS Code l10n sample](https://github.com/microsoft/vscode-extension-samples/tree/main/l10n-sample). The previous implementation never called `vscode.l10n.t()` at all — it always resolved keys against an in-memory English bundle — so users running VS Code in Spanish, French, German, Portuguese, Japanese, or Chinese saw every runtime message (validation errors, success notifications, exception dialogs) in English despite the shipped translation bundles.
+  - Simplified `src/utils/l10nHelper.ts` down to a one-line delegate around `vscode.l10n.t(message, ...args)` and removed the activation-time `initializeEnglishFallback()` preload. There is intentionally no `bundle.l10n.en.json` — English lives in the source code, as the l10n sample recommends.
+  - Regenerated every `l10n/bundle.l10n.<locale>.json` (es, fr, de, pt-br, ja, zh-cn) so that keys are the English source strings and values are the localized translations. Translations themselves are preserved verbatim; only the keys changed. `l10n/bundle.l10n.json` is now an identity map suitable for `@vscode/l10n-dev` tooling.
+  - Removed the dead debug helper `getL10nStatus()` and the now-obsolete "raw translation key" fallback assertions in `src/test/extension.test.ts`.
+  - Cleaned up `activationEvents` in `package.json`: removed the auto-generated `onCommand:*` entries (deprecated since VS Code 1.74) and the invalid `onSaveTextDocument`, leaving only `onLanguage:css` and `onLanguage:javascript`.
 
 ### Added
 
-- New i18n key `commands.minifyInNewFile.untitled` across all 7 supported languages (en, es, fr, de, pt-br, ja, zh-cn).
-- Three new test cases covering the untitled document scenarios (in-place minify for CSS and JS, and the error path for `minifyInNewFile`).
+- New i18n key `"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."` across all 6 non-English bundles (es, fr, de, pt-br, ja, zh-cn) to cover the untitled-document guard added in #145.
+- New **Runtime Localization (`vscode.l10n`)** test suite in `src/test/i18n.test.ts` that guards against issue #169 regressing:
+  - Asserts `t()` returns real interpolated text (never a raw translation key) for every known bundle entry.
+  - Verifies placeholder interpolation (`{0}`, `{1}`, …) is preserved end-to-end.
+  - Compares `vscode.l10n.bundle` against the shipped `bundle.l10n.<locale>.json` when running under a non-English locale.
+  - Detects accidental "translation bundle is a copy of English" regressions.
+- `.vscode-test.mjs` now honors `VSCODE_LOCALE=<lang>` and forwards it as `--locale` to the test VS Code instance, enabling locale-specific test runs (`VSCODE_LOCALE=es npm test`, `VSCODE_LOCALE=qps-ploc npm test`, …). See [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md#testing-under-a-specific-locale).
+
+### Changed
+
+- Rewrote the "Overview", "Runtime Message Bundles", "Runtime Bundle Keys", "Message Interpolation", "Implementation Details", "Translation Pattern", and "Adding a New Language" sections of [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md) to describe the canonical `vscode.l10n` flow (English-as-key), replace outdated `import * as l10n from '@vscode/l10n'` examples with the correct `import { t } from '../utils/l10nHelper'` pattern, and add a new "Testing Under a Specific Locale" guide.
 
 ## [1.3.2] - 2026-07-08
 

@@ -1,14 +1,14 @@
 {
-	"validators.fileType.unsupported": "ファイルタイプ '{0}' はサポートされていません。CSSとJavaScriptファイルのみを縮小できます。",
-	"validators.content.empty": "空の {0} ファイルを縮小することはできません。最初にコンテンツを追加してください。",
-	"fileService.newFile.success": "ファイルが正常に縮小され、次の名前で保存されました：{0}",
-	"fileService.newFile.successWithStats": "ファイルが正常に縮小され、次の名前で保存されました：{0} (サイズを{1}から{2}に削減、{3}%の縮小)",
-	"fileService.inPlace.success": "{0} が正常に縮小されました。",
-	"fileService.inPlace.successWithStats": "{0} が正常に縮小されました (サイズを{1}から{2}に削減、{3}%の縮小)",
-	"minificationService.fileType.unsupported": "縮小がサポートされていないファイルタイプ：{0}",
-	"minificationService.error.cssLocal": "CSS縮小エラー：{0}",
-	"minificationService.error.jsLocal": "JavaScript縮小エラー：{0}",
-	"extension.activation.failed": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。",
-	"commands.openFile.failed": "ファイルを開けませんでした：{0}",
-	"commands.minifyInNewFile.untitled": "『縮小して新規ファイルとして保存』を使用する前に、ファイルをディスクに保存してください。新しい縮小ファイルは、既存の場所の隣に作成する必要があります。"
+	"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "ファイルタイプ '{0}' はサポートされていません。CSSとJavaScriptファイルのみを縮小できます。",
+	"Cannot minify empty {0} file. Please add some content first.": "空の {0} ファイルを縮小することはできません。最初にコンテンツを追加してください。",
+	"File successfully minified and saved as: {0}": "ファイルが正常に縮小され、次の名前で保存されました：{0}",
+	"File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)": "ファイルが正常に縮小され、次の名前で保存されました：{0} (サイズを{1}から{2}に削減、{3}%の縮小)",
+	"{0} has been successfully minified.": "{0} が正常に縮小されました。",
+	"{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)": "{0} が正常に縮小されました (サイズを{1}から{2}に削減、{3}%の縮小)",
+	"Unsupported file type for minification: {0}": "縮小がサポートされていないファイルタイプ：{0}",
+	"CSS minification error: {0}": "CSS縮小エラー：{0}",
+	"JavaScript minification error: {0}": "JavaScript縮小エラー：{0}",
+	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。",
+	"Failed to open file: {0}": "ファイルを開けませんでした：{0}",
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "『縮小して新規ファイルとして保存』を使用する前に、ファイルをディスクに保存してください。新しい縮小ファイルは、既存の場所の隣に作成する必要があります。"
 }

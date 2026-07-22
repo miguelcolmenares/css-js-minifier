@@ -14,6 +14,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'assert';
+import * as vscode from 'vscode';
+import { t } from '../utils/l10nHelper';
 
 /**
  * Supported languages for the extension
@@ -62,20 +64,27 @@ const EXPECTED_PACKAGE_KEYS = [
 ];
 
 /**
- * Expected translation keys in runtime bundle files
+ * Expected translation keys in runtime bundle files.
+ *
+ * Starting in v1.3.3 the extension follows VS Code's canonical `vscode.l10n` pattern:
+ * the English source string is passed to `t()` and is also used as the key in every
+ * `bundle.l10n.<locale>.json` file (there is intentionally no `bundle.l10n.en.json` —
+ * English works because `vscode.l10n.t(message)` returns `message` when no bundle
+ * matches).
  */
 const EXPECTED_BUNDLE_KEYS = [
-	'validators.fileType.unsupported',
-	'validators.content.empty',
-	'fileService.newFile.success',
-	'fileService.newFile.successWithStats',
-	'fileService.inPlace.success',
-	'fileService.inPlace.successWithStats',
-	'minificationService.fileType.unsupported',
-	'minificationService.error.cssLocal',
-	'minificationService.error.jsLocal',
-	'commands.openFile.failed',
-	'commands.minifyInNewFile.untitled',
+	"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
+	'Cannot minify empty {0} file. Please add some content first.',
+	'File successfully minified and saved as: {0}',
+	'File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)',
+	'{0} has been successfully minified.',
+	'{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)',
+	'Unsupported file type for minification: {0}',
+	'CSS minification error: {0}',
+	'JavaScript minification error: {0}',
+	'CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.',
+	'Failed to open file: {0}',
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.",
 ];
 
 suite('Internationalization (i18n) Test Suite', function () {
@@ -221,18 +230,18 @@ suite('Internationalization (i18n) Test Suite', function () {
 				const filePath = path.join(l10nPath, bundle.file);
 				const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
-				// Keys that should have placeholders
+				// Keys that should have placeholders (English source strings used as keys)
 				const keysWithPlaceholders = [
-					'validators.fileType.unsupported', // {0}
-					'validators.content.empty', // {0}
-					'fileService.newFile.success', // {0}
-					'fileService.newFile.successWithStats', // {0}, {1}, {2}, {3}
-					'fileService.inPlace.success', // {0}
-					'fileService.inPlace.successWithStats', // {0}, {1}, {2}, {3}
-					'minificationService.fileType.unsupported', // {0}
-					'minificationService.error.cssLocal', // {0}
-					'minificationService.error.jsLocal', // {0}
-					'commands.openFile.failed', // {0}
+					"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
+					'Cannot minify empty {0} file. Please add some content first.',
+					'File successfully minified and saved as: {0}',
+					'File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)',
+					'{0} has been successfully minified.',
+					'{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)',
+					'Unsupported file type for minification: {0}',
+					'CSS minification error: {0}',
+					'JavaScript minification error: {0}',
+					'Failed to open file: {0}',
 				];
 
 				keysWithPlaceholders.forEach((key) => {
@@ -334,6 +343,102 @@ suite('Internationalization (i18n) Test Suite', function () {
 						});
 					}
 				});
+			});
+		});
+	});
+
+	suite('Runtime Localization (vscode.l10n)', function () {
+		const englishBundlePath = path.join(workspaceRoot, 'l10n', 'bundle.l10n.json');
+		const englishBundle = JSON.parse(fs.readFileSync(englishBundlePath, 'utf8')) as Record<string, string>;
+
+		test('l10nHelper.t() returns the English source text under the default locale', function () {
+			// Under VS Code's canonical l10n pattern the first argument to `t()` is the
+			// English source string, and `vscode.l10n.t(message, ...args)` returns
+			// `message` (with placeholders substituted) when no locale bundle matches.
+			// Regression guard for issue #169: the previous helper served English strings
+			// from an in-memory bundle regardless of the active locale, breaking every
+			// non-English user.
+			const source = "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.";
+			const resolved = t(source, 'txt');
+
+			assert.ok(
+				resolved.includes("File type 'txt' is not supported"),
+				`t() should either return the interpolated English source or a translated equivalent (got: '${resolved}')`
+			);
+		});
+
+		test('Placeholder interpolation covers every positional argument', function () {
+			// The four-argument message used by `showInformationMessage` after saving a
+			// minified copy exercises `{0}`, `{1}`, `{2}` and `{3}` simultaneously.
+			const source = 'File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)';
+			const resolved = t(source, 'style.min.css', '10.5 KB', '3.2 KB', '69.5');
+
+			assert.ok(resolved.includes('style.min.css'), 'Should interpolate {0}');
+			assert.ok(resolved.includes('10.5 KB'), 'Should interpolate {1}');
+			assert.ok(resolved.includes('3.2 KB'), 'Should interpolate {2}');
+			assert.ok(resolved.includes('69.5'), 'Should interpolate {3}');
+		});
+
+		test('vscode.l10n API is available at runtime', function () {
+			// The `l10n` field in `package.json` must be honored by VS Code so
+			// `vscode.l10n.t` exists as a function at runtime.
+			assert.strictEqual(typeof vscode.l10n.t, 'function', 'vscode.l10n.t must be a function');
+			assert.ok('bundle' in vscode.l10n, 'vscode.l10n.bundle property must exist');
+		});
+
+		test('vscode.env.language reports a valid locale string', function () {
+			// Informational assertion: guarantees the test host actually exposes a locale so the
+			// bundle-match test below can meaningfully compare against disk when a non-English
+			// language pack is installed (`VSCODE_LOCALE=<lang> npm test`).
+			const locale = vscode.env.language;
+			assert.strictEqual(typeof locale, 'string', 'vscode.env.language should be a string');
+			assert.ok(locale.length > 0, 'vscode.env.language should not be empty');
+		});
+
+		test('vscode.l10n.bundle matches the shipped bundle for non-English locales', function () {
+			// When VS Code launches with `--locale=<lang>` AND the matching language pack is
+			// installed, `vscode.l10n.bundle` should reflect the contents of
+			// `l10n/bundle.l10n.<lang>.json`. For the default English locale
+			// `vscode.l10n.bundle` is `undefined` because VS Code returns the source message.
+			const locale = vscode.env.language;
+			const bundle = vscode.l10n.bundle;
+
+			if (locale === 'en' || !bundle) {
+				// Default English path — no bundle is loaded; `t()` returns the source string.
+				return;
+			}
+
+			const localeBundleFile = path.join(workspaceRoot, 'l10n', `bundle.l10n.${locale}.json`);
+			if (!fs.existsSync(localeBundleFile)) {
+				// Locale is not one we ship translations for — VS Code falls back to the source.
+				return;
+			}
+
+			const diskBundle = JSON.parse(fs.readFileSync(localeBundleFile, 'utf8')) as Record<string, string>;
+			Object.entries(diskBundle).forEach(([key, expectedValue]) => {
+				assert.strictEqual(
+					bundle[key],
+					expectedValue,
+					`vscode.l10n.bundle['${key}'] does not match shipped translation for locale '${locale}'`
+				);
+			});
+		});
+
+		test('Every non-English bundle differs from the English source for at least one key', function () {
+			// Guard against a regression where a translation file is accidentally overwritten
+			// with the English source. Independent of the current runtime locale.
+			RUNTIME_BUNDLES.slice(1).forEach((bundle) => {
+				const filePath = path.join(workspaceRoot, 'l10n', bundle.file);
+				const localized = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, string>;
+
+				const differing = Object.entries(englishBundle).filter(([key, englishValue]) => {
+					return localized[key] !== undefined && localized[key] !== englishValue;
+				});
+
+				assert.ok(
+					differing.length > 0,
+					`${bundle.name} (${bundle.file}) is identical to English for every key — bundle appears untranslated.`
+				);
 			});
 		});
 	});

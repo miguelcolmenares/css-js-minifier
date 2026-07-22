@@ -40,9 +40,8 @@
 		"localization"
 	],
 	"activationEvents": [
-		"onCommand:extension.minify",
-		"onCommand:extension.minifyInNewFile",
-		"onSaveTextDocument"
+		"onLanguage:css",
+		"onLanguage:javascript"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {

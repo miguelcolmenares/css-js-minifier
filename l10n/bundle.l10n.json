@@ -1,14 +1,14 @@
 {
-	"validators.fileType.unsupported": "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
-	"validators.content.empty": "Cannot minify empty {0} file. Please add some content first.",
-	"fileService.newFile.success": "File successfully minified and saved as: {0}",
-	"fileService.newFile.successWithStats": "File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)",
-	"fileService.inPlace.success": "{0} has been successfully minified.",
-	"fileService.inPlace.successWithStats": "{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)",
-	"minificationService.fileType.unsupported": "Unsupported file type for minification: {0}",
-	"minificationService.error.cssLocal": "CSS minification error: {0}",
-	"minificationService.error.jsLocal": "JavaScript minification error: {0}",
-	"extension.activation.failed": "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.",
-	"commands.openFile.failed": "Failed to open file: {0}",
-	"commands.minifyInNewFile.untitled": "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
+	"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
+	"Cannot minify empty {0} file. Please add some content first.": "Cannot minify empty {0} file. Please add some content first.",
+	"File successfully minified and saved as: {0}": "File successfully minified and saved as: {0}",
+	"File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)": "File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)",
+	"{0} has been successfully minified.": "{0} has been successfully minified.",
+	"{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)": "{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)",
+	"Unsupported file type for minification: {0}": "Unsupported file type for minification: {0}",
+	"CSS minification error: {0}": "CSS minification error: {0}",
+	"JavaScript minification error: {0}": "JavaScript minification error: {0}",
+	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.",
+	"Failed to open file: {0}": "Failed to open file: {0}",
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
 }
