@@ -1,0 +1,75 @@
+name: Verify Marketplace Auth
+
+# Manual smoke test for the VSCE_PAT secret and the Marketplace publisher
+# scope. Runs `vsce verify-pat` which validates the token against the
+# Marketplace API WITHOUT publishing anything — no version is burned. Use
+# this before pushing a real release tag to catch auth/scope problems
+# early (expired PAT, wrong scope, wrong publisher, etc).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify VSCE_PAT can publish for miguel-colmenares
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (for vsce)
+        run: npm ci
+
+      - name: Check VSCE_PAT secret is present
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::VSCE_PAT is not configured on this repository."
+            echo "::error::Add it under Settings \u2192 Secrets and variables \u2192 Actions"
+            echo "::error::using a PAT from https://dev.azure.com with 'Marketplace (Manage)' scope."
+            exit 1
+          fi
+          echo "VSCE_PAT present (length: ${#VSCE_PAT})."
+
+      - name: Verify PAT has publish rights for publisher 'miguel-colmenares'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        # `vsce verify-pat <publisher>` is the officially supported smoke
+        # test for a Marketplace PAT: it authenticates against the
+        # Marketplace API and checks the token can publish for the given
+        # publisher, but it does NOT upload anything. Nothing is billed,
+        # no version is burned, and no Marketplace state changes.
+        # Exit non-zero (with a clear vsce error) if the PAT is expired,
+        # wrong scope, or scoped to a different publisher.
+        run: npx vsce verify-pat miguel-colmenares
+
+      - name: Show current Marketplace record for miguel-colmenares.css-js-minifier
+        # Read-only Marketplace query \u2014 confirms the extension is registered
+        # under the expected publisher/id combination and prints the current
+        # published version, install count, etc. Independent of the PAT
+        # (uses the public API), so if this succeeds but verify-pat fails
+        # above, the problem is definitely the token, not the identity.
+        run: npx vsce show miguel-colmenares.css-js-minifier
+
+      - name: Summary
+        run: |
+          {
+            echo "## Marketplace auth verification"
+            echo ""
+            echo "\u2705 VSCE_PAT is configured on this repository."
+            echo "\u2705 PAT has publish rights for publisher \`miguel-colmenares\`."
+            echo "\u2705 Extension \`miguel-colmenares.css-js-minifier\` is registered on Marketplace."
+            echo ""
+            echo "The token is ready to be used by the \`publish\` job in \`release.yml\`."
+            echo "Push a \`v*\` tag to trigger a real release."
+          } >> "$GITHUB_STEP_SUMMARY"
