@@ -160,7 +160,8 @@
 		"lint:fix": "eslint \"src/**/*.ts\" --fix",
 		"format": "prettier --write \"src/**/*.ts\" \"*.{json,md,cjs,mjs}\"",
 		"format:check": "prettier --check \"src/**/*.ts\" \"*.{json,md,cjs,mjs}\"",
-		"test": "vscode-test"
+		"test": "vscode-test",
+		"prepare": "husky"
 	},
 	"devDependencies": {
 		"@types/mocha": "^10.0.6",
@@ -175,6 +176,7 @@
 		"eslint": "^9.39.5",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-prettier": "^5.5.6",
+		"husky": "^9.1.7",
 		"mocha": "^11.7.6",
 		"prettier": "^3.9.5",
 		"sinon": "^22.0.0",

@@ -1,0 +1,56 @@
+# Husky commit-msg hook — enforce Conventional Commits on the subject line.
+#
+# Accepted format:
+#   <type>[optional scope][optional !]: <description>
+#
+# Types (aligned with .github/instructions and Silver Assist conventions):
+#   feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+#
+# Examples:
+#   feat: Add search by sender name
+#   fix(cli): Handle empty input
+#   chore!: Drop Node 18 support
+#
+# Special cases that bypass the check:
+#   - Merge commits (Git prepends "Merge …")
+#   - Revert commits from `git revert` (start with "Revert ")
+#   - Automated release commits from workflows (start with "chore: Release ")
+#
+# Escape hatch: commit with `--no-verify` to skip locally. CI does not
+# re-check commit messages, so squash-and-merge lets maintainers rewrite
+# a bad subject at merge time regardless.
+
+msg_file="$1"
+first_line=$(head -n1 "$msg_file")
+
+# Skip common auto-generated messages.
+case "$first_line" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *)
+    exit 0
+    ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._-]+\))?!?: .{1,100}$'
+
+if ! echo "$first_line" | grep -Eq "$pattern"; then
+  cat <<EOF >&2
+❌ Commit message does not follow Conventional Commits.
+
+Got:
+  $first_line
+
+Expected format:
+  <type>[optional scope][optional !]: <description>
+
+Where <type> is one of:
+  feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+
+Examples:
+  feat: Add search by sender name
+  fix(cli): Handle empty input
+  chore!: Drop Node 18 support
+
+Bypass with 'git commit --no-verify' if you know what you're doing.
+EOF
+  exit 1
+fi

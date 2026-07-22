@@ -2,37 +2,19 @@
 
 ## Test Strategy Overview
 
-The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The test suite includes 52+ tests covering all functionality. Since both CSS and JS minification are fully local (LightningCSS + oxc-minify), tests run fast with no network dependency or rate limiting concerns.
+The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **58 tests** across three files, spanning activation, main functionality, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
 
 ## Test Structure
 
-### Test Suites
+### Test Files (`src/test/`)
 
-1. **Internationalization (i18n) Test Suite (16 tests)**
-   - Package.nls file validation (existence, JSON validity, key consistency)
-   - Bundle.l10n runtime message validation across 7 languages
-   - VS Code integration (localized commands, configuration)
-   - Translation quality (placeholder preservation, no English-only text)
+| File | Tests | Focus |
+|---|---|---|
+| `activation.test.ts` | 5 | Regression guard for [#168](https://github.com/miguelcolmenares/css-js-minifier/issues/168): asserts `activationEvents` in `package.json` contains `onLanguage:css` and `onLanguage:javascript`, and that the deprecated `onCommand:*` / invalid `onSaveTextDocument` entries are not re-added. |
+| `extension.test.ts` | 31 | Main functionality: CSS/JS minification (in-place + new file), file-prefix configurations, explorer context menu, empty file / unsupported file type validation, configuration behaviors (`autoOpenNewFile`, `minifyInNewFile`, `minifiedNewFilePrefix`, `showSizeReduction`), CSS nth-child selectors, and keybinding smoke tests. |
+| `i18n.test.ts` | 22 | Two nested suites: (a) static bundle validation — file existence, JSON validity, key parity across all seven languages, placeholder preservation; and (b) **Runtime Localization (`vscode.l10n`)** — regression guard for [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169): asserts `t()` returns real interpolated text (never a raw key), placeholder interpolation is preserved end-to-end, `vscode.l10n.bundle` matches the shipped `bundle.l10n.<locale>.json` when running under a non-English locale, and every non-English bundle differs from English for at least one key. |
 
-2. **Main Functionality Tests (21 tests)**
-   - Basic CSS/JS minification (in-place and new file)
-   - File prefix configurations (`.min`, `-min`, `.compressed`, `-compressed`, `.minified`, `-minified`)
-   - Explorer context menu actions
-   - Empty file and unsupported file type validation
-
-3. **CSS nth-child Test Suite (2 tests, pending)**
-   - CSS nth-child selectors minification
-   - Currently pending due to LightningCSS handling differences
-
-4. **Keybinding Test Suite (2 tests)**
-   - Keyboard shortcut functionality
-   - Command palette integration
-
-5. **Configuration Test Suite (4 tests + 8 size reduction tests)**
-   - `autoOpenNewFile` setting validation (enabled/disabled)
-   - `minifiedNewFilePrefix` custom prefix configuration
-   - `minifyInNewFile` vs in-place minification behavior
-   - Size reduction statistics display and formatting
+Total: **58 tests**.
 
 ## File Management & Test Isolation
 
@@ -68,48 +50,60 @@ this.afterEach(function () {
 
 Access via `Ctrl/Cmd + Shift + P` → "Tasks: Run Task":
 
-| Task | Tests | Time |
-|------|-------|------|
-| Test: Run All Tests | 52+ | ~1 min |
-| Test: Configuration Suite Only | 12 | ~30s |
-| Test: Main Functionality Suite Only | 21 | ~15s |
-| Test: Internationalization (i18n) Suite Only | 16 | ~10s |
-| Test: Keybinding Suite Only | 2 | ~5s |
-| Test: CSS nth-child Suite Only | 2 | ~5s |
-| Test: Specific Test by Name | 1 | ~5s |
-| Test: Compile and Build Only | — | ~10s |
+| Task | Focus |
+|---|---|
+| Test: Run All Tests | Full 58-test suite (compile + lint + all suites) |
+| Test: Configuration Suite Only | `Configuration Test Suite` in `extension.test.ts` |
+| Test: Main Functionality Suite Only | `JS & CSS Minifier Test Suite` in `extension.test.ts` |
+| Test: CSS nth-child Suite Only | `CSS nth-child Test Suite` in `extension.test.ts` |
+| Test: Keybinding Suite Only | `Keybinding Test Suite` in `extension.test.ts` |
+| Test: Internationalization (i18n) Suite Only | Both static + runtime suites in `i18n.test.ts` |
+| Test: Specific Test by Name | Prompts for a `--grep` pattern and runs matching tests |
+| Test: Compile and Build Only | `npm run pretest` (compile + lint + copy fixtures, no test run) |
+| Test: Quick Compile and Test | `npm run compile-tests` (TS only, no webpack, no lint) |
 
 ### Command Line
 
 ```bash
-# Complete test suite
+# Complete test suite (compile + lint + all tests)
 npm test
 
-# Individual suite execution
+# Individual suites (grep-based)
 npx vscode-test --grep "Configuration Test Suite"
-npx vscode-test --grep "Internationalization"
 npx vscode-test --grep "JS & CSS Minifier Test Suite"
+npx vscode-test --grep "CSS nth-child Test Suite"
+npx vscode-test --grep "Keybinding Test Suite"
+npx vscode-test --grep "Internationalization"
+npx vscode-test --grep "Activation Events"
+npx vscode-test --grep "Runtime Localization"
 
 # Specific test
 npx vscode-test --grep "autoOpenNewFile setting - enabled"
 
-# Build only
+# Under a specific display locale (VS Code Language Pack must be installed)
+VSCODE_LOCALE=es npm test
+VSCODE_LOCALE=fr npx vscode-test --grep "Internationalization"
+VSCODE_LOCALE=qps-ploc npm test  # pseudo-locale, no pack needed
+
+# Build only (no tests)
 npm run pretest
 ```
+
+See [`docs/INTERNATIONALIZATION.md#testing-under-a-specific-locale`](INTERNATIONALIZATION.md#testing-under-a-specific-locale) for the runtime localization test wiring.
 
 ### Development Workflow
 
 **Feature Development:**
 
 1. Start watch mode: "tasks: watch-tests"
-2. Run specific tests for your feature
-3. Run full suite before commit: "Test: Run All Tests"
+2. Run the relevant suite for your change (e.g. `Test: Configuration Suite Only`).
+3. Run the full suite before commit: `Test: Run All Tests`.
 
 **Bug Fixing:**
 
-1. Identify failing suite: "Test: Run All Tests"
-2. Focus on specific suite
-3. Target specific test: "Test: Specific Test by Name"
+1. Identify failing suite via `Test: Run All Tests`.
+2. Focus on the specific suite.
+3. Target a single test via `Test: Specific Test by Name`.
 
 ## Test Data Management
 
@@ -127,17 +121,19 @@ const jsMinifiedContent = 'function test(){for(var e=`Hello, World!`,t=``,n=0;n<
 
 ```
 src/test/
-├── extension.test.ts      # Main test suite (52+ tests)
-├── i18n.test.ts           # Internationalization test suite
-├── fixtures/
-│   ├── test.css           # Basic CSS test file
-│   ├── test.js            # Basic JS test file
-│   ├── test-minified.js   # Expected JS minified output
-│   ├── nth-child-test.css # CSS nth-child test case
-│   ├── large.css          # Large CSS file for size tests
-│   ├── empty.css          # Empty file test case
-│   ├── empty.js           # Empty file test case
-│   └── test.txt           # Unsupported file type
+├── activation.test.ts     # Activation Events regression guard (#168)
+├── extension.test.ts      # Main test suite (31 tests)
+├── i18n.test.ts           # Static + runtime i18n suites (22 tests)
+└── fixtures/
+    ├── test.css           # Basic CSS test file
+    ├── test.js            # Basic JS test file
+    ├── test-minified.js   # Expected JS minified output
+    ├── nth-child-test.css # CSS nth-child test case
+    ├── starting-style.css # CSS @starting-style test case
+    ├── large.css          # Larger CSS file for size-reduction tests
+    ├── empty.css          # Empty file test case
+    ├── empty.js           # Empty file test case
+    └── test.txt           # Unsupported file type
 ```
 
 ## Debugging Test Failures
@@ -145,29 +141,32 @@ src/test/
 ### Common Issues
 
 1. **Configuration Test Failures**
-   - VS Code configuration updates are asynchronous — use delays
-   - Always use temporary files, never modify source fixtures
+   - VS Code configuration updates are asynchronous — use small delays after `.update()`.
+   - Always use temporary files, never modify source fixtures.
 
 2. **File Path Issues**
-   - Ensure `npm run copy-fixtures` ran during `pretest`
-   - Check `out/test/fixtures/` directory exists
+   - Ensure `npm run copy-fixtures` ran during `pretest`.
+   - Check `out/test/fixtures/` directory exists.
 
 3. **In-Place Modification Conflicts**
-   - Use unique temporary file names per test
-   - Comprehensive cleanup in `beforeAll` hooks
+   - Use unique temporary file names per test.
+   - Comprehensive cleanup in `beforeAll` hooks.
+
+4. **Runtime i18n Assertions Silently Pass Under English**
+   - `Runtime Localization` tests use `vscode.env.language` to decide what to assert. Under the default English locale several assertions no-op. Run them under a non-English locale (`VSCODE_LOCALE=es npm test`) or the pseudo-locale (`VSCODE_LOCALE=qps-ploc npm test`) to exercise them properly.
 
 ## Best Practices
 
-1. **Source Protection**: Never modify files in `src/test/fixtures/`
-2. **Temporary Files**: Use unique prefixes (`temp-test.css`)
-3. **Complete Cleanup**: Remove generated and temporary files after tests
-4. **Fixture Restoration**: Copy fresh content from source when needed
-5. **Spy Management**: Always restore Sinon spies to prevent interference
-6. **Descriptive Names**: Use clear functionality descriptions for test names
-7. **Content Verification**: Assert specific minified output, not just "changed"
+1. **Source Protection**: Never modify files in `src/test/fixtures/`.
+2. **Temporary Files**: Use unique prefixes (`temp-test.css`).
+3. **Complete Cleanup**: Remove generated and temporary files after tests.
+4. **Fixture Restoration**: Copy fresh content from source when needed.
+5. **Spy Management**: Always restore Sinon spies to prevent interference.
+6. **Descriptive Names**: Use clear functionality descriptions for test names.
+7. **Content Verification**: Assert specific minified output, not just "changed".
 
 ---
 
-**Last Updated**: April 2026
-**Extension Version**: 1.3.0
-**Test Suite**: 52+ tests, 100% passing rate
+**Last Updated**: 2026-07-22
+**Extension Version**: 1.3.3
+**Test Suite**: 58 tests across 3 files (activation, main, i18n)

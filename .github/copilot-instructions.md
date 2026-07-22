@@ -145,6 +145,33 @@ To add support for a new language:
 
 ## Development Workflows
 
+### Release Flow (workflow-driven — do NOT push tags manually)
+
+**As of v1.3.3 releases are cut from the `Build & Release` workflow (`.github/workflows/release.yml`) via `workflow_dispatch`. There is no `push: tags: v*` trigger and the local `pre-push` Husky hook refuses to push any `v*` tag from your machine. See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.github/instructions/publish-update-extension.instructions.md`](instructions/publish-update-extension.instructions.md) for the human runbook.**
+
+**Why:** two invariants — (1) the repository ruleset makes `refs/tags/v*` immutable (blocks `deletion` + `non_fast_forward`), and (2) the `VSCE_PAT` expires after at most 1 year. A naïve tag push could burn a version number on GitHub if the token expired without anyone noticing. The workflow validates the PAT via `vsce verify-pat` **before** creating the tag, so if the token is broken, nothing is created anywhere.
+
+**Pipeline:**
+
+```
+gh workflow run release.yml -f version=X.Y.Z
+  ├─ preflight       — version match, changelog entry, tag unused, vsce verify-pat
+  ├─ build (× 6)     — matrix packages one .vsix per platform + activation smoke test
+  ├─ tag-and-release — creates annotated tag, pushes it, creates GitHub Release
+  └─ publish         — vsce publish --packagePath dist/*.vsix
+```
+
+**Before dispatching:**
+
+1. Bump `package.json` version (+ `src/extension.ts` `@version` header — see [Version Management](#version-management--documentation-standards) below).
+2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
+3. Commit both in the same commit — the `pre-commit` Husky hook enforces this pairing and rejects a version bump without a matching changelog entry. Convention: `chore: Release version X.Y.Z`.
+4. Open PR → get the 6-platform matrix green → squash-merge.
+5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy without publishing anything.
+6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
+
+**Never:** run `vsce publish` locally (except the emergency-fallback scenario documented in the publishing instructions), push a `v*` tag by hand, or delete/re-tag an existing `v*` (the ruleset blocks it and the fix is always "bump to the next version").
+
 ### Version Management & Documentation Standards
 **CRITICAL Version Update Requirements:**
 - **When changing version numbers:** Always update BOTH `package.json` AND `src/extension.ts`
@@ -379,3 +406,20 @@ ls -lh *.vsix
 - **Auto-merge**: Dependabot PRs automatically merge when all CI checks pass
 - **Workflow Integration**: Auto-merge triggered after Build-Master and all VS Code version tests succeed
 - **Critical**: Monitor auto-merged PRs and manual intervention available if needed
+
+## Local Git Hooks (Husky)
+
+Installed automatically on `npm ci` via the `prepare` script. Located in `.husky/`.
+
+| Hook | Purpose | Runs |
+| --- | --- | --- |
+| `pre-commit` | ESLint on `src/**` + release-bump consistency check (if `package.json` `version` field changes, `CHANGELOG.md` must be staged with matching `## [X.Y.Z]` heading) | Every `git commit` |
+| `commit-msg` | Enforces Conventional Commits format (`feat:`, `fix:`, `chore:`, etc.) on the subject line | Every `git commit` |
+| `pre-push` | Rejects any push whose remote ref matches `refs/tags/v*` (release tags must originate from the release workflow) | Every `git push` |
+
+**Escape hatches:**
+- `git commit --no-verify` skips `pre-commit` + `commit-msg`.
+- `git push --no-verify` skips `pre-push`.
+- `HUSKY=0` in the env disables all hooks (use only in containers/CI).
+
+**Why no `pre-tag` / `pre-release` hook:** Git does not expose one, and Husky can only wrap Git-dispatched hooks. The `pre-commit` bump check + `pre-push` tag rejection cover the same ground: a bad bump can't be committed, and a stray tag can't be pushed. See [`AGENTS.md`](../AGENTS.md#why-there-is-no-pre-tag-or-pre-release-hook) for the design reasoning.

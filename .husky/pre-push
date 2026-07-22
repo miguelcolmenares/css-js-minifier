@@ -1,0 +1,47 @@
+# Husky pre-push hook — refuse to push release tags from a local machine.
+#
+# Why: the release flow requires tags to be created from inside the
+# `Build & Release` workflow, after the preflight (which includes
+# `vsce verify-pat`) has succeeded. A hand-pushed `v*` tag would bypass
+# that safety net and, because the repo's ruleset makes tags immutable,
+# could burn a version number if the workflow later refused to publish.
+#
+# See `.github/instructions/publish-update-extension.instructions.md`
+# and `AGENTS.md` for the full release runbook.
+#
+# Bypass with `git push --no-verify` if you genuinely need to (e.g. you
+# are pushing a non-`v*` tag, or you are the maintainer intentionally
+# repairing state after an outage). Contributors should never need this.
+
+# Git passes ref updates on stdin: "<local ref> <local sha> <remote ref> <remote sha>\n"
+while read -r local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in
+    refs/tags/v*)
+      cat <<EOF >&2
+❌ Refusing to push $remote_ref from a local machine.
+
+Release tags (v*) must be created by the 'Build & Release' workflow, not
+by hand. Manual tag pushes bypass the VSCE_PAT preflight and, because
+the repository ruleset makes tags immutable, can burn a version number
+if the Marketplace publish later fails.
+
+To cut a release:
+  1. Merge the version bump PR to master.
+  2. Verify the PAT: gh workflow run verify-marketplace-auth.yml
+  3. Dispatch the release: gh workflow run release.yml -f version=X.Y.Z
+
+See .github/instructions/publish-update-extension.instructions.md for
+the full runbook.
+
+If you genuinely need to bypass this check, use:
+  git push --no-verify $remote_ref
+EOF
+      exit 1
+      ;;
+  esac
+
+  # Non-tag refs (branches) and non-v* tags are fine.
+  : "$local_ref"
+done
+
+exit 0
