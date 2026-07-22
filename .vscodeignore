@@ -19,4 +19,5 @@ vsc-extension-quickstart.md
 **/.vscode-test.*
 .github/**
 docs/**
+scripts/**
 images/*.gif
