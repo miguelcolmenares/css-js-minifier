@@ -75,7 +75,7 @@ export function minifyCss(text: string): MinificationResult | null {
 		};
 	} catch (error: unknown) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		vscode.window.showErrorMessage(t('minificationService.error.cssLocal', errorMessage));
+		vscode.window.showErrorMessage(t('CSS minification error: {0}', errorMessage));
 		return null;
 	}
 }

@@ -1,14 +1,14 @@
 {
-	"validators.fileType.unsupported": "Le type de fichier '{0}' n'est pas pris en charge. Seuls les fichiers CSS et JavaScript peuvent être minifiés.",
-	"validators.content.empty": "Impossible de minifier un fichier {0} vide. Veuillez d'abord ajouter du contenu.",
-	"fileService.newFile.success": "Fichier minifié avec succès et enregistré sous : {0}",
-	"fileService.newFile.successWithStats": "Fichier minifié avec succès et enregistré sous : {0} (Taille réduite de {1} à {2}, {3}% de réduction)",
-	"fileService.inPlace.success": "{0} a été minifié avec succès.",
-	"fileService.inPlace.successWithStats": "{0} a été minifié avec succès (Taille réduite de {1} à {2}, {3}% de réduction)",
-	"minificationService.fileType.unsupported": "Type de fichier non pris en charge pour la minification : {0}",
-	"minificationService.error.cssLocal": "Erreur de minification CSS : {0}",
-	"minificationService.error.jsLocal": "Erreur de minification JavaScript : {0}",
-	"extension.activation.failed": "CSS & JS Minifier n'a pas pu s'activer : {0}. Consultez le panneau de Sortie pour plus de détails.",
-	"commands.openFile.failed": "Impossible d'ouvrir le fichier : {0}",
-	"commands.minifyInNewFile.untitled": "Veuillez enregistrer le fichier sur le disque avant d'utiliser « Minifier et enregistrer comme nouveau fichier ». Le nouveau fichier minifié a besoin d'un emplacement existant à côté duquel il sera créé."
+	"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "Le type de fichier '{0}' n'est pas pris en charge. Seuls les fichiers CSS et JavaScript peuvent être minifiés.",
+	"Cannot minify empty {0} file. Please add some content first.": "Impossible de minifier un fichier {0} vide. Veuillez d'abord ajouter du contenu.",
+	"File successfully minified and saved as: {0}": "Fichier minifié avec succès et enregistré sous : {0}",
+	"File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)": "Fichier minifié avec succès et enregistré sous : {0} (Taille réduite de {1} à {2}, {3}% de réduction)",
+	"{0} has been successfully minified.": "{0} a été minifié avec succès.",
+	"{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)": "{0} a été minifié avec succès (Taille réduite de {1} à {2}, {3}% de réduction)",
+	"Unsupported file type for minification: {0}": "Type de fichier non pris en charge pour la minification : {0}",
+	"CSS minification error: {0}": "Erreur de minification CSS : {0}",
+	"JavaScript minification error: {0}": "Erreur de minification JavaScript : {0}",
+	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifier n'a pas pu s'activer : {0}. Consultez le panneau de Sortie pour plus de détails.",
+	"Failed to open file: {0}": "Impossible d'ouvrir le fichier : {0}",
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Veuillez enregistrer le fichier sur le disque avant d'utiliser « Minifier et enregistrer comme nouveau fichier ». Le nouveau fichier minifié a besoin d'un emplacement existant à côté duquel il sera créé."
 }

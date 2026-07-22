@@ -7,22 +7,19 @@ import { setTimeout } from 'timers';
 import { t } from '../utils/l10nHelper';
 
 /**
- * Rate limiting configuration for tests
- * Delays are used for UI stability and file watcher cleanup
+ * Timing configuration for tests.
+ *
+ * Every entry here exists to work around VS Code UI, workspace, or filesystem
+ * async behavior (file watchers flushing, config changes propagating, notifications
+ * being processed, Windows CI I/O latency, …). None of these delays exist to
+ * throttle requests against an external API — the extension has minified CSS/JS
+ * locally since v1.3.0.
  */
 const RATE_LIMIT_CONFIG = {
-	// Delay between tests in milliseconds (reduced - no API calls needed)
-	TEST_DELAY_MS: 500,
-	// Maximum retries for failed requests
-	MAX_RETRIES: 3,
-	// Timeout for individual tests (reduced - all minification is local)
+	// Timeout for individual tests (all minification is local, so this is UI/FS budget only)
 	TEST_TIMEOUT_MS: 5000,
-	// Timeout for config tests (30 seconds)
+	// Timeout for configuration tests (they open/close many editors and wait for FS)
 	TEST_TIMEOUT_CONFIG_MS: 30000,
-	// Delay between configuration tests (increased for CI stability)
-	CONFIG_TEST_DELAY_MS: 5000,
-	// Delay between test suites (reduced - no API rate limit needed)
-	SUITE_DELAY_MS: 5000,
 	// Small delay for file watcher cleanup (100ms)
 	FILE_WATCHER_CLEANUP_MS: 100,
 	// Delay for message processing (300ms)
@@ -40,10 +37,13 @@ const RATE_LIMIT_CONFIG = {
 };
 
 /**
- * Adds a delay between tests for UI stability
- * @param ms - Delay in milliseconds (default: 500ms)
+ * Waits `ms` milliseconds. Used to give VS Code UI, file watchers, or the FS
+ * enough time to settle between test steps.
+ *
+ * @param ms - Delay in milliseconds. There is no default — every call site must
+ *   pass an explicit value tied to the specific async behavior it is waiting on.
  */
-async function delayBetweenTests(ms: number = RATE_LIMIT_CONFIG.TEST_DELAY_MS): Promise<void> {
+async function delayBetweenTests(ms: number): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
@@ -122,7 +122,7 @@ const prefixes = ['.min', '-min', '.compressed', '-compressed', '.minified', '-m
 
 // Main suite that groups all tests
 suite('JS & CSS Minifier Test Suite', function () {
-	// Set a maximum timeout for each test (increased for rate limiting)
+	// Set a maximum timeout for each test
 	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
@@ -131,11 +131,6 @@ suite('JS & CSS Minifier Test Suite', function () {
 	// Clean up sinon spies after each test to prevent conflicts
 	this.afterEach(function () {
 		sinon.restore();
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
 	});
 
 	this.afterAll(async function () {
@@ -263,7 +258,10 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.fileType.unsupported', 'plaintext');
+		const expectedMessage = t(
+			"File type '{0}' is not supported. Only CSS and JavaScript files can be minified.",
+			'plaintext'
+		);
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('plaintext') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show unsupported file type message. Got: ${errorMessage}`);
@@ -282,7 +280,7 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.content.empty', 'css');
+		const expectedMessage = t('Cannot minify empty {0} file. Please add some content first.', 'css');
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('css') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty CSS file message. Got: ${errorMessage}`);
@@ -301,7 +299,7 @@ suite('JS & CSS Minifier Test Suite', function () {
 		// Check if the error message was called - use same t() helper as production code for consistency
 		assert(showErrorMessageSpy.called, 'showErrorMessage should be called');
 		const errorMessage = showErrorMessageSpy.firstCall.args[0] as string;
-		const expectedMessage = t('validators.content.empty', 'javascript');
+		const expectedMessage = t('Cannot minify empty {0} file. Please add some content first.', 'javascript');
 		// Check if message contains key parts (handles both translated and fallback cases)
 		const isCorrectMessage = errorMessage.includes('javascript') || errorMessage === expectedMessage;
 		assert(isCorrectMessage, `Should show empty JavaScript file message. Got: ${errorMessage}`);
@@ -389,22 +387,10 @@ suite('JS & CSS Minifier Test Suite', function () {
 // These tests fail inconsistently due to Toptal API not minifying nth-child selectors reliably
 // See: https://github.com/miguelcolmenares/css-js-minifier/issues/XXX
 suite.skip('CSS nth-child Test Suite', function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
-
-	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
-	this.beforeAll(async function () {
-		vscode.window.showInformationMessage('Waiting 30 seconds before CSS nth-child tests to avoid API rate limiting...');
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
-	});
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage('Start CSS nth-child tests.');
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
-	});
 
 	this.afterAll(async function () {
 		const nthChildUri = vscode.Uri.file(path.join(__dirname, 'fixtures', 'nth-child-test.css'));
@@ -481,19 +467,7 @@ suite.skip('CSS nth-child Test Suite', function () {
 
 // Keybinding Test Suite
 suite('Keybinding Test Suite', function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
-
-	// Wait 30 seconds before starting this suite to avoid API rate limiting conflicts
-	this.beforeAll(async function () {
-		vscode.window.showInformationMessage('Waiting 30 seconds before Keybinding tests to avoid API rate limiting...');
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS);
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
-	});
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_MS);
 
 	// Show an informational message when starting the tests
 	vscode.window.showInformationMessage('Start keybinding tests.');
@@ -546,8 +520,8 @@ suite('Keybinding Test Suite', function () {
 
 // Configuration Test Suite
 suite('Configuration Test Suite', async function () {
-	// Set a maximum timeout for each test and hooks (increased for 30-second delays)
-	this.timeout(45000); // 45 seconds to accommodate 30-second delay + buffer
+	// Configuration tests open/close many editors and wait for FS + config propagation.
+	this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_CONFIG_MS);
 
 	// Clean up any existing files before starting configuration tests
 	this.beforeAll(async function () {
@@ -621,11 +595,6 @@ suite('Configuration Test Suite', async function () {
 		}
 
 		vscode.window.showInformationMessage('File cleanup completed for configuration tests.');
-	});
-
-	// Add delay after each test to respect rate limits
-	this.afterEach(async function () {
-		await delayBetweenTests();
 	});
 
 	// Show an informational message when starting the tests
@@ -734,7 +703,7 @@ suite('Configuration Test Suite', async function () {
 		await vscode.commands.executeCommand('extension.minifyInNewFile');
 
 		// Wait for file creation (significantly increased for Windows CI)
-		await delayBetweenTests(RATE_LIMIT_CONFIG.SUITE_DELAY_MS / 3); // 10 seconds
+		await delayBetweenTests(RATE_LIMIT_CONFIG.FILE_OPERATION_MS);
 
 		// Verify the new file exists (auto-open behavior is tested via file creation)
 		const newFileUri = vscode.Uri.file(jsDocument.uri.fsPath.replace(/(\.js)$/, '.min$1'));
@@ -961,13 +930,7 @@ suite('Configuration Test Suite', async function () {
 			// Verify the message includes size reduction information
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if it's using the correct translation key for stats or contains percentage info
-			// In test environment, we might get translation keys instead of translated text
-			const hasStatsInfo =
-				message.includes('successWithStats') ||
-				message.includes('%') ||
-				message.includes('reduced') ||
-				message === 'fileService.inPlace.successWithStats';
+			const hasStatsInfo = message.includes('%') || message.includes('reduced');
 			assert(hasStatsInfo, `Message should include size reduction info. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -993,9 +956,7 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 			// Should use regular success message, not the stats version
-			const isBasicMessage =
-				message.includes('fileService.inPlace.success') ||
-				(message.includes('successfully minified') && !message.includes('%'));
+			const isBasicMessage = message.includes('successfully minified') && !message.includes('%');
 			assert(isBasicMessage, `Message should be a basic success message. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1026,10 +987,7 @@ suite('Configuration Test Suite', async function () {
 			// Verify the message includes size reduction information
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if it's using the correct translation key for stats or contains size info
-			// In test environment, we might get translation keys instead of translated text
-			const hasStatsInfo =
-				message.includes('successWithStats') || message.includes('Size reduced') || message.includes('No size change');
+			const hasStatsInfo = message.includes('Size reduced') || message.includes('No size change');
 			assert(hasStatsInfo, `Message should include size info. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1080,8 +1038,8 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 
-			// Verify the message contains either size units or is using stats translation key
-			const hasUnits = message.includes(' KB') || message.includes(' B') || message.includes('successWithStats');
+			// Verify the message contains size units
+			const hasUnits = message.includes(' KB') || message.includes(' B');
 			assert(hasUnits, `Message should include size units. Got: ${message}`);
 
 			showMessageStub.restore();
@@ -1103,14 +1061,10 @@ suite('Configuration Test Suite', async function () {
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
 
-			// Should include percentage if there was reduction or use stats translation key
+			// Should include percentage if there was reduction or a `No size change` notice.
 			const hasPercentage = message.includes('%');
 			const hasNoReduction = message.includes('No size change');
-			const hasStatsKey = message.includes('successWithStats');
-			assert(
-				hasPercentage || hasNoReduction || hasStatsKey,
-				`Message should show percentage or no change. Got: ${message}`
-			);
+			assert(hasPercentage || hasNoReduction, `Message should show percentage or no change. Got: ${message}`);
 
 			showMessageStub.restore();
 		});
@@ -1130,9 +1084,7 @@ suite('Configuration Test Suite', async function () {
 
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if filename is included or if it's using translation key
-			const hasFilename = message.includes('test.js') || message.includes('fileService.inPlace');
-			assert(hasFilename, `Message should include filename. Got: ${message}`);
+			assert(message.includes('test.js'), `Message should include filename. Got: ${message}`);
 
 			showMessageStub.restore();
 		});
@@ -1152,9 +1104,7 @@ suite('Configuration Test Suite', async function () {
 
 			assert(showMessageStub.called, 'showInformationMessage should be called');
 			const message = showMessageStub.firstCall.args[0] as string;
-			// Check if filename is included or if it's using translation key
-			const hasFilename = message.includes('test.css') || message.includes('fileService.inPlace');
-			assert(hasFilename, `Message should include filename. Got: ${message}`);
+			assert(message.includes('test.css'), `Message should include filename. Got: ${message}`);
 
 			showMessageStub.restore();
 		});

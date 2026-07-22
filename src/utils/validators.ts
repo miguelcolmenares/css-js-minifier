@@ -60,7 +60,9 @@ export function isValidFileType(fileType: string): boolean {
 export function validateFileType(fileType: string): boolean {
 	if (!isValidFileType(fileType)) {
 		// Show user-friendly error message with supported file types
-		vscode.window.showErrorMessage(t('validators.fileType.unsupported', fileType));
+		vscode.window.showErrorMessage(
+			t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", fileType)
+		);
 		return false;
 	}
 	return true;
@@ -95,7 +97,7 @@ export function validateContentLength(text: string, fileType: string): boolean {
 	// Check for empty content (whitespace-only content is still considered valid)
 	if (text.length === 0) {
 		// Provide contextual error message based on file type
-		vscode.window.showErrorMessage(t('validators.content.empty', fileType));
+		vscode.window.showErrorMessage(t('Cannot minify empty {0} file. Please add some content first.', fileType));
 		return false;
 	}
 	return true;

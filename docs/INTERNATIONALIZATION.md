@@ -4,7 +4,17 @@ This document describes the internationalization (i18n) implementation for the C
 
 ## Overview
 
-The extension uses VS Code's native localization system to provide a fully internationalized user experience across 7 languages. All user-facing text is translated, including commands, configuration settings, error messages, and notifications.
+The extension uses **VS Code's native `vscode.l10n` API** to provide a fully internationalized user experience across 7 languages. All user-facing text is translated, including commands, configuration settings, error messages, and notifications.
+
+> **Runtime translation (v1.3.3+)**: Every runtime message goes through the `t()` helper in [`src/utils/l10nHelper.ts`](../src/utils/l10nHelper.ts), which is now a thin one-line delegate to `vscode.l10n.t(message, ...args)` — following the [canonical VS Code l10n sample](https://github.com/microsoft/vscode-extension-samples/tree/main/l10n-sample):
+>
+> - The **first argument to `t()` is the English source string** (e.g. `t("File type '{0}' is not supported.", type)`), not a symbolic dotted key.
+> - For non-English locales (es, fr, de, pt-br, ja, zh-cn) VS Code automatically loads the matching `bundle.l10n.<locale>.json` and returns the translated string.
+> - When VS Code runs under the default English locale, no bundle is loaded and `vscode.l10n.t()` returns the source `message` argument as-is (with positional placeholders substituted). **There is intentionally no `bundle.l10n.en.json`** — English lives in the source code.
+>
+> Issue [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169) tracked the earlier implementation, which relied on a manually loaded English bundle and dotted keys, and effectively never called `vscode.l10n.t()` — breaking translations for every non-English user. v1.3.3 migrated all call sites to the English-as-key convention and dropped the fallback helper.
+>
+> The `@vscode/l10n` npm package (mentioned in older tutorials) is **only** required by extensions that spawn subprocesses — the main extension host must use `vscode.l10n` directly. See the [VS Code l10n API docs](https://code.visualstudio.com/api/references/vscode-api#l10n).
 
 ## Supported Languages
 
@@ -73,29 +83,26 @@ Used for dynamic messages in TypeScript code:
 - User feedback
 
 **File Location:** `l10n/` directory  
-**Format:** JSON key-value pairs with placeholder support  
-**Usage in code:** `l10n.t('key', ...args)`
+**Format:** JSON key-value pairs where the key is the **English source string** and the value is the localized translation (with matching positional placeholders).  
+**Usage in code:** `t(englishText, ...args)` (via [`src/utils/l10nHelper.ts`](../src/utils/l10nHelper.ts))
 
 **Example:**
 
 ```typescript
 // TypeScript code
-import * as l10n from '@vscode/l10n';
+import { t } from '../utils/l10nHelper';
 
 vscode.window.showErrorMessage(
-  l10n.t('validators.fileType.unsupported', fileType)
+  t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", fileType)
 );
-
-// l10n/bundle.l10n.json (English)
-{
-  "validators.fileType.unsupported": "File type '{0}' is not supported. Only CSS and JavaScript files can be minified."
-}
 
 // l10n/bundle.l10n.es.json (Spanish)
 {
-  "validators.fileType.unsupported": "El tipo de archivo '{0}' no es compatible. Solo se pueden minificar archivos CSS y JavaScript."
+  "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "El tipo de archivo '{0}' no es compatible. Solo se pueden minificar archivos CSS y JavaScript."
 }
 ```
+
+> Note: `l10n/bundle.l10n.json` (no locale suffix) ships as an identity map — useful only as an artifact for tooling such as `@vscode/l10n-dev export`. **There is no `bundle.l10n.en.json`**; VS Code never loads a bundle for the default English locale.
 
 ## Translation Keys Structure
 
@@ -117,27 +124,26 @@ configuration.minifiedNewFilePrefix.enumDescriptions.6
 configuration.autoOpenNewFile
 ```
 
-### Runtime Bundle Keys (17 keys)
+### Runtime Bundle Keys (12 English source strings)
+
+Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 12 messages:
 
 ```
-validators.fileType.unsupported
-validators.content.empty
-fileService.newFile.success
-fileService.inPlace.success
-minificationService.fileType.unsupported
-minificationService.fileSize.tooLarge
-minificationService.error.missingInput
-minificationService.error.invalidMethod
-minificationService.error.invalidContentType
-minificationService.error.fileTooLarge
-minificationService.error.invalidSyntax
-minificationService.error.rateLimitExceeded
-minificationService.error.apiError
-minificationService.error.invalidResponse
-minificationService.error.timeout
-minificationService.error.network
-minificationService.error.generic
+"File type '{0}' is not supported. Only CSS and JavaScript files can be minified."
+"Cannot minify empty {0} file. Please add some content first."
+"File successfully minified and saved as: {0}"
+"File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)"
+"{0} has been successfully minified."
+"{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)"
+"Unsupported file type for minification: {0}"
+"CSS minification error: {0}"
+"JavaScript minification error: {0}"
+"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details."
+"Failed to open file: {0}"
+"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
 ```
+
+> The canonical source of truth is `l10n/bundle.l10n.json` (identity map, one entry per source string). To regenerate it from the codebase, run `npx @vscode/l10n-dev export -o ./l10n ./src`.
 
 ## Message Interpolation
 
@@ -146,44 +152,50 @@ Runtime messages support parameter interpolation using `{0}`, `{1}`, `{2}`, etc.
 **Examples:**
 
 ```typescript
+import { t } from '../utils/l10nHelper';
+
 // Single parameter
-l10n.t('validators.fileType.unsupported', 'html')
-// Result: "File type 'html' is not supported..."
+t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", 'html');
+// Result (English): "File type 'html' is not supported. Only CSS and JavaScript files can be minified."
 
 // Multiple parameters
-l10n.t('minificationService.error.apiError', 'CSS Minifier', '429', 'Too Many Requests')
-// Result: "CSS Minifier API error (429): Too Many Requests"
+t(
+  'File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)',
+  'style.min.css',
+  '10.5 KB',
+  '3.2 KB',
+  '69.5'
+);
+// Result: (localized message with all four values interpolated)
 ```
 
 ## Implementation Details
 
 ### Source Code Integration
 
-Three main modules were updated to use l10n:
+User-facing runtime messages live in these modules (all call sites pass an English source string as the first argument to `t()`):
 
-**`src/utils/validators.ts`**
+**`src/utils/validators.ts`** — 2 messages (file-type + content-empty validation)
 
-- 2 messages internationalized
-- File type validation errors
-- Content length validation errors
+**`src/services/fileService.ts`** — 4 messages (in-place / new-file success, with and without size stats)
 
-**`src/services/fileService.ts`**
+**`src/services/minificationService.ts`** — 1 message (unsupported file type)
 
-- 2 messages internationalized
-- Success notifications for file operations
+**`src/services/strategies/localCssMinifier.ts`** — 1 message (CSS minification error)
 
-**`src/services/minificationService.ts`**
+**`src/services/strategies/localJsMinifier.ts`** — 1 message (JavaScript minification error)
 
-- 13 messages internationalized
-- API error messages
-- Network error messages
-- Validation error messages
+**`src/commands/minifyCommand.ts`** — 2 messages (failed to open file, untitled document)
+
+**`src/extension.ts`** — 1 message (activation failure)
 
 ### Import Pattern
 
 ```typescript
-import * as l10n from "@vscode/l10n";
+import { t } from '../utils/l10nHelper';
 ```
+
+The helper is a one-line delegate to `vscode.l10n.t()` — import it from `./utils/l10nHelper` (adjust the relative path from your source file). Never import `@vscode/l10n` directly in extension-host code.
 
 ### Translation Pattern
 
@@ -193,9 +205,11 @@ vscode.window.showErrorMessage(
   `File type '${fileType}' is not supported. Only CSS and JavaScript files can be minified.`
 );
 
-// After (internationalized)
+// After (internationalized — English source is the key)
+import { t } from '../utils/l10nHelper';
+
 vscode.window.showErrorMessage(
-  l10n.t('validators.fileType.unsupported', fileType)
+  t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", fileType)
 );
 ```
 
@@ -218,13 +232,53 @@ The extension includes comprehensive i18n tests in `src/test/i18n.test.ts`:
 **Running i18n Tests:**
 
 ```bash
-# Run all i18n tests
+# Run all i18n tests (default English locale)
 npm run pretest
 npx vscode-test --grep "Internationalization"
 
 # Or use VS Code task
 # Tasks: Run Task -> Test: Internationalization (i18n) Suite Only
 ```
+
+### Testing Under a Specific Locale
+
+The test runner supports launching VS Code under a specific display language via the `VSCODE_LOCALE` environment variable (wired through `.vscode-test.mjs` → `launchArgs: ['--locale=<lang>']`):
+
+```bash
+# Run the full test suite as if VS Code were set to Spanish
+VSCODE_LOCALE=es npm test
+
+# Run only i18n tests under French
+VSCODE_LOCALE=fr npx vscode-test --grep "Internationalization"
+
+# Use the built-in pseudo-locale (no language pack required)
+VSCODE_LOCALE=qps-ploc npm test
+```
+
+**Requirements:**
+
+- **`es`, `fr`, `de`, `pt-br`, `ja`, `zh-cn`**: the matching Marketplace Language Pack must be installed in the VS Code test host. Without it, VS Code silently falls back to English (`vscode.env.language === 'en'`) and the runtime bundle test in `i18n.test.ts` becomes a no-op.
+- **`qps-ploc`**: VS Code ships the [Pseudo Language Pack](https://marketplace.visualstudio.com/items?itemName=MS-CEINTL.vscode-language-pack-qps-ploc) as an official extension. Once installed, all strings render with pseudo-localization markers, making i18n regressions visually obvious.
+
+**What the runtime tests verify** (see `Runtime Localization (vscode.l10n)` suite in `src/test/i18n.test.ts`):
+
+1. `t()` returns real text (either the English source with placeholders substituted, or the translated equivalent) — the regression guard for issue #169.
+2. Placeholder interpolation (`{0}`, `{1}`, …) is preserved end-to-end.
+3. `vscode.l10n.bundle` matches the shipped `bundle.l10n.<locale>.json` on disk when running under a non-English locale.
+4. Every non-English bundle differs from English for at least one key (guards against accidental bundle overwrites).
+
+### Manual Testing in VS Code
+
+To exercise the extension in a specific language interactively:
+
+```bash
+# Launch VS Code with a specific locale (Language Pack must be installed)
+code . --locale=es
+code . --locale=fr
+code . --locale=qps-ploc
+```
+
+Alternatively use the **Command Palette → Configure Display Language** command and restart VS Code.
 
 ## Adding a New Language
 
@@ -263,36 +317,32 @@ Create `package.nls.it.json` in the root directory with all 13 keys:
 
 #### Step 2: Create Runtime Bundle File
 
-Create `l10n/bundle.l10n.it.json` with all 17 runtime message keys:
+Create `l10n/bundle.l10n.it.json`. The **key is the English source string** exactly as it appears in the `t()` call sites, and the **value is the Italian translation**. Placeholders `{0}`, `{1}`, … must be preserved in the translation:
 
 ```json
 {
-  "validators.fileType.unsupported": "Il tipo di file '{0}' non è supportato. Solo i file CSS e JavaScript possono essere minimizzati.",
-  "validators.content.empty": "Impossibile minimizzare un file {0} vuoto. Aggiungi prima del contenuto.",
-  "fileService.newFile.success": "File minimizzato con successo e salvato come: {0}",
-  "fileService.inPlace.success": "{0} è stato minimizzato con successo.",
-  "minificationService.fileType.unsupported": "Tipo di file non supportato per la minimizzazione: {0}",
-  "minificationService.fileSize.tooLarge": "File troppo grande: {0}MB. La dimensione massima consentita è 5MB. Riduci la dimensione del file e riprova.",
-  "minificationService.error.missingInput": "Parametro di input mancante. Assicurati che il file abbia del contenuto.",
-  "minificationService.error.invalidMethod": "Metodo di richiesta non valido. Questo è un errore interno, riprova.",
-  "minificationService.error.invalidContentType": "Tipo di contenuto non valido. Questo è un errore interno, riprova.",
-  "minificationService.error.fileTooLarge": "File troppo grande. La dimensione massima consentita è 5MB. Riduci la dimensione del file.",
-  "minificationService.error.invalidSyntax": "Sintassi {0} non valida. Controlla il codice per errori di sintassi.",
-  "minificationService.error.rateLimitExceeded": "Troppe richieste. Il limite API è 30 richieste al minuto. Attendi e riprova.",
-  "minificationService.error.apiError": "Errore API {0} ({1}): {2}",
-  "minificationService.error.invalidResponse": "Formato di risposta non valido dall'API di minimizzazione",
-  "minificationService.error.timeout": "Timeout di minimizzazione: Il servizio {0} sta impiegando più tempo del previsto. Controlla la connessione Internet e riprova.",
-  "minificationService.error.network": "Errore di rete: Impossibile connettersi al servizio di minimizzazione. Controlla la connessione Internet e riprova.",
-  "minificationService.error.generic": "Impossibile minimizzare il file {0}: {1}"
+  "File type '{0}' is not supported. Only CSS and JavaScript files can be minified.": "Il tipo di file '{0}' non è supportato. Solo i file CSS e JavaScript possono essere minimizzati.",
+  "Cannot minify empty {0} file. Please add some content first.": "Impossibile minimizzare un file {0} vuoto. Aggiungi prima del contenuto.",
+  "File successfully minified and saved as: {0}": "File minimizzato con successo e salvato come: {0}",
+  "File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)": "File minimizzato con successo e salvato come: {0} (Dimensione ridotta da {1} a {2}, riduzione {3}%)",
+  "{0} has been successfully minified.": "{0} è stato minimizzato con successo.",
+  "{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)": "{0} è stato minimizzato con successo (Dimensione ridotta da {1} a {2}, riduzione {3}%)",
+  "Unsupported file type for minification: {0}": "Tipo di file non supportato per la minimizzazione: {0}",
+  "CSS minification error: {0}": "Errore di minimizzazione CSS: {0}",
+  "JavaScript minification error: {0}": "Errore di minimizzazione JavaScript: {0}",
+  "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "Attivazione di CSS & JS Minifier non riuscita: {0}. Controlla il pannello Output per i dettagli.",
+  "Failed to open file: {0}": "Impossibile aprire il file: {0}",
+  "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Salva il file su disco prima di usare 'Minimizza e salva come nuovo file'. Il nuovo file minimizzato ha bisogno di una posizione esistente accanto a cui essere creato."
 }
 ```
 
 **Critical Requirements:**
 
-- Must have exactly 17 keys
-- Preserve all placeholders: `{0}`, `{1}`, `{2}` in correct positions
+- Must contain exactly the 12 English source strings shown above as keys
+- Preserve all placeholders (`{0}`, `{1}`, `{2}`, `{3}`) in the exact positions required by the message
 - Maintain professional tone suitable for error messages
-- Keep technical terms (CSS, JavaScript, API, MB) untranslated
+- Keep technical terms (CSS, JavaScript, KB) untranslated where appropriate
+- Do **not** create `bundle.l10n.en.json` — English is served from the source strings themselves
 
 #### Step 3: Update Test Constants
 
@@ -444,11 +494,11 @@ Update the language support table in:
 
 ### For Developers
 
-1. **Always Use l10n.t()**: Never hardcode user-facing strings
-2. **Descriptive Keys**: Use clear, hierarchical key names
+1. **Always Use `t()`**: Never hardcode user-facing strings; pass the English source text as the first argument
+2. **Stable Source Strings**: Treat the English source string as the key — editing wording is a breaking change for every bundle
 3. **Document Parameters**: Comment what each placeholder represents
-4. **Test All Languages**: Verify translations load correctly
-5. **Update All Files**: When adding keys, update all language files
+4. **Test All Languages**: Verify translations load correctly (`VSCODE_LOCALE=es npm test`)
+5. **Update All Files**: When adding messages, update every `l10n/bundle.l10n.<locale>.json`
 
 ## Language Selection
 
@@ -468,7 +518,7 @@ Users can change their VS Code language:
 ## Performance Considerations
 
 - Translation files are loaded once at extension activation
-- No runtime performance impact from l10n.t() calls
+- No runtime performance impact from `t()` calls (single delegate to `vscode.l10n.t`)
 - Bundles are small (~2KB per language)
 - VS Code caches translations efficiently
 
@@ -476,10 +526,11 @@ Users can change their VS Code language:
 
 ### When Adding New Messages
 
-1. Add key to English files first (`package.nls.json` and `l10n/bundle.l10n.json`)
-2. Update all other language files with translations
-3. Run i18n tests to verify consistency
-4. Update this documentation if adding new categories
+1. Add the English source string inline at the call site: `t("New English message", ...args)`
+2. Add the same English source string as a new key to every `l10n/bundle.l10n.<locale>.json` (translation on the value side)
+3. Optionally run `npx @vscode/l10n-dev export -o ./l10n ./src` to regenerate `l10n/bundle.l10n.json` (identity map)
+4. Run the i18n test suite to verify key consistency
+5. Update this documentation if adding new categories
 
 ### Translation Updates
 
@@ -619,20 +670,20 @@ npx vscode-test --grep "Internationalization"
         <(jq -r 'keys[]' package.nls.es.json | sort)
    ```
 
-2. **Typo in l10n.t() Call**
+2. **Typo in `t()` Call**
 
    ```typescript
-   // Wrong
-   l10n.t('validators.fileType.unsupported')
-   
-   // Correct (must match key in bundle.l10n.json)
-   l10n.t('validators.fileType.unsupported', fileType)
+   // Wrong — truncated or misspelled English source
+   t("File type '{0}' is unsupported", fileType)
+
+   // Correct — must match the exact key in every bundle.l10n.<locale>.json
+   t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", fileType)
    ```
 
 **Solution:**
 
 - Run i18n tests to verify key consistency
-- Check for typos in source code l10n.t() calls
+- Check for typos in source code `t()` calls
 - Ensure all translation files have identical keys
 
 ### Parameter Interpolation Not Working
@@ -641,31 +692,31 @@ npx vscode-test --grep "Internationalization"
 
 **Possible Causes:**
 
-1. **Missing Parameters in l10n.t() Call**
+1. **Missing Parameters in `t()` Call**
 
    ```typescript
-   // Wrong - missing parameter
-   l10n.t('validators.fileType.unsupported')
-   
-   // Correct - includes parameter
-   l10n.t('validators.fileType.unsupported', fileType)
+   // Wrong — missing parameter
+   t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.");
+
+   // Correct — includes parameter
+   t("File type '{0}' is not supported. Only CSS and JavaScript files can be minified.", fileType);
    ```
 
 2. **Parameter Order Mismatch**
 
    ```typescript
-   // Translation: "File {0} is too large: {1}MB"
-   
-   // Wrong - reversed parameters
-   l10n.t('error.fileTooLarge', sizeMB, fileName)
-   
-   // Correct - matches placeholder order
-   l10n.t('error.fileTooLarge', fileName, sizeMB)
+   // Source: "File {0} is too large: {1}MB"
+
+   // Wrong — reversed parameters
+   t('File {0} is too large: {1}MB', sizeMB, fileName);
+
+   // Correct — matches placeholder order
+   t('File {0} is too large: {1}MB', fileName, sizeMB);
    ```
 
 **Solution:**
 
-- Always pass required parameters to l10n.t()
+- Always pass required parameters to `t()`
 - Ensure parameter order matches placeholders in translation
 - Test with actual values, not just in development
 
@@ -791,8 +842,8 @@ vsce ls
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| `Cannot find module '@vscode/l10n'` | Package not installed | Run `npm install` |
-| `l10n.t is not a function` | Missing import statement | Add `import * as l10n from '@vscode/l10n';` |
+| `Cannot find module '@vscode/l10n'` | You should not import `@vscode/l10n` in extension-host code | Use `import { t } from '../utils/l10nHelper';` instead |
+| `vscode.l10n.t is not a function` | VS Code version too old | Require `engines.vscode >= 1.73.0` in package.json |
 | `Translation key not found` | Key doesn't exist in bundle | Check key spelling and bundle file |
 | `Unexpected token in JSON` | Syntax error in .nls file | Validate JSON with `jq` or online validator |
 | `Encoding error` | Non-UTF-8 characters | Save files with UTF-8 encoding |

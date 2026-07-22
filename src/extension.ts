@@ -15,7 +15,7 @@
 
 import * as vscode from 'vscode';
 import { minifyCommand, minifyInNewFileCommand, onSaveMinify } from './commands';
-import { loadL10nBundle, t } from './utils/l10nHelper';
+import { t } from './utils/l10nHelper';
 
 /**
  * Output channel for extension logging.
@@ -75,13 +75,10 @@ export function activate(context: vscode.ExtensionContext): void {
 			context.subscriptions.push(onSaveListener);
 		}
 
-		// Initialize l10n fallback system asynchronously (non-blocking).
-		// This is safe because `t()` falls back to the key itself if the bundle
-		// has not loaded yet, and l10n is only used for user-facing messages.
-		void loadL10nBundle(context.extensionPath).catch((err: unknown) => {
-			const message = err instanceof Error ? err.message : String(err);
-			outputChannel.appendLine(`[WARN] Failed to load l10n bundle: ${message}`);
-		});
+		// Preloading of a manual English bundle is no longer required. The helper
+		// in `src/utils/l10nHelper.ts` delegates directly to `vscode.l10n.t()`,
+		// which returns the source English message as-is when running under the
+		// default locale — matching VS Code's canonical l10n contract.
 
 		outputChannel.appendLine('[INFO] CSS & JS Minifier extension activated successfully.');
 	} catch (error: unknown) {
@@ -91,7 +88,9 @@ export function activate(context: vscode.ExtensionContext): void {
 			outputChannel.appendLine(`[ERROR] Stack trace: ${error.stack}`);
 		}
 		outputChannel.show(true);
-		vscode.window.showErrorMessage(t('extension.activation.failed', errorMessage));
+		vscode.window.showErrorMessage(
+			t('CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.', errorMessage)
+		);
 	}
 }
 

@@ -78,6 +78,10 @@ export default [
 				__dirname: 'readonly',
 				suite: 'readonly',
 				test: 'readonly',
+				suiteSetup: 'readonly',
+				suiteTeardown: 'readonly',
+				setup: 'readonly',
+				teardown: 'readonly',
 			},
 		},
 		plugins: {

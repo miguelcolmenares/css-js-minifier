@@ -76,7 +76,7 @@ export function getMinifiedText(text: string, fileType: string): MinificationRes
 			return minifyJs(text);
 
 		default:
-			vscode.window.showErrorMessage(t('minificationService.fileType.unsupported', fileType));
+			vscode.window.showErrorMessage(t('Unsupported file type for minification: {0}', fileType));
 			return null;
 	}
 }

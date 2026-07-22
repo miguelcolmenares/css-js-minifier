@@ -125,7 +125,7 @@ async function resolveTargetDocument(uri?: unknown): Promise<vscode.TextDocument
 			return await vscode.workspace.openTextDocument(uri);
 		} catch (error: unknown) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			vscode.window.showErrorMessage(t('commands.openFile.failed', errorMessage));
+			vscode.window.showErrorMessage(t('Failed to open file: {0}', errorMessage));
 			return undefined;
 		}
 	}
@@ -219,7 +219,11 @@ export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
 	// Untitled documents have no file path on disk, so we cannot derive a
 	// "<name>.min.<ext>" sibling file. Ask the user to save first (issue #145).
 	if (document?.isUntitled) {
-		vscode.window.showErrorMessage(t('commands.minifyInNewFile.untitled'));
+		vscode.window.showErrorMessage(
+			t(
+				"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
+			)
+		);
 		return;
 	}
 

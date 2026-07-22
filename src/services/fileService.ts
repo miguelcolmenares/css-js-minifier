@@ -65,7 +65,7 @@ export async function saveAsNewFile(
 	if (showSizeReduction) {
 		vscode.window.showInformationMessage(
 			t(
-				'fileService.newFile.successWithStats',
+				'File successfully minified and saved as: {0} (Size reduced from {1} to {2}, {3}% reduction)',
 				fileName,
 				stats.originalSizeKB,
 				stats.minifiedSizeKB,
@@ -73,7 +73,7 @@ export async function saveAsNewFile(
 			)
 		);
 	} else {
-		vscode.window.showInformationMessage(t('fileService.newFile.success', fileName));
+		vscode.window.showInformationMessage(t('File successfully minified and saved as: {0}', fileName));
 	}
 }
 
@@ -153,7 +153,7 @@ export async function replaceDocumentContent(
 		if (showSizeReduction) {
 			vscode.window.showInformationMessage(
 				t(
-					'fileService.inPlace.successWithStats',
+					'{0} has been successfully minified (Size reduced from {1} to {2}, {3}% reduction)',
 					fileName,
 					stats.originalSizeKB,
 					stats.minifiedSizeKB,
@@ -161,7 +161,7 @@ export async function replaceDocumentContent(
 				)
 			);
 		} else {
-			vscode.window.showInformationMessage(t('fileService.inPlace.success', fileName));
+			vscode.window.showInformationMessage(t('{0} has been successfully minified.', fileName));
 		}
 	}
 }
