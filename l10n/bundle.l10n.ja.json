@@ -9,5 +9,6 @@
 	"minificationService.error.cssLocal": "CSS縮小エラー：{0}",
 	"minificationService.error.jsLocal": "JavaScript縮小エラー：{0}",
 	"extension.activation.failed": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。",
-	"commands.openFile.failed": "ファイルを開けませんでした：{0}"
+	"commands.openFile.failed": "ファイルを開けませんでした：{0}",
+	"commands.minifyInNewFile.untitled": "『縮小して新規ファイルとして保存』を使用する前に、ファイルをディスクに保存してください。新しい縮小ファイルは、既存の場所の隣に作成する必要があります。"
 }

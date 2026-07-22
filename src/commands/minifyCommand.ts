@@ -174,8 +174,13 @@ export async function minifyCommand(uri?: unknown): Promise<void> {
 		try {
 			// Skip save in processDocument - we'll save after while Set still has protection
 			await processDocument(document, { debugSource: 'manual' }, true);
-			// Now save while still protected by Set to prevent onSaveMinify recursion
-			await document.save();
+			// Only persist to disk when the document has a real file path.
+			// For untitled documents `document.save()` triggers a "Save As" dialog
+			// which blocks the command and can appear broken to users (issue #145).
+			// The minified content stays in the editor buffer for the user to save manually.
+			if (!document.isUntitled) {
+				await document.save();
+			}
 		} finally {
 			// Remove from set only after ALL operations including save are complete
 			processingDocuments.delete(documentUri);
@@ -210,6 +215,13 @@ export async function minifyCommand(uri?: unknown): Promise<void> {
  */
 export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
 	const document = await resolveTargetDocument(uri);
+
+	// Untitled documents have no file path on disk, so we cannot derive a
+	// "<name>.min.<ext>" sibling file. Ask the user to save first (issue #145).
+	if (document?.isUntitled) {
+		vscode.window.showErrorMessage(t('commands.minifyInNewFile.untitled'));
+		return;
+	}
 
 	// Get user configuration for file naming
 	const settings = vscode.workspace.getConfiguration('css-js-minifier');

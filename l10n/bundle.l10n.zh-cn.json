@@ -9,5 +9,6 @@
 	"minificationService.error.cssLocal": "CSS压缩错误：{0}",
 	"minificationService.error.jsLocal": "JavaScript压缩错误：{0}",
 	"extension.activation.failed": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。",
-	"commands.openFile.failed": "无法打开文件：{0}"
+	"commands.openFile.failed": "无法打开文件：{0}",
+	"commands.minifyInNewFile.untitled": "请先将文件保存到磁盘,然后再使用“压缩并另存为新文件”。新的压缩文件需要一个现有位置以在其旁边创建。"
 }

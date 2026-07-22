@@ -75,6 +75,7 @@ const EXPECTED_BUNDLE_KEYS = [
 	'minificationService.error.cssLocal',
 	'minificationService.error.jsLocal',
 	'commands.openFile.failed',
+	'commands.minifyInNewFile.untitled',
 ];
 
 suite('Internationalization (i18n) Test Suite', function () {

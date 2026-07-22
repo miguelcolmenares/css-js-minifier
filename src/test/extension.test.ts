@@ -307,6 +307,66 @@ suite('JS & CSS Minifier Test Suite', function () {
 		assert(isCorrectMessage, `Should show empty JavaScript file message. Got: ${errorMessage}`);
 	});
 
+	// Tests for untitled/unsaved documents (issue #145 follow-up)
+	// These simulate a user creating a new file with Ctrl+N, setting the language
+	// to CSS or JS, and invoking the minify command WITHOUT ever saving the file.
+	test('Minify unsaved (untitled) CSS document in-place', async function () {
+		const untitledDocument = await vscode.workspace.openTextDocument({
+			language: 'css',
+			content: 'p { color: red; }',
+		});
+		await vscode.window.showTextDocument(untitledDocument);
+
+		// Verify the document is truly untitled
+		assert.strictEqual(untitledDocument.uri.scheme, 'untitled', 'Document should have untitled: scheme');
+		assert.strictEqual(untitledDocument.isUntitled, true, 'Document should be marked as untitled');
+
+		await vscode.commands.executeCommand('extension.minify');
+
+		// Content should be minified in-buffer, even though the file is untitled
+		const minifiedContent = untitledDocument.getText();
+		assert.strictEqual(minifiedContent, cssMinifiedContent);
+	});
+
+	test('Minify unsaved (untitled) JS document in-place', async function () {
+		const untitledDocument = await vscode.workspace.openTextDocument({
+			language: 'javascript',
+			content: 'function foo() { return 1 + 2; }',
+		});
+		await vscode.window.showTextDocument(untitledDocument);
+
+		assert.strictEqual(untitledDocument.uri.scheme, 'untitled');
+		assert.strictEqual(untitledDocument.isUntitled, true);
+
+		await vscode.commands.executeCommand('extension.minify');
+
+		// Content should be minified in-buffer
+		const minifiedContent = untitledDocument.getText();
+		assert.notStrictEqual(minifiedContent, 'function foo() { return 1 + 2; }', 'Content should be minified');
+		assert(minifiedContent.length > 0, 'Minified content should not be empty');
+		// Verify actual minification happened (no unnecessary whitespace)
+		assert(!minifiedContent.includes('  '), 'Minified content should not contain double spaces');
+	});
+
+	test('Minify unsaved (untitled) CSS document in new file shows helpful error', async function () {
+		const showErrorMessageSpy = sinon.spy(vscode.window, 'showErrorMessage');
+		const untitledDocument = await vscode.workspace.openTextDocument({
+			language: 'css',
+			content: 'p { color: red; }',
+		});
+		await vscode.window.showTextDocument(untitledDocument);
+
+		assert.strictEqual(untitledDocument.isUntitled, true);
+		const originalContent = untitledDocument.getText();
+
+		await vscode.commands.executeCommand('extension.minifyInNewFile');
+
+		// Original content should remain unchanged (no in-place edit for this command)
+		assert.strictEqual(untitledDocument.getText(), originalContent);
+		// User should have received a helpful error message
+		assert(showErrorMessageSpy.called, 'showErrorMessage should be called for untitled documents');
+	});
+
 	// Function to test the explorer context menu functionality
 	async function testExplorerContextMenu(
 		uri: vscode.Uri,

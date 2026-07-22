@@ -9,5 +9,6 @@
 	"minificationService.error.cssLocal": "CSS minification error: {0}",
 	"minificationService.error.jsLocal": "JavaScript minification error: {0}",
 	"extension.activation.failed": "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.",
-	"commands.openFile.failed": "Failed to open file: {0}"
+	"commands.openFile.failed": "Failed to open file: {0}",
+	"commands.minifyInNewFile.untitled": "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
 }

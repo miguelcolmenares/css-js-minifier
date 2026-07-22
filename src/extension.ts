@@ -8,7 +8,7 @@
  * minification and creating new minified files with configurable prefixes.
  *
  * @author Miguel Colmenares
- * @version 1.3.2
+ * @version 1.3.3
  * @since 0.1.0
  * @see {@link https://github.com/miguelcolmenares/css-js-minifier} GitHub Repository
  */
@@ -47,19 +47,16 @@ let outputChannel: vscode.OutputChannel;
  * // - A CSS or JavaScript file is opened (based on activationEvents)
  * // - The user manually activates the extension
  */
-export async function activate(context: vscode.ExtensionContext): Promise<void> {
+export function activate(context: vscode.ExtensionContext): void {
 	// Create output channel for extension logging
 	outputChannel = vscode.window.createOutputChannel('CSS & JS Minifier');
 	context.subscriptions.push(outputChannel);
 
 	try {
-		// Initialize l10n fallback system
-		await loadL10nBundle(context.extensionPath);
-
-		// Register the main minification command (in-place minification)
+		// Register commands SYNCHRONOUSLY first so they are immediately available.
+		// This prevents a race condition where a user could trigger the command
+		// before activation completes (which manifested as "command not found" in issue #145).
 		const minifyCommandDisposable = vscode.commands.registerCommand('extension.minify', minifyCommand);
-
-		// Register the command for creating new minified files
 		const minifyInNewFileCommandDisposable = vscode.commands.registerCommand(
 			'extension.minifyInNewFile',
 			minifyInNewFileCommand
@@ -77,6 +74,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			// Add listener to subscriptions for proper cleanup
 			context.subscriptions.push(onSaveListener);
 		}
+
+		// Initialize l10n fallback system asynchronously (non-blocking).
+		// This is safe because `t()` falls back to the key itself if the bundle
+		// has not loaded yet, and l10n is only used for user-facing messages.
+		void loadL10nBundle(context.extensionPath).catch((err: unknown) => {
+			const message = err instanceof Error ? err.message : String(err);
+			outputChannel.appendLine(`[WARN] Failed to load l10n bundle: ${message}`);
+		});
 
 		outputChannel.appendLine('[INFO] CSS & JS Minifier extension activated successfully.');
 	} catch (error: unknown) {

@@ -6,6 +6,21 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-07-22
+
+### Fixed
+
+- **Fix "command not found" and hangs on unsaved (untitled) documents** ([#145](https://github.com/miguelcolmenares/css-js-minifier/issues/145))
+  - `extension.minify` no longer calls `document.save()` on untitled documents — this previously triggered a blocking "Save As" dialog that made the command appear broken. Minified content is now applied to the editor buffer, letting the user decide when to save.
+  - `extension.minifyInNewFile` now detects untitled documents and shows a clear, localized error asking the user to save the file first, instead of throwing a cryptic `EROFS: read-only file system` error when attempting to write `/Untitled-1`.
+  - Extension activation was refactored to register commands **synchronously** at the top of `activate()`, before the asynchronous `loadL10nBundle` call. This eliminates a race condition where a fast user action could invoke a command before it was registered, surfacing as "command 'extension.minifyInNewFile' not found".
+  - The l10n bundle now loads in the background (non-blocking), keeping commands available immediately.
+
+### Added
+
+- New i18n key `commands.minifyInNewFile.untitled` across all 7 supported languages (en, es, fr, de, pt-br, ja, zh-cn).
+- Three new test cases covering the untitled document scenarios (in-place minify for CSS and JS, and the error path for `minifyInNewFile`).
+
 ## [1.3.2] - 2026-07-08
 
 ### Fixed
