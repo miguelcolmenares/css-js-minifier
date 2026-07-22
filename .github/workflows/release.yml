@@ -105,11 +105,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         # Release/asset immutability policy: this step does NOT use --clobber.
-        # If the release already exists we only upload assets that are not
-        # already present — any attempt to overwrite an existing asset will
-        # fail loudly, which is the intended behaviour. To re-publish a tag
-        # after the fact you must first delete the affected release assets
-        # (or the entire release) by hand. Combined with the tag-protection
+        # `gh release upload` will attempt to upload every file we pass and
+        # fail loudly on the first asset whose name already exists on the
+        # release — it does NOT silently skip duplicates. That's the intended
+        # behaviour: a rerun on the same tag with the same .vsix set exits
+        # non-zero, forcing whoever is republishing to make a conscious
+        # decision (delete the affected assets or the whole release by hand
+        # first, or bump to a fresh version). Combined with the tag-protection
         # ruleset on refs/tags/v* this guarantees that a given tag → release
         # → .vsix mapping is stable forever.
         run: |

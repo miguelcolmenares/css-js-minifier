@@ -94,6 +94,17 @@ if (!existsSync(extDir)) {
   rmSync(workDir, { recursive: true, force: true });
   exit(2);
 }
+// A broken .vsix layout (no bundled extension.js) should not masquerade as
+// a binding regression — the child probe would fail loudly when its
+// require() calls resolve to nothing and we would report it as exit 1,
+// making CI think the fix regressed. Catch it here as an infrastructure
+// failure instead so the exit code accurately reflects "packaging bug".
+const extensionEntry = join(extDir, "dist", "extension.js");
+if (!existsSync(extensionEntry)) {
+  console.error(`error: extracted vsix has no 'extension/dist/extension.js': ${extensionEntry}`);
+  rmSync(workDir, { recursive: true, force: true });
+  exit(2);
+}
 
 // ---------------------------------------------------------------------------
 // Run the activation probe as a child node process. Setting cwd + writing
