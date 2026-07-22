@@ -44,6 +44,8 @@ Two invariants are enforced by external systems and drive every decision:
 
 The preflight-first release workflow gives us: if the PAT is broken, nothing gets created anywhere; if the PAT is fine, the tag is created and immediately published, in one atomic-ish sequence.
 
+> **⚠️ Hard deadline: 2026-12-01 — Global PATs are being retired by Microsoft.** Our `VSCE_PAT` is scoped as *All accessible organizations* (required for Marketplace lookups), which makes it a global PAT. Per [Retirement of Global Personal Access Tokens in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/), **every global PAT stops working on 2026-12-01** regardless of its own expiration date. Migration to Microsoft Entra ID federated authentication (`azure/login@v2` + `vsce publish --azure-credential`) is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180). Until that ships, the preflight guard is what protects us: on 2026-12-01 the `vsce verify-pat` step will start failing and the workflow will refuse to create any tag — no orphan releases, but also no publishing until we finish the Entra migration.
+
 ### What to check before dispatching a release
 
 - `package.json` on `master` has the intended version.
@@ -98,6 +100,7 @@ Enforced by Husky (`commit-msg` hook). Format:
 Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
 
 Examples:
+
 - `feat: Add support for Turkish translation`
 - `fix(activation): Handle missing detect-libc on Linux`
 - `chore!: Drop Node 18 support`
@@ -162,12 +165,14 @@ The `Build & Release` workflow runs a 6-platform matrix on every relevant PR and
 | `windows-11-arm` | `win32-arm64` | ARM Windows |
 
 Each runner:
+
 1. `npm ci` — installs the native optional dependencies for its platform.
 2. `npm run package` — webpack production bundle.
 3. `npx vsce package --target <t>` — produces a platform-tagged `.vsix`.
 4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to make sure the binary loads on that platform.
 
 `verify-vsix-activation.mjs` exit codes:
+
 - `0` — binaries load and execute.
 - `1` — binding regression (missing / wrong architecture / undefined export).
 - `2` — infrastructure failure (extraction failed, missing files, unexpected `.vsix` layout).
@@ -179,12 +184,14 @@ If you add a new native dependency, update both `.vscodeignore` (to whitelist th
 ## Testing
 
 **Local — VS Code tasks** (`Cmd/Ctrl + Shift + P` → **Tasks: Run Task**):
+
 - `Test: Run All Tests` — full suite (~2 min).
 - `Test: Configuration Suite Only` — 4 tests (~20 s).
 - `Test: Main Functionality Suite Only` — 21 tests (~1.5 min).
 - `Test: Internationalization (i18n) Suite Only` — translation consistency.
 
 **Local — CLI:**
+
 ```bash
 npm test            # full suite
 npm run pretest     # compile + lint + copy fixtures (no test run)
@@ -201,8 +208,8 @@ npm run format:check # check without writing
 
 ### Add a new translation language
 
-1. Create `package.nls.<locale>.json` (13 keys — copy from `package.nls.json`, translate values).
-2. Create `l10n/bundle.l10n.<locale>.json` (17 keys — copy from `l10n/bundle.l10n.json`, translate values).
+1. Create `package.nls.<locale>.json` (14 keys — copy from `package.nls.json`, translate values). These stay as dotted symbolic keys because VS Code's `%placeholder%` mechanism for `package.json` contributions has no English-as-key equivalent.
+2. Create `l10n/bundle.l10n.<locale>.json` (12 keys — the keys are the English source strings themselves, per the v1.3.3 `vscode.l10n` migration; copy from `l10n/bundle.l10n.json` and translate the values).
 3. Add the locale to the arrays in `src/test/i18n.test.ts`.
 4. Run `Test: Internationalization (i18n) Suite Only` to verify key parity.
 5. See [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md) for details.
@@ -226,6 +233,7 @@ npm run format:check # check without writing
 Follow [`.github/instructions/publish-update-extension.instructions.md`](.github/instructions/publish-update-extension.instructions.md) — the runbook is authoritative.
 
 Short version:
+
 ```bash
 # 1. Bump + changelog PR, get merged.
 # 2. (Optional) Verify PAT.
@@ -244,7 +252,6 @@ gh workflow run release.yml -f version=X.Y.Z
 - [`.github/instructions/publish-update-extension.instructions.md`](.github/instructions/publish-update-extension.instructions.md) — release runbook.
 - [`.github/instructions/github-cli-usage.instructions.md`](.github/instructions/github-cli-usage.instructions.md) — how to use `gh` in this repo (always pipe to `cat` / set `GH_PAGER=cat`).
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module boundaries.
-- [`docs/native-bindings-cross-platform-plan.md`](docs/native-bindings-cross-platform-plan.md) — why the build matrix exists.
 - [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md) — i18n architecture.
 
 ---

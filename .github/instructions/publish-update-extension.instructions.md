@@ -22,13 +22,15 @@ The preflight-first workflow solves both: the tag is created **from inside** the
 
 ### 1. `VSCE_PAT` repository secret
 
+> **⚠️ Hard deadline: 2026-12-01.** Microsoft is retiring global PATs on this date — see [Retirement of Global Personal Access Tokens in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/). The PAT rotation instructions below still work today (2026-07-22), but on 2026-12-01 the token stops working regardless of its own expiration. Migration to Microsoft Entra ID federated auth (`azure/login@v2` + `vsce publish --azure-credential`) is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180). Once that lands, this section is replaced with the Entra setup steps and `VSCE_PAT` is deleted from the repository secrets.
+
 The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
 
 1. Sign in at <https://dev.azure.com> with the account that owns the `miguel-colmenares` Marketplace publisher.
 2. User Settings → Personal Access Tokens → **New Token**.
 3. Configure:
    - **Name**: `VS Code Marketplace — miguel-colmenares (GitHub Actions)`
-   - **Organization**: **All accessible organizations** (do NOT scope to a single org — Marketplace lookups fail otherwise).
+   - **Organization**: **All accessible organizations** (do NOT scope to a single org — Marketplace lookups fail otherwise; this is precisely the setting Microsoft is retiring, hence the deadline above).
    - **Scopes**: Custom defined → **Marketplace (Manage)**.
    - **Expiration**: 1 year (the maximum allowed).
 4. Copy the token immediately (it is shown only once).

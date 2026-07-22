@@ -51,7 +51,7 @@ jobs:
         # no version is burned, and no Marketplace state changes.
         # Exit non-zero (with a clear vsce error) if the PAT is expired,
         # wrong scope, or scoped to a different publisher.
-        run: npx vsce verify-pat miguel-colmenares
+        run: npx --package=@vscode/vsce -- vsce verify-pat miguel-colmenares
 
       - name: Show current Marketplace record for miguel-colmenares.css-js-minifier
         # Read-only Marketplace query — confirms the extension is registered
@@ -59,7 +59,7 @@ jobs:
         # published version, install count, etc. Independent of the PAT
         # (uses the public API), so if this succeeds but verify-pat fails
         # above, the problem is definitely the token, not the identity.
-        run: npx vsce show miguel-colmenares.css-js-minifier
+        run: npx --package=@vscode/vsce -- vsce show miguel-colmenares.css-js-minifier
 
       - name: Summary
         run: |

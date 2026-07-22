@@ -106,9 +106,11 @@ vscode.window.showErrorMessage(
 
 ## Translation Keys Structure
 
-### Package.nls Keys (13 keys)
+### Package.nls Keys (14 keys)
 
-```
+These are dotted symbolic keys because VS Code's contribution system (`package.json`) only supports the `%key%` placeholder syntax — there is no English-as-key equivalent for static contributions. Only the runtime bundle (`l10n/bundle.l10n.*.json`) migrated to English-as-key in v1.3.3.
+
+```json
 commands.extension.minify.title
 commands.extension.minifyInNewFile.title
 configuration.title
@@ -122,6 +124,7 @@ configuration.minifiedNewFilePrefix.enumDescriptions.4
 configuration.minifiedNewFilePrefix.enumDescriptions.5
 configuration.minifiedNewFilePrefix.enumDescriptions.6
 configuration.autoOpenNewFile
+configuration.showSizeReduction
 ```
 
 ### Runtime Bundle Keys (12 English source strings)
@@ -288,7 +291,7 @@ To add support for a new language, follow these detailed steps:
 
 #### Step 1: Create Package Translation File
 
-Create `package.nls.it.json` in the root directory with all 13 keys:
+Create `package.nls.it.json` in the root directory with all 14 keys:
 
 ```json
 {
@@ -304,13 +307,14 @@ Create `package.nls.it.json` in the root directory with all 13 keys:
   "configuration.minifiedNewFilePrefix.enumDescriptions.4": "Il nome del nuovo file avrà l'estensione '-compressed'.",
   "configuration.minifiedNewFilePrefix.enumDescriptions.5": "Il nome del nuovo file avrà l'estensione '.minified'.",
   "configuration.minifiedNewFilePrefix.enumDescriptions.6": "Il nome del nuovo file avrà l'estensione '-minified'.",
-  "configuration.autoOpenNewFile": "Apri automaticamente i file minimizzati appena creati nell'editor."
+  "configuration.autoOpenNewFile": "Apri automaticamente i file minimizzati appena creati nell'editor.",
+  "configuration.showSizeReduction": "Mostra le statistiche di riduzione delle dimensioni nei messaggi di successo dopo la minimizzazione."
 }
 ```
 
 **Key Points:**
 
-- Must have exactly 13 keys (same as other languages)
+- Must have exactly 14 keys (same as other languages)
 - Keys must match exactly (case-sensitive)
 - Use native language translations
 - Preserve technical terms in their standard form
@@ -381,7 +385,7 @@ Run comprehensive validation:
 jq empty package.nls.it.json
 jq empty l10n/bundle.l10n.it.json
 
-# 2. Count keys (should be 13 and 17)
+# 2. Count keys (should be 14 and 12)
 echo "Package keys: $(jq 'keys | length' package.nls.it.json)"
 echo "Runtime keys: $(jq 'keys | length' l10n/bundle.l10n.it.json)"
 
@@ -447,8 +451,8 @@ Update the language support table in:
 ```markdown
 ### Added
 - 🇮🇹 Italian (it) language support
-  - Complete package.nls.it.json with 13 translations
-  - Complete l10n/bundle.l10n.it.json with 17 runtime messages
+  - Complete package.nls.it.json with 14 translations
+  - Complete l10n/bundle.l10n.it.json with 12 runtime messages
 ```
 
 ### Quick Reference for Common Languages

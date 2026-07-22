@@ -32,7 +32,7 @@ The fastest way is via the VS Code tasks (`Cmd/Ctrl + Shift + P` → **Tasks: Ru
 
 | Task | Scope | Duration |
 | --- | --- | --- |
-| `Test: Run All Tests` | Full suite (52+ tests) | ~2 min |
+| `Test: Run All Tests` | Full suite (58 tests) | ~2 min |
 | `Test: Main Functionality Suite Only` | Core minification (21 tests) | ~1.5 min |
 | `Test: Configuration Suite Only` | Configuration (4 tests) | ~20 s |
 | `Test: Internationalization (i18n) Suite Only` | Translations across 7 languages | ~30 s |

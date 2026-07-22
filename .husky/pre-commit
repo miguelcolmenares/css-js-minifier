@@ -60,7 +60,9 @@ EOF
     fi
 
     # And it must actually mention the new version.
-    if ! git show :CHANGELOG.md | grep -Eq "^## \[${staged_version}\]"; then
+    # Escape dots so `1.3.3` doesn't accidentally match `1a3a3` (Copilot review #179).
+    escaped_version="${staged_version//./\\.}"
+    if ! git show :CHANGELOG.md | grep -Eq "^## \[${escaped_version}\]"; then
       cat <<EOF >&2
 ❌ CHANGELOG.md is staged but has no '## [${staged_version}]' heading.
 
