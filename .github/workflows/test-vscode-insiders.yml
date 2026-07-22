@@ -10,22 +10,36 @@ jobs:
   test-insiders:
     name: Test on ${{ matrix.os }} with VS Code Insiders
     timeout-minutes: 10
-    # macOS Insiders on darwin-arm64 currently fails to spawn Electron
-    # (ENOENT on `.../Visual Studio Code - Insiders.app/Contents/MacOS/Electron`).
-    # This is an upstream `@vscode/test-electron` compatibility gap with the
-    # renamed binary layout in recent Insiders builds; both `@vscode/test-cli`
-    # and `@vscode/test-electron` are already pinned to their latest published
-    # versions. The failure exists on `master` as well and is unrelated to any
-    # workspace code. Keep the job visible in the UI but prevent it from
-    # blocking PRs until the upstream fix ships.
-    continue-on-error: ${{ matrix.os == 'macos-latest' }}
     strategy:
       # Do not cancel the other OS jobs when one fails: the Insiders channel is
       # inherently unstable and a break on one platform is not evidence of a
       # regression on the others.
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # macOS is intentionally excluded from the Insiders matrix.
+        #
+        # `@vscode/test-electron@3.0.0` fails to spawn Electron after
+        # downloading the darwin-arm64 Insiders archive (ENOENT on
+        # `Visual Studio Code - Insiders.app/Contents/MacOS/Electron`).
+        # See upstream bug: microsoft/vscode-test#348.
+        #
+        # We do NOT fall back to an Intel macOS runner (macos-15-intel /
+        # macos-13) as a workaround: Apple has fully transitioned off x86_64
+        # and macOS 26 (Tahoe) no longer supports Intel. Running the extension
+        # under Rosetta 2 on an arm64 host would test a code path that Apple
+        # is actively deprecating. `@vscode/test-cli` does not expose a
+        # `platform` override in its config, so a native arm64 fix requires
+        # the upstream bug to be resolved.
+        #
+        # macOS coverage is still exercised by the Stable and minimum-version
+        # workflows (both run on `macos-latest` arm64). Insiders drift
+        # specific to macOS is temporarily uncovered; the early-warning
+        # signal for VS Code API breakage remains via Ubuntu-Insiders and
+        # Windows-Insiders below.
+        #
+        # Restore `macos-latest` here once microsoft/vscode-test#348 is
+        # fixed and `@vscode/test-electron` is bumped to the fixed release.
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
