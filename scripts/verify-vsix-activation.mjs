@@ -11,7 +11,13 @@
  *
  * Contract:
  *   - Exit 0: every required binding loaded and produced non-empty output.
- *   - Exit 1: at least one binding failed to load or execute.
+ *   - Exit 1: at least one binding failed to load or execute (activation
+ *     regression — this is the failure mode the script exists to catch).
+ *   - Exit 2: usage error or infrastructure failure before the checks could
+ *     run (missing .vsix path, non-existent file, extraction failed, no
+ *     `extension/dist/extension.js`, child Node could not be spawned).
+ *     CI callers should treat exit 2 as a script/runner bug, not a
+ *     genuine binding regression.
  *
  * Portability:
  *   - Requires Node 20+ (ESM, `fs.rmSync`, `fs.mkdtempSync`).
