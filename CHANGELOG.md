@@ -22,6 +22,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Removed the dead debug helper `getL10nStatus()` and the now-obsolete "raw translation key" fallback assertions in `src/test/extension.test.ts`.
   - Cleaned up `activationEvents` in `package.json`: removed the auto-generated `onCommand:*` entries (deprecated since VS Code 1.74) and the invalid `onSaveTextDocument`, leaving only `onLanguage:css` and `onLanguage:javascript`.
 
+- **Fix `minifyOnSave` failing silently on the first save after VS Code startup** ([#168](https://github.com/miguelcolmenares/css-js-minifier/issues/168))
+  - The pre-1.3.3 `activationEvents` list did not include `onLanguage:css` or `onLanguage:javascript`, and its `onSaveTextDocument` entry was not a valid activation event (VS Code silently ignored it). As a result the extension did not activate when a user opened a CSS or JS file, and the `workspace.onDidSaveTextDocument` listener registered inside `activate()` did not exist by the time the first save fired. The workaround was to run the `Minify` command once from the Command Palette to force activation.
+  - Fixed as an incidental result of the `activationEvents` cleanup shipped with #169 — opening a `.css` or `.js` file now correctly activates the extension before the user can save.
+  - Added a dedicated regression suite `src/test/activation.test.ts` (`Activation Events (regression guard for #168)`) that fails CI if either `onLanguage:css` or `onLanguage:javascript` is removed from `package.json`, or if the invalid `onSaveTextDocument` / deprecated `onCommand:*` entries are re-added.
+
 ### Added
 
 - New i18n key `"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."` across all 6 non-English bundles (es, fr, de, pt-br, ja, zh-cn) to cover the untitled-document guard added in #145.
@@ -40,6 +45,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Removed the legacy pre-test `sleep 20` step and the `TEST_DELAY_MS` / `MAX_RETRIES` environment variables from every `.github/workflows/test-vscode-*.yml` workflow (`master.yml`, `test-vscode-stable.yml`, `test-vscode-insiders.yml`, `test-vscode-minimum.yml`). These existed to throttle requests against the Toptal minification API, which was removed in v1.3.0 when minification moved fully local via LightningCSS and oxc-minify.
 - Removed the corresponding rate-limit legacy constants (`TEST_DELAY_MS`, `MAX_RETRIES`, `SUITE_DELAY_MS`, `CONFIG_TEST_DELAY_MS`) from `RATE_LIMIT_CONFIG` in `src/test/extension.test.ts`, along with the four `afterEach(delayBetweenTests())` hooks and the two 30-second `beforeAll` "avoid API rate limiting" waits in the `CSS nth-child` and `Keybinding` test suites. The remaining entries are legitimate UI, filesystem, and Windows-CI stability waits. Total test-suite runtime dropped by roughly one minute.
+
+### Security
+
+- Applied non-breaking `npm audit fix` to close 6 HIGH-severity Dependabot alerts on transitive **dev-only** dependencies (`fast-uri` → 3.1.3/3.1.4, `linkify-it` → 5.0.2, `brace-expansion` → 1.1.16/2.1.2/5.0.7). Only `package-lock.json` changed; the shipped production bundle (`dist/extension.js` = `lightningcss` + `oxc-minify`) is unaffected. Remaining 3 LOW alerts (`jsdiff` via `mocha` via `@vscode/test-cli`) require a breaking upgrade to `mocha@12` and are deferred to a follow-up PR.
 
 ## [1.3.2] - 2026-07-08
 
