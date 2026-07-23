@@ -1,5 +1,6 @@
 /**
- * @fileoverview Minification service facade that orchestrates all minification strategies.
+ * @packageDocumentation
+ * Minification service facade that orchestrates all minification strategies.
  *
  * This module serves as the main entry point for minification operations,
  * routing requests to the appropriate strategy based on file type:
@@ -7,7 +8,6 @@
  * - JavaScript files → Local minification using oxc-minify
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 0.1.0
  *
  * @example
@@ -39,7 +39,7 @@ export { MinificationResult, MinificationStats } from '@/types';
  * **CSS Minification (Local - LightningCSS):**
  * - No network required - works offline
  * - Rust-based parser (~60x faster than JavaScript alternatives)
- * - Full support for modern CSS features (@starting-style, CSS Nesting, etc.)
+ * - Full support for modern CSS features (`@starting-style`, CSS Nesting, etc.)
  *
  * **JavaScript Minification (Local - oxc-minify):**
  * - No network required - works offline
@@ -47,13 +47,12 @@ export { MinificationResult, MinificationStats } from '@/types';
  * - Variable mangling, dead code elimination, constant folding
  * - No rate limits or file size restrictions
  *
- * @function getMinifiedText
- * @param {string} text - The source code to be minified (CSS or JavaScript)
- * @param {string} fileType - The file type identifier ('css' or 'javascript')
- * @returns {MinificationResult | null} The minified code with statistics, or null if minification failed
+ * @remarks
+ * Shows error messages to the user via VS Code notifications on failure.
  *
- * @sideEffects
- * - Shows error messages to the user via VS Code notifications on failure
+ * @param text - The source code to be minified (CSS or JavaScript)
+ * @param fileType - The file type identifier ('css' or 'javascript')
+ * @returns The minified code with statistics, or null if minification failed
  *
  * @example
  * ```typescript

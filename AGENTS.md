@@ -58,6 +58,7 @@ The workflow re-checks all four in its `preflight` job, so you can't accidentall
 ### Explicit anti-patterns
 
 - ❌ Do **not** run `vsce publish` locally except in the emergency-fallback scenario documented in `publish-update-extension.instructions.md` (workflow publish step failed AND cannot be re-run).
+- ❌ If the tag-and-release job succeeds but publish fails, re-running the publish job is the first recovery step. If the job cannot be re-run, follow the emergency-fallback in `publish-update-extension.instructions.md`. Do NOT create a new tag for the same version.
 - ❌ Do **not** push tags manually. `pre-push` will block you.
 - ❌ Do **not** try to delete or re-tag a `v*` — the ruleset blocks it and the fix is always "bump to the next version".
 - ❌ Do **not** add a `push: tags: v*` trigger back to `release.yml`. It defeats the purpose of preflight-gated tag creation.
@@ -115,12 +116,63 @@ Merge commits (`Merge …`), reverts (`Revert …`), and fixup/squash commits (`
 - `docs/<description>` for documentation-only changes
 - `refactor/<description>` for internal refactors
 
+### Documentation (TSDoc)
+
+All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification, enforced at lint time by `eslint-plugin-tsdoc` (`tsdoc/syntax: "error"`).
+
+**Key rules:**
+
+- No `{type}` annotations in `@param` or `@returns` — TypeScript provides the types.
+- No redundant tags: `@function`, `@async`, `@interface`, `@enum`, `@module` are not used.
+- File-level docs use `@packageDocumentation` (not `@fileoverview`).
+- Extended descriptions go in `@remarks` blocks (separate from the summary).
+- Side effects are documented under `@remarks`, not a custom `@sideEffects` tag.
+- Custom block tags `@since`, `@version`, `@author` are defined in `tsdoc.json`.
+
+**Canonical function comment:**
+
+````typescript
+/**
+ * Brief summary (one sentence, no tag).
+ *
+ * @remarks
+ * Extended description, implementation details, side effects.
+ *
+ * @param name - Description without type braces
+ * @returns Description without type braces
+ *
+ * @throws When something goes wrong
+ *
+ * @example
+ * ```typescript
+ * const result = doSomething('input');
+ * ```
+ */
+````
+
+**File header (entry points only):**
+
+```typescript
+/**
+ * @packageDocumentation
+ * One-line module summary.
+ *
+ * Extended description of what this module provides.
+ *
+ * @author Miguel Colmenares
+ * @version X.Y.Z
+ * @since X.Y.Z
+ */
+```
+
+See [`.github/instructions/tsdoc-standards.instructions.md`](.github/instructions/tsdoc-standards.instructions.md) for the full reference.
+
 ### PR conventions
 
 - Title uses the same format as commit messages (`type: description`).
 - Description includes what changed, why, and how to test.
 - PRs that touch `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `scripts/verify-vsix-activation.mjs`, `webpack.config.cjs`, or `.github/workflows/release.yml` automatically trigger the 6-platform build matrix.
-- Reviewer waits for all 6 matrix jobs to be green before merging.
+- Reviewer waits for all 6 matrix jobs to be green before merging. For PRs that do not touch the path-filtered files, the 6-platform matrix will not run; proceed with merging once the four required status checks pass.
 
 ---
 
@@ -230,7 +282,7 @@ npm run format:check # check without writing
 
 ### Cut a new release
 
-Follow [`.github/instructions/publish-update-extension.instructions.md`](.github/instructions/publish-update-extension.instructions.md) — the runbook is authoritative.
+Follow the release runbook in `publish-update-extension.instructions.md` (linked in the intro) — it is authoritative.
 
 Short version:
 
@@ -249,7 +301,7 @@ gh workflow run release.yml -f version=X.Y.Z
 - [`README.md`](README.md) — user-facing overview.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contributor workflow.
 - [`.github/copilot-instructions.md`](.github/copilot-instructions.md) — extended developer notes (architecture, testing, i18n details, package size optimization).
-- [`.github/instructions/publish-update-extension.instructions.md`](.github/instructions/publish-update-extension.instructions.md) — release runbook.
+- `.github/instructions/publish-update-extension.instructions.md` — release runbook (already imported via the intro reference).
 - [`.github/instructions/github-cli-usage.instructions.md`](.github/instructions/github-cli-usage.instructions.md) — how to use `gh` in this repo (always pipe to `cat` / set `GH_PAGER=cat`).
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module boundaries.
 - [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md) — i18n architecture.

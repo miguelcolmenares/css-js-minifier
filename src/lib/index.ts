@@ -1,12 +1,12 @@
 /**
- * @fileoverview Library module exports.
+ * @packageDocumentation
+ * Library module exports.
  *
  * This module exports constants and helper functions used throughout
  * the extension. Following DDD principles, shared utilities are
  * centralized here for consistent usage across all layers.
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 1.2.0
  *
  * @example

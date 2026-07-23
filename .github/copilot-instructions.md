@@ -54,7 +54,7 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 - **Code Reusability**: No duplicate validation or API logic
 - **Enhanced Testability**: Strategies can be mocked independently
 - **Improved Maintainability**: 63% reduction in main file size (220→81 lines)
-- **Better Documentation**: Comprehensive JSDoc with examples throughout
+- **Better Documentation**: Comprehensive TSDoc with examples throughout
 - **Extensibility**: Easy to add new strategies or swap implementations
 
 ### Configuration System
@@ -147,9 +147,28 @@ To add support for a new language:
 
 ### Release Flow (workflow-driven — do NOT push tags manually)
 
-**As of v1.3.3 releases are cut from the `Build & Release` workflow (`.github/workflows/release.yml`) via `workflow_dispatch`. There is no `push: tags: v*` trigger and the local `pre-push` Husky hook refuses to push any `v*` tag from your machine. See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.github/instructions/publish-update-extension.instructions.md`](instructions/publish-update-extension.instructions.md) for the human runbook.**
+Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. Do NOT push `v*` tags manually — the `pre-push` Husky hook blocks it.
 
-**Why:** two invariants — (1) the repository ruleset makes `refs/tags/v*` immutable (blocks `deletion` + `non_fast_forward`), and (2) the `VSCE_PAT` expires after at most 1 year. A naïve tag push could burn a version number on GitHub if the token expired without anyone noticing. The workflow validates the PAT via `vsce verify-pat` **before** creating the tag, so if the token is broken, nothing is created anywhere.
+#### Release Checklist
+
+1. Bump `package.json` version (+ `src/extension.ts` `@version` header — see [Version Management](#version-management--documentation-standards) below).
+2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
+3. Commit both in the same commit. Convention: `chore: Release version X.Y.Z`.
+4. Open PR → get the 6-platform matrix green → squash-merge.
+5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy.
+6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
+
+#### Prohibitions
+
+- Never run `vsce publish` locally (except the emergency-fallback scenario in the publishing instructions).
+- Never push a `v*` tag by hand.
+- Never delete/re-tag an existing `v*` (the ruleset blocks it; the fix is always "bump to the next version").
+
+#### Background (rationale & pipeline details)
+
+Two invariants drive this design: (1) the repository ruleset makes `refs/tags/v*` immutable, and (2) the `VSCE_PAT` expires after at most 1 year. The workflow validates the PAT via `vsce verify-pat` **before** creating the tag, so a broken token never burns a version number.
+
+See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.github/instructions/publish-update-extension.instructions.md`](instructions/publish-update-extension.instructions.md) for the human runbook.
 
 **Pipeline:**
 
@@ -161,26 +180,17 @@ gh workflow run release.yml -f version=X.Y.Z
   └─ publish         — vsce publish --packagePath dist/*.vsix
 ```
 
-**Before dispatching:**
-
-1. Bump `package.json` version (+ `src/extension.ts` `@version` header — see [Version Management](#version-management--documentation-standards) below).
-2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
-3. Commit both in the same commit — the `pre-commit` Husky hook enforces this pairing and rejects a version bump without a matching changelog entry. Convention: `chore: Release version X.Y.Z`.
-4. Open PR → get the 6-platform matrix green → squash-merge.
-5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy without publishing anything.
-6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
-
-**Never:** run `vsce publish` locally (except the emergency-fallback scenario documented in the publishing instructions), push a `v*` tag by hand, or delete/re-tag an existing `v*` (the ruleset blocks it and the fix is always "bump to the next version").
-
 ### Version Management & Documentation Standards
 **CRITICAL Version Update Requirements:**
 - **When changing version numbers:** Always update BOTH `package.json` AND `src/extension.ts`
-- **In `src/extension.ts`:** Update the `@version` line in the file header JSDoc comment
-- **For new functionality files:** Add `@since` comment ONLY in the file header JSDoc (not in individual functions)
+- **In `src/extension.ts`:** Update the `@version` line in the file header TSDoc comment
+- **For new functionality files:** Add `@since` comment ONLY in the file header TSDoc (not in individual functions)
 - **Example version update:**
   ```typescript
   /**
-   * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
+   * @packageDocumentation
+   * Main entry point for the CSS & JS Minifier VS Code extension.
+   *
    * @author Miguel Colmenares
    * @version 1.3.0  // ← UPDATE THIS when version changes
    * @since 0.1.0
@@ -188,13 +198,14 @@ gh workflow run release.yml -f version=X.Y.Z
   ```
 
 **New File Documentation Standards:**
-- **Header JSDoc:** Include `@since` with the version when the file was created
-- **Function JSDoc:** Do NOT include `@since` in individual function documentation
+- **Header TSDoc:** Include `@since` with the version when the file was created
+- **Function TSDoc:** Do NOT include `@since` in individual function documentation
 - **Module exports:** Include comprehensive documentation with examples
 
 ### Task Execution Behavior (IMPORTANT)
 **CRITICAL Understanding for Copilot:**
 - **Task Success ≠ Completion:** When executing VS Code tasks via `run_task`, a "success" message indicates the task STARTED successfully, NOT that it completed
+- **Completion signal:** A task is considered complete when `get_task_output` returns output containing the test results summary (e.g., "X passing") or an explicit exit code.
 - **Test Execution Time:** 
   - "Test: Run All Tests" takes 3-4 minutes to complete (52 comprehensive tests)
   - Other test suites take 20s-1.5 minutes depending on scope
@@ -242,7 +253,7 @@ The project includes optimized VS Code tasks for efficient development. Access v
 
 **Pre-commit:**
 1. Build check: "Test: Compile and Build Only"
-2. Full validation: "Test: Run All Tests" (ensure 52/52 passing)
+2. Full validation: "Test: Run All Tests" (ensure all tests passing). If the reported test count differs from 52, verify whether new tests were intentionally added or existing ones removed before treating the result as a failure.
 
 ### Pre-Commit Testing
 - **CRITICAL**: Always run "Test: Run All Tests" before committing/pushing changes
@@ -318,10 +329,12 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`src/*/index.ts`**: Module exports with documentation for each layer
 
 ### Documentation Standards
-- **Comprehensive JSDoc**: Every function has detailed documentation with examples
+- **TSDoc Standard**: All documentation comments follow the [TSDoc](https://tsdoc.org/) specification, enforced by `eslint-plugin-tsdoc`
+- **Comprehensive TSDoc**: Every function has detailed documentation with examples
 - **Type Safety**: Interfaces and types for all major data structures
 - **Error Handling**: Documented side effects and error conditions
 - **Usage Examples**: Practical code examples in documentation
+- **Custom Tags**: `@since`, `@version`, `@author` configured as block tags in `tsdoc.json`
 
 ## Testing & Debugging
 - Test files expect specific minified output (hardcoded in test file)

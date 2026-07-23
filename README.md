@@ -29,11 +29,11 @@ This extension is thoroughly tested across multiple VS Code versions to ensure c
 
 Minify File through context menu
 
-![Minify File through context menu](images/minify.gif)
+![Minify File through context menu](https://github.com/miguelcolmenares/css-js-minifier/raw/master/images/minify.gif)
 
 Minify and Save as New File through context menu
 
-![Minify and Save as New File through context menu](images/minify-and-save-as-new-file.gif)
+![Minify and Save as New File through context menu](https://github.com/miguelcolmenares/css-js-minifier/raw/master/images/minify-and-save-as-new-file.gif)
 
 ## Key Features
 
@@ -92,11 +92,11 @@ To adjust these settings, add the following lines to your `settings.json` file:
 
 ```json
 {
-	"css-js-minifier.minifyOnSave": true,
-	"css-js-minifier.minifyInNewFile": true,
-	"css-js-minifier.minifiedNewFilePrefix": ".min",
-	"css-js-minifier.autoOpenNewFile": false,
-	"css-js-minifier.showSizeReduction": true
+ "css-js-minifier.minifyOnSave": true,
+ "css-js-minifier.minifyInNewFile": true,
+ "css-js-minifier.minifiedNewFilePrefix": ".min",
+ "css-js-minifier.autoOpenNewFile": false,
+ "css-js-minifier.showSizeReduction": true
 }
 ```
 

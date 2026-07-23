@@ -69,11 +69,12 @@ If your change **doesn't** touch any of the paths above, the matrix is skipped (
 
 Before opening a PR, please make sure:
 
-- [ ] Code is formatted and lints clean: `npm run lint`
+- [ ] Code is formatted and lints clean: `npm run lint` (includes TSDoc validation)
 - [ ] All tests pass locally on your platform: `npm test`
 - [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`, `perf:`)
 - [ ] Branch name follows `<type>/<short-description>` (e.g. `feat/new-language-support`, `fix/windows-path-encoding`)
 - [ ] `CHANGELOG.md` has a new entry under `## [Unreleased]` describing the user-facing impact of your change
+- [ ] Doc comments on new/modified functions follow [TSDoc](https://tsdoc.org/) syntax (enforced by `eslint-plugin-tsdoc`)
 - [ ] Documentation in `README.md` or `docs/` is updated if you added or changed user-visible behavior
 - [ ] If you added a new user-visible string, all seven `l10n/bundle.l10n.*.json` files have the corresponding key (see [docs/INTERNATIONALIZATION.md](docs/INTERNATIONALIZATION.md))
 

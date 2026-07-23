@@ -173,7 +173,7 @@ gh api repos/owner/repo/branches/master/protection | cat
 ```bash
 # Get specific API endpoints
 PAGER=cat gh api repos/owner/repo/pulls/34/reviews
-gh api repos/owner/repo/pulls/comments | cat
+gh api repos/owner/repo/pulls/34/comments | cat
 
 # Use jq for JSON processing
 PAGER=cat gh api repos/owner/repo/pulls/34 | jq '.title'
@@ -292,7 +292,7 @@ gh workflow list | cat
 # Branch and release management
 gh api repos/owner/repo/branches | cat
 gh release list | cat
-gh tag list | cat
+gh api repos/owner/repo/tags | cat
 ```
 
 ## Security Considerations

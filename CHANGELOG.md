@@ -6,6 +6,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation**: Migrated all TypeScript doc comments from JSDoc to the [TSDoc](https://tsdoc.org/) standard ([#182](https://github.com/miguelcolmenares/css-js-minifier/issues/182))
+  - Removed redundant `{type}` annotations from `@param` and `@returns` (TypeScript provides these)
+  - Removed non-standard tags (`@fileoverview`, `@function`, `@async`, `@interface`, `@enum`, `@module`)
+  - Converted module-level docs to `@packageDocumentation`
+  - Moved `@sideEffects` content into `@remarks` sections
+  - Added `eslint-plugin-tsdoc` with `tsdoc/syntax: "error"` rule for CI enforcement
+  - Created `tsdoc.json` with custom block tags (`@since`, `@version`, `@author`)
+
 ## [1.3.3] - 2026-07-22
 
 ### Fixed

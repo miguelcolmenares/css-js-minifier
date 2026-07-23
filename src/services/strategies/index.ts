@@ -1,12 +1,12 @@
 /**
- * @fileoverview Minification strategies module exports.
+ * @packageDocumentation
+ * Minification strategies module exports.
  *
  * This module exports all available minification strategies:
  * - Local CSS minification using LightningCSS (Rust-based)
  * - Local JavaScript minification using oxc-minify (Rust-based)
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 1.2.0
  *
  * @example

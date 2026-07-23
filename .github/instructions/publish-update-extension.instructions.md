@@ -24,6 +24,8 @@ The preflight-first workflow solves both: the tag is created **from inside** the
 
 > **⚠️ Hard deadline: 2026-12-01.** Microsoft is retiring global PATs on this date — see [Retirement of Global Personal Access Tokens in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/). The PAT rotation instructions below still work today (2026-07-22), but on 2026-12-01 the token stops working regardless of its own expiration. Migration to Microsoft Entra ID federated auth (`azure/login@v2` + `vsce publish --azure-credential`) is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180). Once that lands, this section is replaced with the Entra setup steps and `VSCE_PAT` is deleted from the repository secrets.
 
+> **🔥 CRITICAL: If the migration in [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180) is not merged before 2026-12-01, do not attempt a release.** The publish step will fail after the tag is created, placing the release in the same broken state described in "Publish fails after tag was created". Complete the Entra migration first.
+
 The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
 
 1. Sign in at <https://dev.azure.com> with the account that owns the `miguel-colmenares` Marketplace publisher.
@@ -128,6 +130,8 @@ The workflow runs four jobs in order:
 If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
 If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and GitHub Release stay in place, and users can install manually from the release assets via `code --install-extension` while the maintainer investigates. Re-running just the publish job is not currently supported — a manual `vsce publish` from the maintainer's machine using the already-attached `.vsix` files is the recovery path (see [Emergency procedures](#emergency-procedures) below).
+
+> **Note:** If the `.vsix` files are missing from the GitHub Release, rebuild them locally with `vsce package --target <platform>` for each of the six platforms before running the emergency publish steps.
 
 ### Step 5 — Verify publication
 
