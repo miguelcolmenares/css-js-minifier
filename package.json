@@ -164,12 +164,12 @@
 		"prepare": "husky"
 	},
 	"devDependencies": {
-		"@types/mocha": "^10.0.6",
+		"@types/mocha": "^10.0.10",
 		"@types/node": "^26.1.1",
 		"@types/sinon": "^22.0.0",
 		"@types/vscode": "^1.125.0",
-		"@typescript-eslint/eslint-plugin": "^8.64.0",
-		"@typescript-eslint/parser": "^8.58.0",
+		"@typescript-eslint/eslint-plugin": "^8.65.0",
+		"@typescript-eslint/parser": "^8.65.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.15",
 		"@vscode/test-electron": "^3.0.0",
@@ -179,8 +179,8 @@
 		"eslint-plugin-tsdoc": "^0.5.2",
 		"husky": "^9.1.7",
 		"mocha": "^11.7.6",
-		"prettier": "^3.9.5",
-		"sinon": "^22.0.0",
+		"prettier": "^3.9.6",
+		"sinon": "^22.1.0",
 		"ts-loader": "^9.6.2",
 		"typescript": "^6.0.3",
 		"webpack": "^5.108.4",
@@ -199,8 +199,8 @@
 		"@sinonjs/fake-timers": "15.1.1"
 	},
 	"dependencies": {
-		"detect-libc": "^2.0.4",
+		"detect-libc": "^2.1.2",
 		"lightningcss": "^1.33.0",
-		"oxc-minify": "^0.140.0"
+		"oxc-minify": "^0.141.0"
 	}
 }
