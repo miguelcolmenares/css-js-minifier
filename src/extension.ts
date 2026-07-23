@@ -1,5 +1,6 @@
 /**
- * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
+ * @packageDocumentation
+ * Main entry point for the CSS & JS Minifier VS Code extension.
  *
  * This extension provides commands to minify CSS and JavaScript files.
  * CSS minification uses the local LightningCSS library (Rust-based),
@@ -37,9 +38,7 @@ let outputChannel: vscode.OutputChannel;
  * Optional features (based on configuration):
  * - Auto-minification on file save (when `minifyOnSave` is enabled)
  *
- * @function activate
- * @param {vscode.ExtensionContext} context - The extension context provided by VS Code
- * @returns {void}
+ * @param context - The extension context provided by VS Code
  *
  * @example
  * // This function is automatically called by VS Code when:
@@ -100,9 +99,6 @@ export function activate(context: vscode.ExtensionContext): void {
  * This function is called by VS Code when the extension is being deactivated.
  * All registered commands and event listeners are automatically cleaned up
  * via the context.subscriptions array, so this function can remain empty.
- *
- * @function deactivate
- * @returns {void}
  *
  * @example
  * // This function is automatically called by VS Code when:

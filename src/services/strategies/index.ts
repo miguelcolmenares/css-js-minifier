@@ -1,5 +1,6 @@
 /**
- * @fileoverview Minification strategies module exports.
+ * @packageDocumentation
+ * Minification strategies module exports.
  *
  * This module exports all available minification strategies:
  * - Local CSS minification using LightningCSS (Rust-based)

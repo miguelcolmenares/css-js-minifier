@@ -1,5 +1,6 @@
 /**
- * @fileoverview Local JavaScript minification strategy using oxc-minify.
+ * @packageDocumentation
+ * Local JavaScript minification strategy using oxc-minify.
  *
  * This module provides offline JavaScript minification without requiring network access.
  * It uses oxc-minify (written in Rust) for fast and modern JavaScript processing,
@@ -44,12 +45,11 @@ const { minifySync } = oxcMinify;
  * - No network dependency - works fully offline
  * - No rate limits or file size restrictions
  *
- * @function minifyJs
- * @param {string} text - The JavaScript source code to be minified
- * @returns {MinificationResult | null} The minified JavaScript with statistics, or null if minification failed
+ * @remarks
+ * Shows error messages to the user via VS Code notifications on failure.
  *
- * @sideEffects
- * - Shows error messages to the user via VS Code notifications on failure
+ * @param text - The JavaScript source code to be minified
+ * @returns The minified JavaScript with statistics, or null if minification failed
  *
  * @example
  * ```typescript

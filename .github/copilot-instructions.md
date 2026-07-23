@@ -54,7 +54,7 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 - **Code Reusability**: No duplicate validation or API logic
 - **Enhanced Testability**: Strategies can be mocked independently
 - **Improved Maintainability**: 63% reduction in main file size (220→81 lines)
-- **Better Documentation**: Comprehensive JSDoc with examples throughout
+- **Better Documentation**: Comprehensive TSDoc with examples throughout
 - **Extensibility**: Easy to add new strategies or swap implementations
 
 ### Configuration System
@@ -175,8 +175,8 @@ gh workflow run release.yml -f version=X.Y.Z
 ### Version Management & Documentation Standards
 **CRITICAL Version Update Requirements:**
 - **When changing version numbers:** Always update BOTH `package.json` AND `src/extension.ts`
-- **In `src/extension.ts`:** Update the `@version` line in the file header JSDoc comment
-- **For new functionality files:** Add `@since` comment ONLY in the file header JSDoc (not in individual functions)
+- **In `src/extension.ts`:** Update the `@version` line in the file header TSDoc comment
+- **For new functionality files:** Add `@since` comment ONLY in the file header TSDoc (not in individual functions)
 - **Example version update:**
   ```typescript
   /**
@@ -188,8 +188,8 @@ gh workflow run release.yml -f version=X.Y.Z
   ```
 
 **New File Documentation Standards:**
-- **Header JSDoc:** Include `@since` with the version when the file was created
-- **Function JSDoc:** Do NOT include `@since` in individual function documentation
+- **Header TSDoc:** Include `@since` with the version when the file was created
+- **Function TSDoc:** Do NOT include `@since` in individual function documentation
 - **Module exports:** Include comprehensive documentation with examples
 
 ### Task Execution Behavior (IMPORTANT)
@@ -318,10 +318,12 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`src/*/index.ts`**: Module exports with documentation for each layer
 
 ### Documentation Standards
-- **Comprehensive JSDoc**: Every function has detailed documentation with examples
+- **TSDoc Standard**: All documentation comments follow the [TSDoc](https://tsdoc.org/) specification, enforced by `eslint-plugin-tsdoc`
+- **Comprehensive TSDoc**: Every function has detailed documentation with examples
 - **Type Safety**: Interfaces and types for all major data structures
 - **Error Handling**: Documented side effects and error conditions
 - **Usage Examples**: Practical code examples in documentation
+- **Custom Tags**: `@since`, `@version`, `@author` configured in `tsdoc.json`
 
 ## Testing & Debugging
 - Test files expect specific minified output (hardcoded in test file)

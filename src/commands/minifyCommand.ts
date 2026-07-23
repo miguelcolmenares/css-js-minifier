@@ -1,5 +1,6 @@
 /**
- * @fileoverview Command handlers for CSS and JavaScript minification operations.
+ * @packageDocumentation
+ * Command handlers for CSS and JavaScript minification operations.
  *
  * This module contains the main command handlers that are registered with VS Code
  * to handle user-initiated minification requests. It supports both in-place
@@ -21,15 +22,13 @@ const processingDocuments = new Set<string>();
 
 /**
  * Configuration options for minification operations.
- *
- * @interface MinifyOptions
- * @property {boolean} [saveAsNewFile] - Whether to save the result as a new file instead of replacing content
- * @property {string} [filePrefix] - The prefix to use when creating new files (e.g., '.min', '-compressed')
- * @property {string} [debugSource] - Debug identifier for the source of the command
  */
 export interface MinifyOptions {
+	/** Whether to save the result as a new file instead of replacing content */
 	saveAsNewFile?: boolean;
+	/** The prefix to use when creating new files (e.g., '.min', '-compressed') */
 	filePrefix?: string;
+	/** Debug identifier for the source of the command */
 	debugSource?: string;
 }
 
@@ -41,14 +40,12 @@ export interface MinifyOptions {
  * 2. Calls the minification service
  * 3. Saves the result (either in-place or as new file)
  *
- * @async
- * @function processDocument
- * @param {vscode.TextDocument} document - The VS Code document to process
- * @param {MinifyOptions} [options={}] - Configuration options for the minification
- * @param {boolean} [skipSave=false] - Whether to skip saving the document (caller will handle save)
- * @returns {Promise<void>} Resolves when the minification process is complete
+ * @param document - The VS Code document to process
+ * @param options - Configuration options for the minification
+ * @param skipSave - Whether to skip saving the document (caller will handle save)
+ * @returns Resolves when the minification process is complete
  *
- * @throws {Error} When file validation fails or minification service encounters errors
+ * @throws When file validation fails or minification service encounters errors
  *
  * @example
  * ```typescript
@@ -109,12 +106,11 @@ async function processDocument(
  * as the first argument. When invoked from the editor context menu, keyboard
  * shortcut, or command palette, no URI is provided and the active editor is used.
  *
- * @async
- * @param {unknown} [uri] - Optional argument passed by VS Code. When invoked from the
+ * @param uri - Optional argument passed by VS Code. When invoked from the
  *   file explorer with a single file selected, this is a `vscode.Uri`. For multi-select
  *   or other invocation contexts, it may be an array or other type — in those cases
  *   the function falls back to the active editor.
- * @returns {Promise<vscode.TextDocument | undefined>} The resolved document, or undefined if
+ * @returns The resolved document, or undefined if
  *   none is available (e.g., no active editor and no URI provided).
  *   Returns undefined after showing an error message if the URI document cannot be opened.
  */
@@ -145,16 +141,14 @@ async function resolveTargetDocument(uri?: unknown): Promise<vscode.TextDocument
  * When processDocument saves the file, it would trigger onSaveMinify, but we prevent
  * that by adding the document to processingDocuments Set.
  *
- * @async
- * @function minifyCommand
- * @param {unknown} [uri] - Optional argument passed by VS Code. A `vscode.Uri` when
- *   invoked from the file explorer; undefined or other types for other contexts.
- * @returns {Promise<void>} Resolves when the command execution is complete
- *
- * @sideEffects
+ * @remarks
  * - Modifies the content of the target file(s)
  * - Shows user notifications for success/error states
  * - Saves modified documents to disk
+ *
+ * @param uri - Optional argument passed by VS Code. A `vscode.Uri` when
+ *   invoked from the file explorer; undefined or other types for other contexts.
+ * @returns Resolves when the command execution is complete
  *
  * @example
  * // This function is typically called by VS Code when the user:
@@ -195,16 +189,14 @@ export async function minifyCommand(uri?: unknown): Promise<void> {
  * The original file remains unchanged, and a new file is created with the
  * user-configured prefix (e.g., 'style.css' becomes 'style.min.css').
  *
- * @async
- * @function minifyInNewFileCommand
- * @param {unknown} [uri] - Optional argument passed by VS Code. A `vscode.Uri` when
- *   invoked from the file explorer; undefined or other types for other contexts.
- * @returns {Promise<void>} Resolves when the command execution is complete
- *
- * @sideEffects
+ * @remarks
  * - Creates a new file with minified content
  * - Opens the new file in VS Code editor
  * - Shows user notifications for success/error states
+ *
+ * @param uri - Optional argument passed by VS Code. A `vscode.Uri` when
+ *   invoked from the file explorer; undefined or other types for other contexts.
+ * @returns Resolves when the command execution is complete
  *
  * @example
  * // This function is typically called by VS Code when the user:
@@ -255,15 +247,13 @@ export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
  * - When creating new files: delegates to processDocument (single call)
  * - When in-place: calls getMinifiedText once, then uses setSkipAutoMinify to prevent recursion
  *
- * @async
- * @function onSaveMinify
- * @param {vscode.TextDocument} document - The document that was saved
- * @returns {Promise<void>} Resolves when auto-minification is complete
- *
- * @sideEffects
+ * @remarks
  * - Modifies the content of the saved file if it's CSS or JavaScript
  * - Shows user notifications for success/error states
  * - Saves the document again after minification (in-place mode only)
+ *
+ * @param document - The document that was saved
+ * @returns Resolves when auto-minification is complete
  *
  * @example
  * // This function is automatically called when:

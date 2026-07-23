@@ -3,8 +3,6 @@ import { t } from './l10nHelper';
 
 /**
  * Supported file types for minification.
- * @readonly
- * @enum {string}
  */
 const SUPPORTED_FILE_TYPES = {
 	CSS: 'css',
@@ -17,9 +15,8 @@ const SUPPORTED_FILE_TYPES = {
  * This function checks if the file type is either CSS or JavaScript,
  * which are the only file types supported for minification.
  *
- * @function isValidFileType
- * @param {string} fileType - The VS Code language identifier (e.g., 'css', 'javascript')
- * @returns {boolean} True if the file type is supported (css or javascript), false otherwise
+ * @param fileType - The VS Code language identifier (e.g., 'css', 'javascript')
+ * @returns True if the file type is supported (css or javascript), false otherwise
  *
  * @example
  * ```typescript
@@ -40,13 +37,12 @@ export function isValidFileType(fileType: string): boolean {
  * user-friendly error messages when the file type is not supported.
  * It's designed to be used in command handlers where user feedback is required.
  *
- * @function validateFileType
- * @param {string} fileType - The VS Code language identifier to validate
- * @returns {boolean} True if validation passes, false if validation fails
+ * @remarks
+ * Shows an error message to the user via VS Code's notification system
+ * when the file type is not supported.
  *
- * @sideEffects
- * - Shows an error message to the user via VS Code's notification system
- *   when the file type is not supported
+ * @param fileType - The VS Code language identifier to validate
+ * @returns True if validation passes, false if validation fails
  *
  * @example
  * ```typescript
@@ -74,13 +70,12 @@ export function validateFileType(fileType: string): boolean {
  * This function ensures that there is actual content to minify before processing.
  * Empty files should be handled gracefully with appropriate user feedback.
  *
- * @function validateContentLength
- * @param {string} text - The complete text content of the file to validate
- * @param {string} fileType - The file type identifier (used for contextual error messages)
- * @returns {boolean} True if the file has content (length > 0), false if empty
+ * @remarks
+ * Shows an informative error message to the user when the file is empty.
  *
- * @sideEffects
- * - Shows an informative error message to the user when the file is empty
+ * @param text - The complete text content of the file to validate
+ * @param fileType - The file type identifier (used for contextual error messages)
+ * @returns True if the file has content (length \> 0), false if empty
  *
  * @example
  * ```typescript

@@ -1,5 +1,6 @@
 /**
- * @fileoverview Local CSS minification strategy using LightningCSS.
+ * @packageDocumentation
+ * Local CSS minification strategy using LightningCSS.
  *
  * This module provides offline CSS minification without requiring network access.
  * It uses LightningCSS (written in Rust) for extremely fast and modern CSS processing.
@@ -29,15 +30,14 @@ import { formatBytes } from '@/lib';
  * - Combining longhand properties into shorthands
  * - Removing duplicate rules
  * - Optimizing colors, fonts, and other values
- * - Full support for modern CSS features (@starting-style, CSS Nesting, etc.)
+ * - Full support for modern CSS features (\@starting-style, CSS Nesting, etc.)
  * - ~60x faster than JavaScript-based minifiers
  *
- * @function minifyCss
- * @param {string} text - The CSS source code to be minified
- * @returns {MinificationResult | null} The minified CSS with statistics, or null if minification failed
+ * @remarks
+ * Shows error messages to the user via VS Code notifications on failure.
  *
- * @sideEffects
- * - Shows error messages to the user via VS Code notifications on failure
+ * @param text - The CSS source code to be minified
+ * @returns The minified CSS with statistics, or null if minification failed
  *
  * @example
  * ```typescript

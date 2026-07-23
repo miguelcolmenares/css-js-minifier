@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ * File service module providing file system operations for the minification workflow.
+ *
+ * This module handles all file-related operations including saving minified content
+ * to new files, replacing document content in-place, and generating minified filenames.
+ *
+ * @author Miguel Colmenares
+ * @version 1.3.0
+ * @since 0.1.0
+ */
+
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { MinificationStats } from './minificationService';
@@ -10,19 +22,17 @@ import { t } from '@/utils/l10nHelper';
  * and automatically opens it in the VS Code editor. It provides user feedback
  * about the successful operation.
  *
- * @async
- * @function saveAsNewFile
- * @param {string} minifiedText - The minified content to save
- * @param {string} newFileName - The complete file path for the new file (including extension)
- * @param {MinificationStats} stats - Statistics about the minification process
- * @returns {Promise<void>} Resolves when the file is successfully created and opened
- *
- * @throws {Error} When file system operations fail (e.g., permissions, disk space)
- *
- * @sideEffects
+ * @remarks
  * - Creates a new file on the file system
  * - Opens the new file in VS Code editor
  * - Shows success notification to the user
+ *
+ * @param minifiedText - The minified content to save
+ * @param newFileName - The complete file path for the new file (including extension)
+ * @param stats - Statistics about the minification process
+ * @returns Resolves when the file is successfully created and opened
+ *
+ * @throws When file system operations fail (e.g., permissions, disk space)
  *
  * @example
  * ```typescript
@@ -84,22 +94,20 @@ export async function saveAsNewFile(
  * with the minified version. It uses VS Code's WorkspaceEdit API to ensure
  * the operation is atomic and can be undone by the user.
  *
- * @async
- * @function replaceDocumentContent
- * @param {vscode.TextDocument} document - The VS Code document to modify
- * @param {string} minifiedText - The minified content to replace the original with
- * @param {MinificationStats} stats - Statistics about the minification process
- * @param {boolean} [showNotification=true] - Whether to show success notification (default: true)
- * @param {boolean} [skipSave=false] - Whether to skip saving the document (default: false)
- * @returns {Promise<void>} Resolves when the document is updated and optionally saved
- *
- * @throws {Error} When the workspace edit fails or the document cannot be saved
- *
- * @sideEffects
+ * @remarks
  * - Modifies the content of the existing document
  * - Saves the document to disk (unless skipSave is true)
  * - Shows success notification to the user (unless suppressed)
  * - Adds an entry to VS Code's undo history
+ *
+ * @param document - The VS Code document to modify
+ * @param minifiedText - The minified content to replace the original with
+ * @param stats - Statistics about the minification process
+ * @param showNotification - Whether to show success notification (default: true)
+ * @param skipSave - Whether to skip saving the document (default: false)
+ * @returns Resolves when the document is updated and optionally saved
+ *
+ * @throws When the workspace edit fails or the document cannot be saved
  *
  * @example
  * ```typescript
@@ -173,10 +181,9 @@ export async function replaceDocumentContent(
  * inserting a user-configurable prefix (like '.min' or '-compressed') before
  * the file extension. It only works with supported file extensions (.css, .js).
  *
- * @function createMinifiedFileName
- * @param {string} originalFileName - The complete path to the original file
- * @param {string} prefix - The prefix to insert before the extension (e.g., '.min', '-compressed')
- * @returns {string} The new filename with the prefix inserted before the extension
+ * @param originalFileName - The complete path to the original file
+ * @param prefix - The prefix to insert before the extension (e.g., '.min', '-compressed')
+ * @returns The new filename with the prefix inserted before the extension
  *
  * @example
  * ```typescript
@@ -204,10 +211,8 @@ export function createMinifiedFileName(originalFileName: string, prefix: string)
  * Used when we need to save a document after modifications but want to avoid
  * triggering additional save events or showing duplicate notifications.
  *
- * @async
- * @function saveDocumentSilently
- * @param {vscode.TextDocument} document - The document to save
- * @returns {Promise<void>} Resolves when the document is saved
+ * @param document - The document to save
+ * @returns Resolves when the document is saved
  */
 export async function saveDocumentSilently(document: vscode.TextDocument): Promise<void> {
 	await document.save();

@@ -1,5 +1,6 @@
 /**
- * @fileoverview Library module exports.
+ * @packageDocumentation
+ * Library module exports.
  *
  * This module exports constants and helper functions used throughout
  * the extension. Following DDD principles, shared utilities are

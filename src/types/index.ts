@@ -1,5 +1,6 @@
 /**
- * @fileoverview Type definitions module exports.
+ * @packageDocumentation
+ * Type definitions module exports.
  *
  * This module exports all type definitions used throughout the extension.
  * Following DDD principles, types are centralized here for consistent

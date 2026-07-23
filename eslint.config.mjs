@@ -3,6 +3,7 @@ import tsEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import tsdoc from 'eslint-plugin-tsdoc';
 
 export default [
 	js.configs.recommended,
@@ -50,10 +51,12 @@ export default [
 		plugins: {
 			'@typescript-eslint': tsEslint,
 			prettier: prettier,
+			tsdoc: tsdoc,
 		},
 		rules: {
 			...tsEslint.configs.recommended.rules,
 			'prettier/prettier': 'error',
+			'tsdoc/syntax': 'error',
 			'@typescript-eslint/naming-convention': [
 				'warn',
 				{
@@ -87,10 +90,12 @@ export default [
 		plugins: {
 			'@typescript-eslint': tsEslint,
 			prettier: prettier,
+			tsdoc: tsdoc,
 		},
 		rules: {
 			...tsEslint.configs.recommended.rules,
 			'prettier/prettier': 'error',
+			'tsdoc/syntax': 'off',
 			'@typescript-eslint/naming-convention': [
 				'warn',
 				{

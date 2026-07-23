@@ -1,5 +1,6 @@
 /**
- * @fileoverview Utility helper functions.
+ * @packageDocumentation
+ * Utility helper functions.
  *
  * This module provides reusable helper functions used across the extension.
  * Following Single Responsibility Principle, each function handles one
@@ -16,9 +17,8 @@ import { BYTES_PER_KB } from './constants';
 /**
  * Formats bytes to human-readable string with KB or B units.
  *
- * @function formatBytes
- * @param {number} bytes - Size in bytes
- * @returns {string} Formatted string (e.g., "1.21 KB" or "512 B")
+ * @param bytes - Size in bytes
+ * @returns Formatted string (e.g., "1.21 KB" or "512 B")
  *
  * @example
  * formatBytes(1234) // Returns: "1.21 KB"
@@ -35,14 +35,15 @@ export function formatBytes(bytes: number): string {
 /**
  * Calculates minification statistics comparing original and minified text.
  *
- * @function calculateStats
- * @param {string} originalText - The original source code
- * @param {string} minifiedText - The minified code
- * @returns {MinificationStats} Statistics object with size and reduction data
+ * @param originalText - The original source code
+ * @param minifiedText - The minified code
+ * @returns Statistics object with size and reduction data
  *
  * @example
+ * ```typescript
  * const stats = calculateStats("body { color: red; }", "body{color:red}");
  * // Returns: { originalSize: 22, minifiedSize: 15, reductionPercent: 32, ... }
+ * ```
  */
 export function calculateStats(originalText: string, minifiedText: string): MinificationStats {
 	const textEncoder = new TextEncoder();

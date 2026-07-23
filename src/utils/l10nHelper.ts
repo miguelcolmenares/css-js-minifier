@@ -1,5 +1,5 @@
 /**
- * @fileoverview Thin re-export of `vscode.l10n.t()` — the extension follows
+ * Thin re-export of `vscode.l10n.t()` — the extension follows
  * VS Code's canonical localization pattern where the English source string is
  * passed as the first argument to `t()` and non-English translations live in
  * `l10n/bundle.l10n.<locale>.json` (loaded automatically because `package.json`
@@ -32,8 +32,8 @@ import * as vscode from 'vscode';
  * the lookup key against the loaded locale bundle and as the fallback value
  * when no translation is available.
  *
- * @param message English source string. Also the key used in bundle files.
- * @param args    Optional positional values to interpolate into `{0}`, `{1}`, …
+ * @param message - English source string. Also the key used in bundle files.
+ * @param args - Optional positional values to interpolate into `{0}`, `{1}`, …
  * @returns The translated message when a bundle matches, otherwise `message`
  *          with placeholders substituted.
  */
