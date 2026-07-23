@@ -14,7 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Converted module-level docs to `@packageDocumentation`
   - Moved `@sideEffects` content into `@remarks` sections
   - Added `eslint-plugin-tsdoc` with `tsdoc/syntax: "error"` rule for CI enforcement
-  - Created `tsdoc.json` with custom modifier tags (`@since`, `@version`, `@author`)
+  - Created `tsdoc.json` with custom block tags (`@since`, `@version`, `@author`)
 
 ## [1.3.3] - 2026-07-22
 

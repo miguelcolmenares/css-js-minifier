@@ -1,4 +1,5 @@
 /**
+ * @packageDocumentation
  * Thin re-export of `vscode.l10n.t()` — the extension follows
  * VS Code's canonical localization pattern where the English source string is
  * passed as the first argument to `t()` and non-English translations live in

@@ -176,7 +176,7 @@ export * from './fileService';
 4. **`@returns`** — Single block, plain description. No type braces.
 5. **`@throws`** — Document each exception type that may be thrown.
 6. **`@example`** — Use fenced code blocks with `typescript` language tag.
-7. **Modifier tags** — `@since`, `@version`, `@author` go at the end of the comment block.
+7. **Block tags** — `@since`, `@version`, `@author` go at the end of the comment block.
 
 ## Version Tracking Convention
 

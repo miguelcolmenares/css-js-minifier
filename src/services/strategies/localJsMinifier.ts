@@ -7,7 +7,6 @@
  * replacing the previous Toptal API dependency.
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 1.3.0
  * @see {@link https://github.com/nicolo-ribaudo/oxc-minify} oxc-minify documentation
  */

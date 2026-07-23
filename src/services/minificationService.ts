@@ -8,7 +8,6 @@
  * - JavaScript files → Local minification using oxc-minify
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 0.1.0
  *
  * @example

@@ -6,7 +6,6 @@
  * It uses LightningCSS (written in Rust) for extremely fast and modern CSS processing.
  *
  * @author Miguel Colmenares
- * @version 1.3.0
  * @since 1.2.0
  * @see {@link https://lightningcss.dev/} LightningCSS documentation
  */
