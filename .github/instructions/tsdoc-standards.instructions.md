@@ -70,7 +70,7 @@ These patterns will cause `tsdoc/syntax` lint errors:
 
 ### Function Documentation
 
-```typescript
+````typescript
 /**
  * Brief one-line summary of what the function does.
  *
@@ -89,7 +89,7 @@ These patterns will cause `tsdoc/syntax` lint errors:
  * const result = processCode('body { color: red }');
  * ```
  */
-```
+````
 
 For overloaded functions, place the TSDoc comment on each overload signature. Do not document the implementation signature.
 
@@ -150,7 +150,7 @@ export const BYTES_PER_KB = 1024;
 
 ### Re-export Modules (barrel files)
 
-```typescript
+````typescript
 /**
  * @packageDocumentation
  * Service layer exports.
@@ -166,7 +166,7 @@ export const BYTES_PER_KB = 1024;
 
 export * from './minificationService';
 export * from './fileService';
-```
+````
 
 ## Comment Structure Rules
 

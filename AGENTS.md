@@ -131,7 +131,7 @@ All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification
 
 **Canonical function comment:**
 
-```typescript
+````typescript
 /**
  * Brief summary (one sentence, no tag).
  *
@@ -148,7 +148,7 @@ All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification
  * const result = doSomething('input');
  * ```
  */
-```
+````
 
 **File header (entry points only):**
 
