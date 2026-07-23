@@ -126,7 +126,7 @@ All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification
 - File-level docs use `@packageDocumentation` (not `@fileoverview`).
 - Extended descriptions go in `@remarks` blocks (separate from the summary).
 - Side effects are documented under `@remarks`, not a custom `@sideEffects` tag.
-- Custom modifier tags `@since`, `@version`, `@author` are defined in `tsdoc.json`.
+- Custom block tags `@since`, `@version`, `@author` are defined in `tsdoc.json`.
 
 **Canonical function comment:**
 

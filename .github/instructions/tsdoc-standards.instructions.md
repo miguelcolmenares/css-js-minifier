@@ -8,7 +8,7 @@ This project follows the [TSDoc](https://tsdoc.org/) specification for all TypeS
 
 ## Configuration
 
-- **`tsdoc.json`** at project root defines custom modifier tags: `@since`, `@version`, `@author`.
+- **`tsdoc.json`** at project root defines custom block tags: `@since`, `@version`, `@author`.
 - **ESLint** enforces `tsdoc/syntax` as an error for `src/**/*.ts` (disabled in test files).
 
 ## Allowed Tags
@@ -36,9 +36,9 @@ This project follows the [TSDoc](https://tsdoc.org/) specification for all TypeS
 
 | Tag | Kind | Usage |
 |-----|------|-------|
-| `@since` | Modifier | Version when the file/API was introduced (file header only) |
-| `@version` | Modifier | Current version of the file (entry point headers only) |
-| `@author` | Modifier | Author attribution (file header only) |
+| `@since` | Block | Version when the file/API was introduced (file header only) |
+| `@version` | Block | Current version of the file (entry point headers only) |
+| `@author` | Block | Author attribution (file header only) |
 
 ## Forbidden Patterns
 

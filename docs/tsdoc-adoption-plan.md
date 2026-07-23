@@ -42,7 +42,7 @@ The project currently uses JSDoc-style documentation comments with several non-s
 ### Tooling
 
 1. **Install** `eslint-plugin-tsdoc` (dev dependency)
-2. **Create** `tsdoc.json` at project root — define custom tags `@since`, `@version`, `@author` as modifier tags for backward compatibility with the project's version-tracking convention
+2. **Create** `tsdoc.json` at project root — define custom tags `@since`, `@version`, `@author` as block tags (they carry content like version numbers and names)
 3. **Update** `eslint.config.mjs` — add `tsdoc` plugin with `tsdoc/syntax: "error"` rule for `src/**/*.ts` files
 
 ### Comment Migration Rules

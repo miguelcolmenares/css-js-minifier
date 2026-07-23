@@ -30,7 +30,7 @@ import { formatBytes } from '@/lib';
  * - Combining longhand properties into shorthands
  * - Removing duplicate rules
  * - Optimizing colors, fonts, and other values
- * - Full support for modern CSS features (\@starting-style, CSS Nesting, etc.)
+ * - Full support for modern CSS features (`@starting-style`, CSS Nesting, etc.)
  * - ~60x faster than JavaScript-based minifiers
  *
  * @remarks

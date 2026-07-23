@@ -3,17 +3,17 @@
 	"tagDefinitions": [
 		{
 			"tagName": "@since",
-			"syntaxKind": "modifier",
+			"syntaxKind": "block",
 			"allowMultiple": false
 		},
 		{
 			"tagName": "@version",
-			"syntaxKind": "modifier",
+			"syntaxKind": "block",
 			"allowMultiple": false
 		},
 		{
 			"tagName": "@author",
-			"syntaxKind": "modifier",
+			"syntaxKind": "block",
 			"allowMultiple": false
 		}
 	]

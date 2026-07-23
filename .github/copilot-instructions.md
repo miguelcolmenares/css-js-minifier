@@ -325,7 +325,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **Type Safety**: Interfaces and types for all major data structures
 - **Error Handling**: Documented side effects and error conditions
 - **Usage Examples**: Practical code examples in documentation
-- **Custom Tags**: `@since`, `@version`, `@author` configured in `tsdoc.json`
+- **Custom Tags**: `@since`, `@version`, `@author` configured as block tags in `tsdoc.json`
 
 ## Testing & Debugging
 - Test files expect specific minified output (hardcoded in test file)

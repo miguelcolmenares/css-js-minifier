@@ -40,7 +40,7 @@ export { MinificationResult, MinificationStats } from '@/types';
  * **CSS Minification (Local - LightningCSS):**
  * - No network required - works offline
  * - Rust-based parser (~60x faster than JavaScript alternatives)
- * - Full support for modern CSS features (\@starting-style, CSS Nesting, etc.)
+ * - Full support for modern CSS features (`@starting-style`, CSS Nesting, etc.)
  *
  * **JavaScript Minification (Local - oxc-minify):**
  * - No network required - works offline
