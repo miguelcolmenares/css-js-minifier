@@ -115,6 +115,57 @@ Merge commits (`Merge …`), reverts (`Revert …`), and fixup/squash commits (`
 - `docs/<description>` for documentation-only changes
 - `refactor/<description>` for internal refactors
 
+### Documentation (TSDoc)
+
+All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification, enforced at lint time by `eslint-plugin-tsdoc` (`tsdoc/syntax: "error"`).
+
+**Key rules:**
+
+- No `{type}` annotations in `@param` or `@returns` — TypeScript provides the types.
+- No redundant tags: `@function`, `@async`, `@interface`, `@enum`, `@module` are not used.
+- File-level docs use `@packageDocumentation` (not `@fileoverview`).
+- Extended descriptions go in `@remarks` blocks (separate from the summary).
+- Side effects are documented under `@remarks`, not a custom `@sideEffects` tag.
+- Custom modifier tags `@since`, `@version`, `@author` are defined in `tsdoc.json`.
+
+**Canonical function comment:**
+
+```typescript
+/**
+ * Brief summary (one sentence, no tag).
+ *
+ * @remarks
+ * Extended description, implementation details, side effects.
+ *
+ * @param name - Description without type braces
+ * @returns Description without type braces
+ *
+ * @throws When something goes wrong
+ *
+ * @example
+ * ```typescript
+ * const result = doSomething('input');
+ * ```
+ */
+```
+
+**File header (entry points only):**
+
+```typescript
+/**
+ * @packageDocumentation
+ * One-line module summary.
+ *
+ * Extended description of what this module provides.
+ *
+ * @author Miguel Colmenares
+ * @version X.Y.Z
+ * @since X.Y.Z
+ */
+```
+
+See [`.github/instructions/tsdoc-standards.instructions.md`](.github/instructions/tsdoc-standards.instructions.md) for the full reference.
+
 ### PR conventions
 
 - Title uses the same format as commit messages (`type: description`).

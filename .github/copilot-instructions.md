@@ -180,7 +180,9 @@ gh workflow run release.yml -f version=X.Y.Z
 - **Example version update:**
   ```typescript
   /**
-   * @fileoverview Main entry point for the CSS & JS Minifier VS Code extension.
+   * @packageDocumentation
+   * Main entry point for the CSS & JS Minifier VS Code extension.
+   *
    * @author Miguel Colmenares
    * @version 1.3.0  // ← UPDATE THIS when version changes
    * @since 0.1.0
