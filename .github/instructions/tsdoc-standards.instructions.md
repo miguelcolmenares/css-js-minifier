@@ -91,6 +91,8 @@ These patterns will cause `tsdoc/syntax` lint errors:
  */
 ```
 
+For overloaded functions, place the TSDoc comment on each overload signature. Do not document the implementation signature.
+
 ### File Header (entry point modules)
 
 ```typescript
