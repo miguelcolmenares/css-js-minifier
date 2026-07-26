@@ -16,30 +16,7 @@ jobs:
       # regression on the others.
       fail-fast: false
       matrix:
-        # macOS is intentionally excluded from the Insiders matrix.
-        #
-        # `@vscode/test-electron@3.0.0` fails to spawn Electron after
-        # downloading the darwin-arm64 Insiders archive (ENOENT on
-        # `Visual Studio Code - Insiders.app/Contents/MacOS/Electron`).
-        # See upstream bug: microsoft/vscode-test#348.
-        #
-        # We do NOT fall back to an Intel macOS runner (macos-15-intel /
-        # macos-13) as a workaround: Apple has fully transitioned off x86_64
-        # and macOS 26 (Tahoe) no longer supports Intel. Running the extension
-        # under Rosetta 2 on an arm64 host would test a code path that Apple
-        # is actively deprecating. `@vscode/test-cli` does not expose a
-        # `platform` override in its config, so a native arm64 fix requires
-        # the upstream bug to be resolved.
-        #
-        # macOS coverage is still exercised by the Stable and minimum-version
-        # workflows (both run on `macos-latest` arm64). Insiders drift
-        # specific to macOS is temporarily uncovered; the early-warning
-        # signal for VS Code API breakage remains via Ubuntu-Insiders and
-        # Windows-Insiders below.
-        #
-        # Restore `macos-latest` here once microsoft/vscode-test#348 is
-        # fixed and `@vscode/test-electron` is bumped to the fixed release.
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
