@@ -211,7 +211,7 @@ jobs:
             css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
 
       - name: Upload .vsix artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vsix-${{ matrix.target }}
           path: css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
