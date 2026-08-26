@@ -17,6 +17,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Added `eslint-plugin-tsdoc` with `tsdoc/syntax: "error"` rule for CI enforcement
   - Created `tsdoc.json` with custom block tags (`@since`, `@version`, `@author`)
 
+### Security
+
+- Applied non-breaking `npm audit fix` to close 2 HIGH-severity alerts on transitive **dev-only** dependencies: `js-yaml` → 4.3.1 ([GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj), quadratic CPU consumption in `!!omap` resolution, reached via `eslint`, `mocha` and `webpack-cli`) and `brace-expansion` → 1.1.18/2.1.4/5.0.9 ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg), [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895)). Only `package-lock.json` changed; the shipped production bundle (`dist/extension.js` = `lightningcss` + `oxc-minify`) is unaffected. Remaining 3 LOW alerts (`jsdiff` via `mocha` via `@vscode/test-cli`) still require a breaking downgrade to `mocha@11.3.0` and stay deferred.
+
 ## [1.3.3] - 2026-07-22
 
 ### Fixed
