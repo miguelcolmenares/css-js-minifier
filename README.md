@@ -15,13 +15,13 @@ Both minification engines are Rust-based, work fully offline, and require no API
 
 ## VS Code Compatibility Testing
 
-[![VS Code 1.125.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.125.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml 'Minimum supported VS Code version - tested on all platforms')
+[![VS Code 1.134.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.134.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml 'Minimum supported VS Code version - tested on all platforms')
 [![VS Code Stable Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-stable.yml?style=flat-square&label=VS%20Code%20Stable&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-stable.yml 'Current stable VS Code version - tested on all platforms')
 [![VS Code Insiders Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-insiders.yml?style=flat-square&label=VS%20Code%20Insiders&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-insiders.yml 'Pre-release VS Code version - tested on Ubuntu only')
 
 This extension is thoroughly tested across multiple VS Code versions to ensure compatibility:
 
-- **1.125.0 (Minimum)**: Engine requirement baseline - tested on macOS, Ubuntu, and Windows
+- **1.134.0 (Minimum)**: Engine requirement baseline - tested on macOS, Ubuntu, and Windows
 - **Stable**: Current production release - tested on all platforms
 - **Insiders**: Pre-release builds - tested on Ubuntu for early compatibility validation
 

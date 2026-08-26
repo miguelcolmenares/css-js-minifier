@@ -1,4 +1,4 @@
-name: Test VS Code Minimum (1.125.0)
+name: Test VS Code Minimum (1.134.0)
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test-minimum:
-    name: Test on ${{ matrix.os }} with VS Code 1.125.0
+    name: Test on ${{ matrix.os }} with VS Code 1.134.0
     timeout-minutes: 10
     strategy:
       matrix:
@@ -44,10 +44,10 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm ci
-      - name: Run tests with VS Code 1.125.0
+      - name: Run tests with VS Code 1.134.0
         uses: coactions/setup-xvfb@v1
         with:
           run: npm test
         env:
-          VSCODE_VERSION: '1.125.0'
+          VSCODE_VERSION: '1.134.0'
         timeout-minutes: 10
