@@ -9,7 +9,7 @@
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 
 - **CSS files** are minified locally using [LightningCSS](https://lightningcss.dev/), an extremely fast Rust-based CSS parser providing offline minification with full support for modern CSS features like `@starting-style`, CSS Nesting, and Color Level 5.
-- **JavaScript files** are minified locally using [oxc-minify](https://github.com/nicolo-ribaudo/oxc-minify), a fast Rust-based JavaScript minifier from the Oxc project.
+- **JavaScript files** are minified locally using [oxc-minify](https://github.com/oxc-project/oxc), a fast Rust-based JavaScript minifier from the Oxc project.
 
 Both minification engines are Rust-based, work fully offline, and require no API dependencies.
 
@@ -65,7 +65,7 @@ CSS files are minified locally using the [LightningCSS](https://lightningcss.dev
 
 ### JavaScript Minification (Local)
 
-JavaScript files are minified locally using the [oxc-minify](https://github.com/nicolo-ribaudo/oxc-minify) library:
+JavaScript files are minified locally using the [oxc-minify](https://github.com/oxc-project/oxc) library:
 
 - **No network required**: Works completely offline
 - **No file size limit**: Limited only by system memory
