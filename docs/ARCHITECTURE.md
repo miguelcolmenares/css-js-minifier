@@ -85,7 +85,7 @@ The CSS & JS Minifier extension follows a modular architecture pattern that sepa
 
 ## Data Flow
 
-```
+```text
 User Action (Command / Keybinding / Context Menu / onDidSaveTextDocument)
     ↓
 Command Handler (commands/minifyCommand.ts)
@@ -103,7 +103,7 @@ User Feedback (VS Code Notifications, localized via utils/l10nHelper.ts)
 
 ## Module Dependencies
 
-```
+```text
 extension.ts
     ├── commands/minifyCommand.ts
     │     ├── utils/validators.ts

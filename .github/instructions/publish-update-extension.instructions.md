@@ -74,11 +74,14 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
 2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`.
 3. Add a new entry at the top of `CHANGELOG.md` following the existing style: `## [X.Y.Z] - YYYY-MM-DD` with `### Added` / `### Fixed` / `### Changed` sections describing user-visible impact. **The release workflow verifies this entry exists before creating the tag** — a missing entry aborts the release.
 4. Run the full local check:
+
    ```bash
    npm test
    npm run lint
    ```
+
 5. Commit:
+
    ```bash
    git checkout -b chore/release-X.Y.Z
    git add package.json CHANGELOG.md
@@ -86,6 +89,7 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
    git push -u origin chore/release-X.Y.Z
    gh pr create --title "chore: Release X.Y.Z" --base master | cat
    ```
+
 6. Merge the PR (squash). The 6-platform build matrix runs automatically on the PR because `package.json` is in the workflow's path filter.
 
 ### Step 2 — Verify `VSCE_PAT` is healthy
@@ -138,9 +142,11 @@ If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and Git
 1. Wait 5–10 minutes for the Marketplace CDN to update.
 2. Confirm the new version is live: <https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier>.
 3. Install and smoke-test:
+
    ```bash
    code --install-extension miguel-colmenares.css-js-minifier
    ```
+
 4. If any GitHub issues were fixed in this release, close them referencing the release tag.
 
 ## Local safety nets (Husky hooks)

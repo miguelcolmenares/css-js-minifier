@@ -15,3 +15,13 @@ src/test/fixtures/
 # Generated files
 *.min.js
 *.min.css
+
+# Markdown is linted by markdownlint-cli2, never reformatted by Prettier.
+# Prettier rewrites code spans and fenced content whose exact whitespace is the
+# subject of the surrounding sentence — the issue templates document GitHub's
+# title prefixes as `[Bug]: `, where the trailing space is literal.
+# See .markdownlint-cli2.jsonc.
+*.md
+
+# VS Code builds the test runner downloads — thousands of files that are not ours.
+.vscode-test/
