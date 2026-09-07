@@ -5,9 +5,11 @@ This directory contains GitHub Issue Templates for the CSS & JS Minifier extensi
 ## Available Templates
 
 ### 🐛 Bug Report (`bug_report.yml`)
+
 Use this template to report bugs or unexpected behavior in the extension.
 
 **Key sections:**
+
 - Bug description
 - Steps to reproduce
 - Expected vs. actual behavior
@@ -22,9 +24,11 @@ Use this template to report bugs or unexpected behavior in the extension.
 **Labels:** `bug`, `needs-triage`
 
 ### ✨ Feature Request (`feature_request.yml`)
+
 Use this template to suggest new features or enhancements.
 
 **Key sections:**
+
 - Feature description
 - Problem statement (what problem does this solve?)
 - Proposed solution
@@ -37,9 +41,11 @@ Use this template to suggest new features or enhancements.
 **Labels:** `enhancement`, `needs-triage`
 
 ### 📚 Documentation Issue (`documentation.yml`)
+
 Use this template to report documentation issues or suggest improvements.
 
 **Key sections:**
+
 - Documentation type (README, CHANGELOG, API docs, etc.)
 - Issue type (missing info, incorrect info, typo, etc.)
 - Location in documentation
@@ -50,9 +56,11 @@ Use this template to report documentation issues or suggest improvements.
 **Labels:** `documentation`, `needs-triage`
 
 ### ❓ Question / Support (`question.yml`)
+
 Use this template for questions about using the extension.
 
 **Key sections:**
+
 - Question description
 - Question category
 - Context and what you've tried
@@ -76,11 +84,13 @@ The `config.yml` file configures the issue template chooser and provides helpful
 All templates include:
 
 ### Required Fields
+
 - Clear description of the issue/request
 - Relevant context information
 - Pre-submission checklist
 
 ### Optional but Helpful Fields
+
 - Configuration settings
 - Code samples
 - Error messages
@@ -88,6 +98,7 @@ All templates include:
 - Additional context
 
 ### Dropdowns for Common Information
+
 - VS Code version
 - Operating system
 - File type (CSS/JS)
@@ -96,6 +107,7 @@ All templates include:
 - Categories
 
 ### Validation
+
 - Required fields are marked and enforced by GitHub
 - Pre-submission checklists help ensure quality
 - Placeholders guide users on what to include
@@ -135,6 +147,7 @@ When creating a new issue, users will see a template chooser with:
 When updating templates:
 
 1. Test YAML syntax:
+
    ```bash
    python3 -c "import yaml; yaml.safe_load(open('.github/ISSUE_TEMPLATE/bug_report.yml'))"
    ```
@@ -156,12 +169,14 @@ When updating templates:
 ## Template Schema Reference
 
 GitHub Issue Form Schema documentation:
+
 - [About issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms)
 - [Form schema syntax](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema)
 
 ## Internationalization Considerations
 
 The extension supports 7 languages:
+
 - 🇺🇸 English (en)
 - 🇪🇸 Spanish (es)
 - 🇫🇷 French (fr)

@@ -131,7 +131,7 @@ configuration.showSizeReduction
 
 Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 12 messages:
 
-```
+```text
 "File type '{0}' is not supported. Only CSS and JavaScript files can be minified."
 "Cannot minify empty {0} file. Please add some content first."
 "File successfully minified and saved as: {0}"

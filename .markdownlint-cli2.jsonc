@@ -1,0 +1,47 @@
+{
+  // Only the Markdown this repo actually authors. `.vscode-test/` holds the VS
+  // Code builds the test runner downloads — several thousand findings that
+  // belong to Microsoft, not here.
+  "globs": ["**/*.md"],
+  "ignores": ["node_modules", ".vscode-test", "dist", "out"],
+
+  "config": {
+    // Prose is hard-wrapped at widths chosen per file; an 80-column rule would
+    // flag thousands of lines that are deliberately formatted.
+    "MD013": false,
+
+    // Table pipe padding is cosmetic and would rewrite hundreds of lines.
+    "MD060": false,
+
+    // A CHANGELOG repeats "Added"/"Changed"/"Fixed" under every release
+    // heading. `siblings_only` still catches a genuine duplicate in one section.
+    "MD024": { "siblings_only": true },
+
+    // Tabs inside fenced blocks are sample output that must survive verbatim.
+    "MD010": { "code_blocks": false },
+
+    // MD029 and MD007 are disabled for their --fix behaviour, not their intent.
+    // Renumbering an ordered list breaks prose that cites items by number, and
+    // re-indenting flattens nested bullets into siblings. Both rewrites are
+    // silent and change meaning.
+    "MD029": false,
+    "MD007": false,
+
+    // <details>/<summary> is used for collapsible rationale blocks.
+    "MD033": { "allowed_elements": ["details", "summary"] },
+
+    // Instructions files open with YAML frontmatter, not an H1.
+    "MD041": false,
+
+    // The trailing space in a code span is sometimes the point. The issue
+    // templates document GitHub's title prefixes as `[Bug]: ` — that space is
+    // literal, and --fix would quietly make the documentation wrong.
+    "MD038": false,
+
+    // Two adjacent blockquotes separated by a blank line are two callouts, not
+    // one that was split by accident. `publish-update-extension` uses that for
+    // a deadline note followed by a CRITICAL note; merging them would misread
+    // both.
+    "MD028": false,
+  },
+}

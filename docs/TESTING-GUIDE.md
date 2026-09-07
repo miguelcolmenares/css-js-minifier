@@ -119,7 +119,7 @@ const jsMinifiedContent = 'function test(){for(var e=`Hello, World!`,t=``,n=0;n<
 
 ### Test File Organization
 
-```
+```text
 src/test/
 ├── activation.test.ts     # Activation Events regression guard (#168)
 ├── extension.test.ts      # Main test suite (31 tests)

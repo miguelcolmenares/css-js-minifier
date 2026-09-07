@@ -25,6 +25,13 @@ set -e
 echo "🔍 Running ESLint on src/…"
 npm run lint
 
+# Same reasoning as the ESLint check above: 16 tracked Markdown files lint in
+# well under a second, so scoping to staged files would cost more in machinery
+# than it saves. Report-only — markdownlint's --fix rewrites code spans and
+# list numbering, which can silently change what a document says.
+echo "📝 Linting Markdown…"
+npm run lint:md
+
 # ---- Release-bump consistency check --------------------------------------
 
 # Only run when package.json is part of the commit.

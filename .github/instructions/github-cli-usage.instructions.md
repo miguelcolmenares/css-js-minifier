@@ -9,6 +9,7 @@ This document provides comprehensive guidelines for using GitHub CLI (gh) effect
 ## Critical Configuration
 
 ### Pager Configuration
+
 **ALWAYS** use `PAGER=cat` or pipe to `| cat` with GitHub CLI commands to prevent terminal hanging:
 
 ```bash
@@ -25,6 +26,7 @@ gh workflow list
 ```
 
 **Why this is necessary:**
+
 - GitHub CLI uses a pager by default for long output
 - In automated environments or terminal tools, this can cause commands to hang waiting for user interaction
 - Using `PAGER=cat` or piping to `| cat` ensures complete output is displayed immediately
@@ -32,6 +34,7 @@ gh workflow list
 ## Pull Request Management
 
 ### Creating Pull Requests
+
 ```bash
 # Create PR with comprehensive description
 gh pr create --title "feat: Your feature title" --body "
@@ -52,6 +55,7 @@ gh pr create --fill
 ```
 
 ### Viewing Pull Request Information
+
 ```bash
 # List all pull requests
 PAGER=cat gh pr list
@@ -71,6 +75,7 @@ gh pr checks 34 | cat
 ```
 
 ### Pull Request Comments and Reviews
+
 ```bash
 # View PR comments
 PAGER=cat gh pr view 34 --comments
@@ -87,6 +92,7 @@ gh api repos/owner/repo/pulls/34/comments | cat
 ## Issues Management
 
 ### Viewing Issues
+
 ```bash
 # List all issues
 PAGER=cat gh issue list
@@ -102,6 +108,7 @@ gh issue list --assignee @me | cat
 ```
 
 ### Creating and Managing Issues
+
 ```bash
 # Create new issue
 gh issue create --title "Bug: Description" --body "Detailed description"
@@ -116,6 +123,7 @@ gh issue reopen 1
 ## Workflow and Actions Management
 
 ### Viewing Workflows
+
 ```bash
 # List all workflows
 PAGER=cat gh workflow list
@@ -135,6 +143,7 @@ gh run view <run-id> --log | cat
 ```
 
 ### Triggering Workflows
+
 ```bash
 # Trigger workflow manually (if workflow_dispatch is enabled)
 gh workflow run workflow-name.yml
@@ -146,6 +155,7 @@ gh run rerun <run-id>
 ## Repository Information
 
 ### Repository Status
+
 ```bash
 # View repository information
 PAGER=cat gh repo view
@@ -157,6 +167,7 @@ gh api repos/owner/repo | cat
 ```
 
 ### Branch Management
+
 ```bash
 # List branches
 PAGER=cat gh api repos/owner/repo/branches
@@ -170,6 +181,7 @@ gh api repos/owner/repo/branches/master/protection | cat
 ## API Usage Patterns
 
 ### Direct API Calls
+
 ```bash
 # Get specific API endpoints
 PAGER=cat gh api repos/owner/repo/pulls/34/reviews
@@ -185,6 +197,7 @@ gh api repos/owner/repo/pulls --paginate | cat
 ```
 
 ### Authentication and Configuration
+
 ```bash
 # Check authentication status
 gh auth status
@@ -201,6 +214,7 @@ gh repo set-default owner/repo
 ### Common Issues and Solutions
 
 **Terminal Hanging:**
+
 ```bash
 # Problem: Command appears to hang
 gh pr list
@@ -211,6 +225,7 @@ gh pr list | cat
 ```
 
 **Permission Errors:**
+
 ```bash
 # Check current authentication
 gh auth status
@@ -221,6 +236,7 @@ gh auth login
 ```
 
 **API Rate Limiting:**
+
 ```bash
 # Check rate limit status
 PAGER=cat gh api rate_limit
@@ -230,12 +246,14 @@ gh api rate_limit | cat
 ## Best Practices
 
 ### For Development Workflows
+
 1. **Always use pager control** in scripts and automated environments
 2. **Pipe complex JSON output** through `jq` for parsing
 3. **Use specific PR/issue numbers** instead of relative references
 4. **Check authentication status** before running sensitive commands
 
 ### For CI/CD Integration
+
 ```bash
 # Example CI script with proper pager handling
 #!/bin/bash
@@ -252,6 +270,7 @@ gh pr comment $PR_NUMBER --body "Build status: $WORKFLOW_STATUS"
 ```
 
 ### For Code Review Process
+
 ```bash
 # Review workflow
 PAGER=cat gh pr list --assignee @me
@@ -263,6 +282,7 @@ gh pr comment 34 --body "LGTM! ✅"
 ## Common Command Patterns
 
 ### Investigation and Debugging
+
 ```bash
 # Full PR investigation
 PAGER=cat gh pr view 34
@@ -282,6 +302,7 @@ gh issue list --label bug | cat
 ```
 
 ### Repository Management
+
 ```bash
 # Repository overview
 PAGER=cat gh repo view
@@ -298,12 +319,14 @@ gh api repos/owner/repo/tags | cat
 ## Security Considerations
 
 ### Token Management
+
 - Never expose GitHub tokens in logs or scripts
 - Use environment variables for sensitive operations
 - Regularly rotate authentication tokens
 - Use minimal required scopes for tokens
 
 ### Safe API Usage
+
 ```bash
 # Read-only operations are safe
 PAGER=cat gh pr list

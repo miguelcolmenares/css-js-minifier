@@ -69,7 +69,8 @@ If your change **doesn't** touch any of the paths above, the matrix is skipped (
 
 Before opening a PR, please make sure:
 
-- [ ] Code is formatted and lints clean: `npm run lint` (includes TSDoc validation)
+- [ ] Code is formatted and lints clean: `npm run lint` (includes TSDoc validation) and `npm run format:check`
+- [ ] Markdown lints clean: `npm run lint:md`. Prettier does not format `*.md` — `markdownlint-cli2` owns it, and its `--fix` is deliberately not part of any script because several of its rewrites change what a document says
 - [ ] All tests pass locally on your platform: `npm test`
 - [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`, `perf:`)
 - [ ] Branch name follows `<type>/<short-description>` (e.g. `feat/new-language-support`, `fix/windows-path-encoding`)

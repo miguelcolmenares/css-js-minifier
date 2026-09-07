@@ -24,7 +24,7 @@ If any instruction here contradicts something you found in the codebase, the cod
 
 ### End-to-end pipeline
 
-```
+```text
 1. PR bumps package.json + CHANGELOG.md            (contributor / maintainer)
 2. PR is squash-merged to master                   (maintainer)
 3. Optional: gh workflow run verify-marketplace-auth.yml   (maintainer)
@@ -94,7 +94,7 @@ All technical content (code, comments, commits, PR titles, PR descriptions, issu
 
 Enforced by Husky (`commit-msg` hook). Format:
 
-```
+```text
 <type>[optional scope][optional !]: <description>
 ```
 
@@ -247,10 +247,20 @@ If you add a new native dependency, update both `.vscodeignore` (to whitelist th
 ```bash
 npm test            # full suite
 npm run pretest     # compile + lint + copy fixtures (no test run)
-npm run lint        # just ESLint
-npm run format      # write prettier formatting
+npm run lint         # just ESLint
+npm run lint:md      # markdownlint over the tracked Markdown (report only)
+npm run format       # write prettier formatting (TypeScript, JSON, cjs/mjs)
 npm run format:check # check without writing
 ```
+
+Prettier does not touch Markdown — `*.md` is in `.prettierignore` and
+`markdownlint-cli2` owns it instead, configured in `.markdownlint-cli2.jsonc`.
+Never run `markdownlint-cli2 --fix` blind: the rules whose fixes rewrite code
+spans or renumber lists are disabled precisely because those rewrites change
+meaning silently, and the config says so rule by rule.
+
+`format:check` and `lint:md` both run in CI, in the `Format & Markdown` job of
+[`master.yml`](.github/workflows/master.yml).
 
 **Important:** `run_task` in VS Code returns "success" when the task **starts**, not when it finishes. Long-running tasks (like `Test: Run All Tests`) need to be awaited via `get_task_output` or `terminal_last_command`. Do not assume success from the launch response alone.
 

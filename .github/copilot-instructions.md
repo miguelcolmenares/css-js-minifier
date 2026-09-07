@@ -1,11 +1,13 @@
 # CSS & JS Minifier Extension - AI Developer Guide
 
 ## Project Overview
+
 This is a VS Code extension that minifies CSS and JavaScript files. Both CSS and JavaScript minification are performed locally using Rust-based libraries: CSS uses LightningCSS and JavaScript uses oxc-minify. No network or API dependencies are required. The extension provides commands, context menu options, keyboard shortcuts, and auto-minification on save.
 
 ## Architecture & Key Components
 
 ### Core Extension Structure (DDD/SRP Architecture)
+
 - **`src/extension.ts`**: Clean entry point (81 lines) - handles activation, command registration, and configuration
 - **`src/commands/`**: Command handlers for VS Code integration
   - `minifyCommand.ts`: Unified command logic with processDocument() core function
@@ -34,7 +36,9 @@ This is a VS Code extension that minifies CSS and JavaScript files. Both CSS and
 - **File handling**: Supports both active editor and explorer context actions
 
 ### Command Registration Pattern (Modular)
+
 Commands are registered in `activate()` using imported handlers:
+
 ```typescript
 // Clean registration with imported handlers
 const minifyCommandDisposable = vscode.commands.registerCommand("extension.minify", minifyCommand);
@@ -49,6 +53,7 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 ```
 
 ### Modular Architecture Benefits
+
 - **Single Responsibility**: Each module has one clear purpose
 - **Separation of Concerns**: Types, constants, strategies are isolated
 - **Code Reusability**: No duplicate validation or API logic
@@ -58,16 +63,20 @@ async function processDocument(document: vscode.TextDocument, options: MinifyOpt
 - **Extensibility**: Easy to add new strategies or swap implementations
 
 ### Configuration System
+
 Four settings in `package.json` contribute section:
+
 - `minifyOnSave`: Auto-minify when saving files
 - `minifyInNewFile`: Save to new file instead of overwriting
 - `minifiedNewFilePrefix`: Customize suffix (`.min`, `-min`, `.compressed`, etc.)
 - `autoOpenNewFile`: Automatically open newly created minified files in the editor
 
 ### Internationalization (i18n) System
+
 The extension has comprehensive internationalization support across 7 languages using a two-layer translation system:
 
 #### Supported Languages (7 total)
+
 - **English (en)**: Default language - `package.nls.json` + `l10n/bundle.l10n.json`
 - **Spanish (es)**: `package.nls.es.json` + `l10n/bundle.l10n.es.json`
 - **French (fr)**: `package.nls.fr.json` + `l10n/bundle.l10n.fr.json`
@@ -79,6 +88,7 @@ The extension has comprehensive internationalization support across 7 languages 
 #### Two-Layer Translation System
 
 **Layer 1: Package Translations (`package.nls.*.json`)**
+
 - Used for static contributions in `package.json`
 - Command titles, configuration settings, enum descriptions
 - Referenced using `%key%` syntax in package.json
@@ -93,6 +103,7 @@ The extension has comprehensive internationalization support across 7 languages 
 ```
 
 **Layer 2: Runtime Messages (`l10n/bundle.l10n.*.json`)**
+
 - Used for dynamic messages in TypeScript code
 - Error messages, success notifications, validation messages
 - Accessed via `@vscode/l10n` package
@@ -110,6 +121,7 @@ vscode.window.showErrorMessage(
 ```
 
 #### Internationalized Components
+
 - All error messages (validators, API errors, network errors)
 - All success notifications (file operations)
 - All configuration labels and descriptions
@@ -117,6 +129,7 @@ vscode.window.showErrorMessage(
 - Parameter interpolation using {0}, {1}, {2} placeholders
 
 #### Translation Testing
+
 - Comprehensive i18n test suite in `src/test/i18n.test.ts`
 - 20+ tests covering file existence, JSON validity, key consistency
 - Placeholder preservation verification
@@ -124,13 +137,17 @@ vscode.window.showErrorMessage(
 - VS Code task: "Test: Internationalization (i18n) Suite Only"
 
 #### Language Detection
+
 VS Code automatically selects the appropriate translation based on:
+
 - User's VS Code display language setting
 - System locale
 - Falls back to `package.nls.json` (English) if locale not supported
 
 #### Adding New Languages
+
 To add support for a new language:
+
 1. Create `package.nls.{locale}.json` with 13 configuration keys
 2. Create `l10n/bundle.l10n.{locale}.json` with 17 runtime message keys
 3. Update test constants in `src/test/i18n.test.ts`
@@ -138,6 +155,7 @@ To add support for a new language:
 5. See `docs/INTERNATIONALIZATION.md` for detailed guide
 
 #### Translation Maintenance
+
 - **Critical**: Keep all `.nls` files synchronized with identical keys
 - **New Features**: Always add translation keys to all supported language files
 - **Testing**: Verify translations by running i18n test suite
@@ -172,7 +190,7 @@ See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.git
 
 **Pipeline:**
 
-```
+```text
 gh workflow run release.yml -f version=X.Y.Z
   ├─ preflight       — version match, changelog entry, tag unused, vsce verify-pat
   ├─ build (× 6)     — matrix packages one .vsix per platform + activation smoke test
@@ -181,11 +199,14 @@ gh workflow run release.yml -f version=X.Y.Z
 ```
 
 ### Version Management & Documentation Standards
+
 **CRITICAL Version Update Requirements:**
+
 - **When changing version numbers:** Always update BOTH `package.json` AND `src/extension.ts`
 - **In `src/extension.ts`:** Update the `@version` line in the file header TSDoc comment
 - **For new functionality files:** Add `@since` comment ONLY in the file header TSDoc (not in individual functions)
 - **Example version update:**
+
   ```typescript
   /**
    * @packageDocumentation
@@ -198,15 +219,18 @@ gh workflow run release.yml -f version=X.Y.Z
   ```
 
 **New File Documentation Standards:**
+
 - **Header TSDoc:** Include `@since` with the version when the file was created
 - **Function TSDoc:** Do NOT include `@since` in individual function documentation
 - **Module exports:** Include comprehensive documentation with examples
 
 ### Task Execution Behavior (IMPORTANT)
+
 **CRITICAL Understanding for Copilot:**
+
 - **Task Success ≠ Completion:** When executing VS Code tasks via `run_task`, a "success" message indicates the task STARTED successfully, NOT that it completed
 - **Completion signal:** A task is considered complete when `get_task_output` returns output containing the test results summary (e.g., "X passing") or an explicit exit code.
-- **Test Execution Time:** 
+- **Test Execution Time:**
   - "Test: Run All Tests" takes 3-4 minutes to complete (52 comprehensive tests)
   - Other test suites take 20s-1.5 minutes depending on scope
 - **Status Interpretation:**
@@ -216,15 +240,18 @@ gh workflow run release.yml -f version=X.Y.Z
 - **Best Practice:** After running tests, wait for actual completion before assuming results
 
 ### Build & Watch
+
 - **Development**: `npm run watch` (webpack watch mode)
 - **Testing**: `npm run watch-tests` (TypeScript compilation watch)
 - **Production**: `npm run package` (optimized webpack build)
 - **Combined**: Use VS Code task `tasks: watch-tests` for both
 
 ### VS Code Tasks (Recommended Development Workflow)
+
 The project includes optimized VS Code tasks for efficient development. Access via `Ctrl/Cmd + Shift + P` → "Tasks: Run Task":
 
 #### Testing Tasks
+
 - **"Test: Run All Tests"** - Complete 52-test suite with compilation and linting (~2 min)
 - **"Test: Configuration Suite Only"** - Configuration tests only (4 tests, ~20s)
 - **"Test: CSS nth-child Suite Only"** - CSS encoding tests only (2 tests, ~7s)  
@@ -235,48 +262,60 @@ The project includes optimized VS Code tasks for efficient development. Access v
 - **"Test: Quick Compile and Test"** - Fast TypeScript compilation (~3s)
 
 #### Build & Watch Tasks  
+
 - **"npm: watch"** - Webpack watch mode (default build task)
 - **"npm: watch-tests"** - TypeScript watch for test files
 - **"tasks: watch-tests"** - Combined extension + test watch mode
 
 #### Development Workflows
+
 **Feature Development:**
+
 1. Start: "tasks: watch-tests" (combined watch mode)
-2. Test specific features: "Test: Configuration Suite Only" 
+2. Test specific features: "Test: Configuration Suite Only"
 3. Final validation: "Test: Run All Tests"
 
 **Bug Fixing:**
+
 1. Identify: "Test: Run All Tests"
 2. Focus: "Test: CSS nth-child Suite Only" (for CSS issues)  
 3. Target: "Test: Specific Test by Name" → enter test name
 4. Verify: "Test: Run All Tests"
 
 **Pre-commit:**
+
 1. Build check: "Test: Compile and Build Only"
 2. Full validation: "Test: Run All Tests" (ensure all tests passing). If the reported test count differs from 52, verify whether new tests were intentionally added or existing ones removed before treating the result as a failure.
 
 ### Pre-Commit Testing
+
 - **CRITICAL**: Always run "Test: Run All Tests" before committing/pushing changes
 - **Validates**: TypeScript compilation, webpack build, ESLint rules, and all extension functionality
 - **Test Suite**: 52 comprehensive tests covering all minification scenarios and edge cases
 - **Never commit**: Code that fails tests, has compilation errors, or doesn't pass linting
 
 ### Testing Strategy
+
 Tests use VS Code's extension testing framework with Mocha:
+
 - **Fixtures**: `src/test/fixtures/` contains test CSS/JS files
 - **Test pattern**: Load fixture → execute command → assert minified output matches expected
 - **Cleanup**: Automatically removes generated `.min` files after tests
 - **Multiple prefixes**: Tests all supported minification prefixes
 
 ### File Validation Logic
+
 Two-step validation before minification:
+
 1. **File type**: Must be `css` or `javascript` language ID
 2. **Content**: Must not be empty (shows appropriate error messages)
 
 ## Extension-Specific Patterns
 
 ### Dual Context Support
+
 Commands work from both active editor AND file explorer:
+
 ```typescript
 const editor = vscode.window.activeTextEditor;
 const explorer = vscode.window.activeTextEditor?.document.uri;
@@ -286,6 +325,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 ### Minification Architecture
 
 **CSS Minification (Local - v1.3.0+):**
+
 - Uses `lightningcss` library v1.32.0 (Rust-based, ~60x faster)
 - Offline minification without network dependency
 - Full support for modern CSS: `@starting-style`, CSS Nesting, Color Level 5, etc.
@@ -293,6 +333,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - Strategy: `services/strategies/localCssMinifier.ts` → `minifyCss()`
 
 **JavaScript Minification (Local - v1.3.0+):**
+
 - Uses `oxc-minify` library (Rust-based, from the Oxc/Voidzero ecosystem)
 - Offline minification without network dependency
 - Features: variable mangling, dead code elimination, constant folding, statement joining
@@ -300,6 +341,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - Strategy: `services/strategies/localJsMinifier.ts` → `minifyJs()`
 
 ### File Manipulation Approach
+
 - **In-place**: Uses `WorkspaceEdit` to replace entire document content
 - **New file**: Uses `vscode.workspace.fs.writeFile` with regex-based filename transformation
 - **Auto-save**: Listens to `onDidSaveTextDocument` when `minifyOnSave` is enabled
@@ -307,6 +349,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 ### Key Files for Extension Development
 
 ### Core Files
+
 - **`package.json`**: Command definitions, menus, keybindings, and configuration schema
 - **`package.nls.json`**: Default English translations for all user-facing strings
 - **`package.nls.es.json`**: Spanish translations with complete key coverage
@@ -317,6 +360,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`.vscode/README.md`**: Complete guide for VS Code tasks usage and development workflows
 
 ### Modular Structure
+
 - **`src/lib/constants.ts`**: Centralized configuration (file size constants)
 - **`src/lib/helpers.ts`**: Utility functions (formatBytes, calculateStats)
 - **`src/types/minification.ts`**: Type definitions (MinificationResult, MinificationStats)
@@ -329,6 +373,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **`src/*/index.ts`**: Module exports with documentation for each layer
 
 ### Documentation Standards
+
 - **TSDoc Standard**: All documentation comments follow the [TSDoc](https://tsdoc.org/) specification, enforced by `eslint-plugin-tsdoc`
 - **Comprehensive TSDoc**: Every function has detailed documentation with examples
 - **Type Safety**: Interfaces and types for all major data structures
@@ -337,6 +382,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 - **Custom Tags**: `@since`, `@version`, `@author` configured as block tags in `tsdoc.json`
 
 ## Testing & Debugging
+
 - Test files expect specific minified output (hardcoded in test file)
 - **Recommended**: Use VS Code tasks for efficient testing workflows
 - **Quick testing**: Use "Test: Configuration Suite Only" or specific suite tasks
@@ -348,18 +394,23 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 ## Package Size Optimization
 
 ### Current Optimized State
+
 - **Package Size**: 47.37 KB (24 files) - **96.8% reduction** from original ~1.46 MB
 - **Key Optimizations Applied**: GIF exclusion + PNG compression with oxipng
 - **Maintained**: Full functionality, 7-language i18n support, complete documentation
 
 ### Optimization Strategy (.vscodeignore)
+
 **CRITICAL for Package Size Management:**
+
 - **Exclude heavy assets**: `images/*.gif` saves ~1.4 MB (demos/documentation GIFs)
 - **Include essentials only**: Icon, README, CHANGELOG, LICENSE, i18n files
 - **Result**: Extremely efficient package while preserving all user-facing functionality
 
 ### Icon Optimization Workflow
+
 **PNG Compression Process:**
+
 ```bash
 # Install oxipng for maximum PNG optimization
 brew install oxipng
@@ -375,20 +426,25 @@ mv images/icon-optimized.png images/icon.png
 ```
 
 ### Package Content Strategy
+
 **Included (24 files, 47.37 KB):**
+
 - ✅ `dist/extension.js` (12.04 KB) - Webpack optimized bundle
 - ✅ `images/icon.png` (22.22 KB) - Oxipng compressed, 46% reduction
 - ✅ i18n files (16.79 KB) - Complete 7-language support
 - ✅ Documentation (17.32 KB) - User-essential files only
 
 **Excluded via .vscodeignore:**
+
 - ❌ `images/*.gif` - Demo/documentation assets (~1.4 MB)
 - ❌ `src/` - TypeScript source code
 - ❌ `node_modules/` - Development dependencies
 - ❌ Test files and development configuration
 
 ### Future Optimization Considerations
+
 **IMPORTANT for Maintainers:**
+
 1. **Monitor New Assets**: Ensure new images don't inflate package size
 2. **Automate PNG Optimization**: Consider adding oxipng to build process
 3. **Regular Package Audits**: Check `vsce package` output for size creep
@@ -396,6 +452,7 @@ mv images/icon-optimized.png images/icon.png
 5. **Documentation Strategy**: Keep essential docs, move extensive guides to repo only
 
 ### Optimization Validation
+
 ```bash
 # Generate package and check size
 npm run package && npx vsce package
@@ -406,14 +463,16 @@ ls -lh *.vsix
 ```
 
 ## GitHub CLI Commands
+
 - **CRITICAL**: Always use `PAGER=cat` or pipe to `| cat` with GitHub CLI commands
-- **Examples**: 
+- **Examples**:
   - `PAGER=cat gh pr list` or `gh pr list | cat`
   - `PAGER=cat gh run view <id>` or `gh run view <id> | cat`
   - `PAGER=cat gh workflow list` or `gh workflow list | cat`
 - **Reason**: Prevents pager issues and ensures complete output in terminal tools
 
 ## Security & Code Quality
+
 - **CodeQL**: Automated security scanning runs on push, PRs, and weekly schedule
 - **Dependabot**: Monitors for security vulnerabilities in dependencies
 - **Auto-merge**: Dependabot PRs automatically merge when all CI checks pass
@@ -431,6 +490,7 @@ Installed automatically on `npm ci` via the `prepare` script. Located in `.husky
 | `pre-push` | Rejects any push whose remote ref matches `refs/tags/v*` (release tags must originate from the release workflow) | Every `git push` |
 
 **Escape hatches:**
+
 - `git commit --no-verify` skips `pre-commit` + `commit-msg`.
 - `git push --no-verify` skips `pre-push`.
 - `HUSKY=0` in the env disables all hooks (use only in containers/CI).
