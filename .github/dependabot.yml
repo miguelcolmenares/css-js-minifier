@@ -42,6 +42,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # `@types/vscode` must never exceed `engines.vscode`: `vsce package` aborts with
+    # "@types/vscode ^X greater than engines.vscode ^Y" (every release.yml Build job fails).
+    # Bump both by hand together when raising the minimum supported VS Code version.
+    ignore:
+      - dependency-name: "@types/vscode"
     # Automatically merge security updates
     open-pull-requests-limit: 10
     commit-message:
