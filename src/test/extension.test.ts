@@ -144,6 +144,9 @@ suite('JS & CSS Minifier Test Suite', function () {
 
 	// Test for minifying a CSS file
 	test('Minify CSS file', async function () {
+		// First command of the run: it cold-activates the extension and loads the native
+		// minifier binaries, which exceeds the 5s suite default on a fresh macOS runner.
+		this.timeout(RATE_LIMIT_CONFIG.TEST_TIMEOUT_CONFIG_MS);
 		const cssUri = vscode.Uri.file(path.join(__dirname, 'fixtures', 'test.css'));
 		const cssDocument = await vscode.workspace.openTextDocument(cssUri);
 		await vscode.window.showTextDocument(cssDocument);
