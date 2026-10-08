@@ -74,5 +74,5 @@ jobs:
         with:
           run: npm test
         env:
-          VSCODE_VERSION: '1.138.0'
+          VSCODE_VERSION: '1.140.0'
         timeout-minutes: 10
