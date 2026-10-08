@@ -203,6 +203,24 @@ There is a Git hook called `reference-transaction` (introduced in Git 2.28) that
 
 ---
 
+## Minimum VS Code version policy
+
+**`engines.vscode` tracks the latest stable VS Code that `@types/vscode` supports.** The project deliberately keeps the floor current rather than supporting old editors, and lets Dependabot's `@types/vscode` bump drive it.
+
+`vsce package` aborts when `@types/vscode` is newer than `engines.vscode` (`@types/vscode ^X greater than engines.vscode ^Y`), which fails all six `Build <platform>` jobs in `release.yml`. The `Test on <os>` and CodeQL checks still pass, so the PR looks mergeable even though the release matrix is red. Do not "fix" that failure by pinning or ignoring `@types/vscode` (an `ignore` entry in `dependabot.yml` was tried and rejected); raise the floor instead.
+
+When a Dependabot PR bumps `@types/vscode`, push these changes onto the same PR, all to the same version:
+
+- `package.json` and `package-lock.json`: `engines.vscode`.
+- `.github/workflows/master.yml` and `.github/workflows/test-vscode-minimum.yml`: `VSCODE_VERSION` and the workflow/job names.
+- `.vscode-test.mjs`: the `VSCODE_VERSION` fallback.
+- `README.md` (badge and version list) and `CONTRIBUTING.md` (requirement line).
+- `CHANGELOG.md`: update the existing Unreleased entry on the minimum version rather than adding a new one, since nothing shipped in between.
+
+The floor is a minimum, not a maximum: newer VS Code versions keep working, and only users who have not updated stop receiving new releases. A newer stable VS Code than `@types/vscode` supports cannot be declared yet; wait for the `@types/vscode` release.
+
+---
+
 ## Cross-platform CI matrix
 
 The `Build & Release` workflow runs a 6-platform matrix on every relevant PR and every release dispatch:
