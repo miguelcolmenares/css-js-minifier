@@ -49,7 +49,7 @@ jobs:
     # `build` job's `if:` picks that up so PR validation still runs.
     name: Preflight — validate version, changelog and VSCE_PAT
     if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.parse.outputs.version }}
       tag: ${{ steps.parse.outputs.tag }}
@@ -163,7 +163,7 @@ jobs:
         include:
           - { target: darwin-x64,   os: macos-15-intel }
           - { target: darwin-arm64, os: macos-latest }
-          - { target: linux-x64,    os: ubuntu-latest }
+          - { target: linux-x64,    os: ubuntu-26.04 }
           - { target: linux-arm64,  os: ubuntu-24.04-arm }
           - { target: win32-x64,    os: windows-latest }
           - { target: win32-arm64,  os: windows-11-arm }
@@ -225,7 +225,7 @@ jobs:
       github.event_name == 'workflow_dispatch' &&
       needs.preflight.result == 'success' &&
       needs.build.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       # Required for creating and pushing the annotated tag, and for
       # creating the GitHub Release via `gh`.
@@ -307,7 +307,7 @@ jobs:
     if: |
       github.event_name == 'workflow_dispatch' &&
       needs.tag-and-release.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:

@@ -56,7 +56,7 @@ The matrix:
 | --- | --- | --- |
 | `macos-15-intel` | `darwin-x64` | Intel Mac |
 | `macos-latest` | `darwin-arm64` | Apple Silicon |
-| `ubuntu-latest` | `linux-x64` | 64-bit Linux (glibc) |
+| `ubuntu-26.04` | `linux-x64` | 64-bit Linux (glibc) |
 | `ubuntu-24.04-arm` | `linux-arm64` | ARM Linux (glibc) |
 | `windows-latest` | `win32-x64` | 64-bit Windows |
 | `windows-11-arm` | `win32-arm64` | ARM Windows |

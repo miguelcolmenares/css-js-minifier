@@ -17,7 +17,7 @@ jobs:
   quality:
     name: Format & Markdown
     timeout-minutes: 5
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -35,11 +35,12 @@ jobs:
 
   # Primary test job - tests with minimum supported VS Code version
   test:
-    name: Test on ${{ matrix.os }}
+    # Keep the check name stable: the `Protect master` ruleset requires "Test on ubuntu-latest".
+    name: Test on ${{ matrix.os == 'ubuntu-26.04' && 'ubuntu-latest' || matrix.os }}
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-26.04, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
