@@ -161,7 +161,7 @@ The extension ships **six platform-specific `.vsix` files** — one per VS Code 
 |---|---|---|
 | `darwin-x64` | `macos-15-intel` | Intel Mac |
 | `darwin-arm64` | `macos-latest` | Apple Silicon |
-| `linux-x64` | `ubuntu-latest` | x64 Linux (glibc) |
+| `linux-x64` | `ubuntu-26.04` | x64 Linux (glibc) |
 | `linux-arm64` | `ubuntu-24.04-arm` | ARM Linux (glibc) |
 | `win32-x64` | `windows-latest` | x64 Windows |
 | `win32-arm64` | `windows-11-arm` | ARM Windows |

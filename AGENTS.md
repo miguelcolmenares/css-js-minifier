@@ -76,7 +76,7 @@ Enforced by repository ruleset **`Protect master`** (id `19564892`, target = def
 | `deletion` | `master` cannot be deleted. |
 | `non_fast_forward` | Force-pushes to `master` are rejected. |
 | `pull_request` (approvals = 0) | Every change must arrive via PR. Direct `git push origin master` is refused. Zero approvals required — the maintainer can self-merge — but the PR object must exist so checks can run and the history is auditable. |
-| `required_status_checks` | The PR cannot be merged until all four of these checks pass: `Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest` (from `Build - Master`), and `Analyze (javascript-typescript)` (from CodeQL). These four run on **every** PR to `master` regardless of what files it touches, so they never cause "waiting for a check that never runs" deadlocks. |
+| `required_status_checks` | The PR cannot be merged until all four of these checks pass: `Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest` (from `Build - Master`), and `Analyze (javascript-typescript)` (from CodeQL). These four run on **every** PR to `master` regardless of what files it touches, so they never cause "waiting for a check that never runs" deadlocks. The Ubuntu job runs on the pinned `ubuntu-26.04` runner but is deliberately still *named* `Test on ubuntu-latest` (see `master.yml`), so renaming it would deadlock every PR. |
 
 **Not required (deliberate):** the six `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR.
 
@@ -211,7 +211,7 @@ The `Build & Release` workflow runs a 6-platform matrix on every relevant PR and
 | --- | --- | --- |
 | `macos-15-intel` | `darwin-x64` | Intel Mac |
 | `macos-latest` | `darwin-arm64` | Apple Silicon |
-| `ubuntu-latest` | `linux-x64` | 64-bit Linux (glibc) |
+| `ubuntu-26.04` | `linux-x64` | 64-bit Linux (glibc) |
 | `ubuntu-24.04-arm` | `linux-arm64` | ARM Linux (glibc) |
 | `windows-latest` | `win32-x64` | 64-bit Windows |
 | `windows-11-arm` | `win32-arm64` | ARM Windows |
