@@ -169,7 +169,7 @@
 		"@types/node": "^26.6.4",
 		"@types/sinon": "^22.0.0",
 		"@types/vscode": "^1.140.0",
-		"@typescript-eslint/eslint-plugin": "^8.71.1",
+		"@typescript-eslint/eslint-plugin": "^8.71.2",
 		"@typescript-eslint/parser": "^8.65.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.15",
@@ -181,7 +181,7 @@
 		"husky": "^9.1.7",
 		"markdownlint-cli2": "^0.23.3",
 		"mocha": "^12.0.3",
-		"prettier": "^3.9.9",
+		"prettier": "^3.9.10",
 		"sinon": "^22.1.0",
 		"ts-loader": "^9.6.2",
 		"typescript": "^6.0.3",
@@ -203,6 +203,6 @@
 	"dependencies": {
 		"detect-libc": "^2.1.2",
 		"lightningcss": "^1.33.0",
-		"oxc-minify": "^0.153.0"
+		"oxc-minify": "^0.154.0"
 	}
 }
