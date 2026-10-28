@@ -183,5 +183,5 @@ The six artifacts are attached to the GitHub Release and published to the Market
 
 ---
 
-**Last Updated**: 2026-07-22
-**Extension Version**: 1.3.3
+**Last Updated**: 2026-10-28
+**Extension Version**: 1.3.4
