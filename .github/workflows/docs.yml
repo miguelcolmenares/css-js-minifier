@@ -22,9 +22,7 @@ on:
         "CHANGELOG.md",
         ".github/workflows/docs.yml",
       ]
-  # A release changes the changelog and the version the site shows, so the site is rebuilt for it.
-  release:
-    types: [published]
+  # A release rebuilds the site from release.yml. A release made with GITHUB_TOKEN starts no other workflow.
   workflow_dispatch:
 
 permissions:
