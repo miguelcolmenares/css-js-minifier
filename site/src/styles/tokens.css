@@ -1,0 +1,32 @@
+/* Generated from design/tokens.json by scripts/build-tokens.mjs. Do not edit. */
+:root {
+  --sk-bg: #09090b;
+  --sk-bg-subtle: #0c0c0f;
+  --sk-surface: #101014;
+  --sk-surface-2: #16161a;
+  --sk-surface-3: #1c1c21;
+  --sk-border: #23232a;
+  --sk-border-strong: #33333c;
+  --sk-border-hover: #42424d;
+  --sk-fg: #ededf0;
+  --sk-fg-bright: #ffffff;
+  --sk-fg-muted: #a1a1aa;
+  --sk-fg-dim: #87878d;
+  --sk-fg-faint: #6b6b71;
+  --sk-accent: #4fc1ff;
+  --sk-accent-strong: #007acc;
+  --sk-accent-contrast: #ffffff;
+  --sk-success: #4ade80;
+  --sk-warn: #fbbf24;
+  --sk-danger: #f87171;
+  --sk-radius-sm: 6px;
+  --sk-radius-md: 10px;
+  --sk-radius-lg: 14px;
+  --sk-radius-xl: 20px;
+  --sk-font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sk-font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sk-layout-maxw: 1120px;
+  --sk-layout-maxw-prose: 760px;
+  --sk-layout-nav-h: 60px;
+  --sk-motion-ease: cubic-bezier(.22, 1, .36, 1);
+}

@@ -1,0 +1,100 @@
+{
+  "site": {
+    "name": "CSS & JS Minifier",
+    "description": "Minify CSS and JavaScript inside VS Code, locally and offline, with LightningCSS and oxc-minify.",
+    "url": "https://miguelcolmenares.github.io",
+    "base": "/css-js-minifier/",
+    "repository": "https://github.com/miguelcolmenares/css-js-minifier",
+    "license": "MIT",
+    "installCommand": "code --install-extension miguel-colmenares.css-js-minifier"
+  },
+  "hero": {
+    "badge": "VS Code extension · Offline · 7 languages",
+    "title": "Minify CSS and JavaScript without leaving VS Code.",
+    "lede": "Two Rust-based engines, LightningCSS for CSS and oxc-minify for JavaScript, run locally with no network and no API keys. Minify a file, save a .min copy, or minify on save.",
+    "primary": {
+      "label": "Read the docs",
+      "href": "/docs/"
+    },
+    "secondary": {
+      "label": "View on the Marketplace",
+      "href": "https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier"
+    }
+  },
+  "features": [
+    {
+      "icon": "zap",
+      "eyebrow": "Fast engines",
+      "title": "Rust-based minification",
+      "text": "CSS goes through LightningCSS and JavaScript through oxc-minify. Both are native, so large files finish quickly."
+    },
+    {
+      "icon": "shield-check",
+      "eyebrow": "Fully offline",
+      "title": "Your code never leaves your machine",
+      "text": "Minification runs locally. There is no network request, no API key and no file size limit beyond your memory."
+    },
+    {
+      "icon": "file-text",
+      "eyebrow": "Your workflow",
+      "title": "Overwrite, save a copy, or minify on save",
+      "text": "Use the command palette or the context menu, write file.min.css next to the original, and see how many bytes you saved."
+    },
+    {
+      "icon": "layers",
+      "eyebrow": "Seven languages",
+      "title": "English, Spanish, French, German, Portuguese, Japanese and Chinese",
+      "text": "The interface follows your VS Code language, with the strings kept in per-language files."
+    }
+  ],
+  "nav": [],
+  "footer": {
+    "links": []
+  },
+  "sources": {
+    "root": "..",
+    "changelog": "../CHANGELOG.md"
+  },
+  "collections": [
+    {
+      "id": "docs",
+      "label": "Docs",
+      "dir": "../docs",
+      "groups": [
+        {
+          "name": "Start",
+          "tone": "brand",
+          "items": [
+            "overview"
+          ]
+        },
+        {
+          "name": "Development",
+          "tone": "neutral",
+          "items": [
+            "architecture",
+            "testing-guide"
+          ]
+        },
+        {
+          "name": "Internationalization",
+          "tone": "success",
+          "items": [
+            "internationalization"
+          ]
+        }
+      ],
+      "lede": "How the extension is built, tested and translated."
+    }
+  ],
+  "deploy": {
+    "target": "github-pages",
+    "acknowledgePublicPages": false
+  },
+  "anonymize": {
+    "excludePaths": [],
+    "replace": {},
+    "denyPatterns": [],
+    "allow": []
+  }
+}

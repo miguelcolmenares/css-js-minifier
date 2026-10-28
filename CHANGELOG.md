@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+
+- **A documentation site** built with [docs-sitekit](https://github.com/miguelcolmenares/docs-sitekit) from `docs/` and this changelog, published to GitHub Pages by `docs.yml` on changes to `master`. It lives in `site/`, which is excluded from the `.vsix` and from the Markdown lint.
+
 ### Changed
 
 - **The minimum VS Code version policy is documented** in [`AGENTS.md`](AGENTS.md#minimum-vs-code-version-policy): `engines.vscode` follows `@types/vscode`, and every file that carries the version is listed, so the next Dependabot bump does not fail the six platform builds again.

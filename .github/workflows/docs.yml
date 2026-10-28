@@ -1,0 +1,59 @@
+name: Docs
+
+on:
+  push:
+    branches: [master]
+    paths:
+      [
+        "site/**",
+        "docs/**",
+        "examples/**",
+        "README.md",
+        "CHANGELOG.md",
+        ".github/workflows/docs.yml",
+      ]
+  pull_request:
+    paths:
+      [
+        "site/**",
+        "docs/**",
+        "examples/**",
+        "README.md",
+        "CHANGELOG.md",
+        ".github/workflows/docs.yml",
+      ]
+  # A release rebuilds the site from release.yml. A release made with GITHUB_TOKEN starts no other workflow.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build docs
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Installs the site, builds it, checks it, and uploads the Pages artifact.
+      - uses: miguelcolmenares/docs-sitekit@v0.1.0
+        with:
+          version: 0.1.0
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

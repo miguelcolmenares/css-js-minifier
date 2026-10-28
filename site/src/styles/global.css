@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "./tokens.css";
+@import "./prose.css";
+
+/* The site is dark only. The `dark` class is set on <html>. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* shadcn semantic colors, mapped onto the sitekit tokens */
+  --color-background: var(--sk-bg);
+  --color-foreground: var(--sk-fg);
+  --color-card: var(--sk-surface);
+  --color-card-foreground: var(--sk-fg);
+  --color-popover: var(--sk-surface-2);
+  --color-popover-foreground: var(--sk-fg);
+  --color-primary: var(--sk-fg-bright);
+  --color-primary-foreground: var(--sk-bg);
+  --color-secondary: var(--sk-surface-2);
+  --color-secondary-foreground: var(--sk-fg);
+  --color-muted: var(--sk-surface-2);
+  --color-muted-foreground: var(--sk-fg-muted);
+  --color-accent: var(--sk-surface-3);
+  --color-accent-foreground: var(--sk-fg-bright);
+  --color-destructive: var(--sk-danger);
+  --color-border: var(--sk-border);
+  --color-input: var(--sk-border-strong);
+  --color-ring: var(--sk-accent-strong);
+
+  /* sitekit scale */
+  --color-bg-subtle: var(--sk-bg-subtle);
+  --color-surface: var(--sk-surface);
+  --color-surface-2: var(--sk-surface-2);
+  --color-surface-3: var(--sk-surface-3);
+  --color-border-strong: var(--sk-border-strong);
+  --color-border-hover: var(--sk-border-hover);
+  --color-fg-bright: var(--sk-fg-bright);
+  --color-fg-muted: var(--sk-fg-muted);
+  --color-fg-dim: var(--sk-fg-dim);
+  --color-fg-faint: var(--sk-fg-faint);
+  --color-brand: var(--sk-accent);
+  --color-brand-strong: var(--sk-accent-strong);
+  --color-success: var(--sk-success);
+  --color-warn: var(--sk-warn);
+
+  --radius-sm: var(--sk-radius-sm);
+  --radius-md: var(--sk-radius-md);
+  --radius-lg: var(--sk-radius-lg);
+  --radius-xl: var(--sk-radius-xl);
+
+  --font-sans: var(--sk-font-sans);
+  --font-mono: var(--sk-font-mono);
+
+  --container-site: var(--sk-layout-maxw);
+  --container-prose: var(--sk-layout-maxw-prose);
+  --ease-site: var(--sk-motion-ease);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: dark;
+    scroll-padding-top: calc(var(--sk-layout-nav-h) + 1rem);
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--sk-accent-strong) 45%, transparent);
+  }
+}
+
+/* Reduce motion for everyone who asks for it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,77 @@
+---
+import "../../styles/global.css";
+import { loadSite } from "../../infrastructure";
+import { SiteFooter } from "../components/site/SiteFooter";
+import SiteHeader from "../components/site/SiteHeader.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const site = loadSite();
+const { config, href } = site;
+const { title, description = config.site.description } = Astro.props;
+const pageTitle = title ? `${title} · ${config.site.name}` : `${config.site.name}: ${config.site.description}`;
+const canonical = new URL(Astro.url.pathname, config.site.url).toString();
+
+const has = (collection: string) => site.documents.some((document) => document.collection === collection);
+// One menu entry per collection that has pages, in the order of the config, then the changelog.
+const defaultNav = [
+  ...config.collections.filter((collection) => has(collection.id)).map((collection) => ({ label: collection.label, href: href(`${collection.id}/`) })),
+  ...(has("changelog") ? [{ label: "Changelog", href: href("changelog/") }] : []),
+];
+const nav = config.nav.length > 0 ? config.nav : defaultNav;
+const firstDoc = site.documents.find((document) => config.collections.some((collection) => collection.id === document.collection));
+const action = firstDoc ? { label: "Get started", href: firstDoc.route } : undefined;
+
+const columns = [
+  { title: "Documentation", links: defaultNav },
+  {
+    title: "Project",
+    links: [
+      ...(config.site.repository ? [{ label: "GitHub", href: config.site.repository, external: true }] : []),
+      ...(config.site.repository ? [{ label: "Report an issue", href: `${config.site.repository}/issues`, external: true }] : []),
+      ...config.footer.links,
+    ],
+  },
+].filter((column) => column.links.length > 0);
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#09090b" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={config.site.name} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href={href("favicon.svg")} type="image/svg+xml" />
+    <link rel="sitemap" href={href("sitemap-index.xml")} />
+  </head>
+  <body>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">
+      Skip to content
+    </a>
+    <SiteHeader name={config.site.name} home={href("")} links={nav} repositoryUrl={config.site.repository} action={action} current={Astro.url.pathname} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter
+      name={config.site.name}
+      description={config.site.description}
+      command={config.site.installCommand}
+      columns={columns}
+      license={config.site.license}
+      version={site.version ? { label: `v${site.version}`, href: has("changelog") ? href("changelog/") : undefined } : undefined}
+      credit={{ prefix: "Built with", label: "sitekit", href: "https://github.com/miguelcolmenares/docs-sitekit" }}
+    />
+  </body>
+</html>
