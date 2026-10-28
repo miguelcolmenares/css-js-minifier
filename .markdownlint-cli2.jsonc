@@ -3,7 +3,7 @@
   // Code builds the test runner downloads — several thousand findings that
   // belong to Microsoft, not here.
   "globs": ["**/*.md"],
-  "ignores": ["node_modules", ".vscode-test", "dist", "out"],
+  "ignores": ["node_modules", ".vscode-test", "dist", "out", "site"],
 
   "config": {
     // Prose is hard-wrapped at widths chosen per file; an 80-column rule would

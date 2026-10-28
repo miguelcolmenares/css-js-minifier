@@ -21,3 +21,4 @@ vsc-extension-quickstart.md
 docs/**
 scripts/**
 images/*.gif
+site/**

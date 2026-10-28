@@ -1,0 +1,53 @@
+---
+import type { Document } from "../../domain";
+import { CardGrid, ItemCard } from "../components/site/ItemCard";
+import { SectionHeader } from "../components/site/SectionHeader";
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title: string;
+  lede?: string;
+  documents: Document[];
+}
+const { title, lede, documents } = Astro.props;
+
+// Pages in a group are shown under the group's name. Without groups there is one list.
+const sections: { name: string | null; documents: Document[] }[] = [];
+for (const document of documents) {
+  const name = document.group?.name ?? null;
+  const last = sections[sections.length - 1];
+  if (last && last.name === name) last.documents.push(document);
+  else sections.push({ name, documents: [document] });
+}
+---
+
+<BaseLayout title={title} description={lede}>
+  <div class="mx-auto max-w-site px-5 py-14">
+    <SectionHeader as="h1" title={title} lede={lede} />
+    <div class="space-y-12">
+      {
+        sections.map((section) => (
+          <section aria-labelledby={section.name ? `group-${section.name}` : undefined}>
+            {section.name && (
+              <h2 id={`group-${section.name}`} class="mb-4 font-mono text-xs tracking-[0.14em] text-fg-dim uppercase">
+                {section.name}
+              </h2>
+            )}
+            <CardGrid>
+              {section.documents.map((document) => (
+                <ItemCard
+                  href={document.route}
+                  title={document.title}
+                  description={document.description}
+                  badge={document.group?.name}
+                  tone={document.group?.tone}
+                  hint="Read"
+                />
+              ))}
+            </CardGrid>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

@@ -6,6 +6,8 @@
 
 ## Description
 
+Documentation: <https://miguelcolmenares.github.io/css-js-minifier/>
+
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 
 - **CSS files** are minified locally using [LightningCSS](https://lightningcss.dev/), an extremely fast Rust-based CSS parser providing offline minification with full support for modern CSS features like `@starting-style`, CSS Nesting, and Color Level 5.

@@ -1,0 +1,114 @@
+---
+import type { Document } from "../../domain";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Breadcrumbs } from "../components/site/Breadcrumbs";
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  doc: Document;
+  html: string;
+  headings: { depth: number; slug: string; text: string }[];
+  siblings: Document[];
+  collectionLabel: string;
+  collectionHref: string;
+  homeHref: string;
+}
+const { doc, html, headings, siblings, collectionLabel, collectionHref, homeHref } = Astro.props;
+const index = siblings.findIndex((sibling) => sibling.route === doc.route);
+const previous = index > 0 ? siblings[index - 1] : undefined;
+const next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : undefined;
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+<BaseLayout title={doc.title} description={doc.description || undefined}>
+  <div class="mx-auto grid max-w-site grid-cols-1 gap-10 px-5 py-10 lg:grid-cols-[220px_minmax(0,1fr)_200px]">
+    <aside class="hidden lg:block">
+      <nav aria-label={collectionLabel} class="sticky top-24">
+        <p class="mb-3 font-mono text-[11px] tracking-[0.14em] text-fg-dim uppercase">{collectionLabel}</p>
+        <ul class="space-y-1">
+          {
+            siblings.map((sibling, position) => (
+              <li>
+                {sibling.group && sibling.group.name !== siblings[position - 1]?.group?.name && (
+                  <p class="mt-4 mb-1 px-3 font-mono text-[11px] tracking-[0.14em] text-fg-dim uppercase">{sibling.group.name}</p>
+                )}
+                <a
+                  href={sibling.route}
+                  aria-current={sibling.route === doc.route ? "page" : undefined}
+                  class="block rounded-md px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg-bright aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg-bright"
+                >
+                  {sibling.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <article class="min-w-0 max-w-prose">
+      <Breadcrumbs items={[{ label: "Home", href: homeHref }, { label: collectionLabel, href: collectionHref }, { label: doc.title }]} />
+      <h1 class="mt-6 text-balance text-[clamp(2rem,5vw,3rem)] leading-[1.08] font-semibold tracking-[-0.035em] text-fg-bright">{doc.title}</h1>
+      {doc.description && doc.descriptionSource === "frontmatter" && <p class="mt-4 text-lg leading-relaxed text-fg-muted">{doc.description}</p>}
+      <div class="prose-site mt-10" set:html={html} data-prose />
+      <nav aria-label="Previous and next" class="mt-16 grid grid-cols-1 gap-4 border-t border-border pt-8 sm:grid-cols-2">
+        {
+          previous ? (
+            <a href={previous.route} class="group rounded-lg border border-border p-4 transition-colors hover:border-border-hover">
+              <span class="flex items-center gap-1.5 text-xs text-fg-dim"><ArrowLeft className="size-3.5" aria-hidden="true" /> Previous</span>
+              <span class="mt-1 block font-medium text-fg-bright">{previous.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a href={next.route} class="group rounded-lg border border-border p-4 text-right transition-colors hover:border-border-hover">
+              <span class="flex items-center justify-end gap-1.5 text-xs text-fg-dim">Next <ArrowRight className="size-3.5" aria-hidden="true" /></span>
+              <span class="mt-1 block font-medium text-fg-bright">{next.title}</span>
+            </a>
+          )
+        }
+      </nav>
+    </article>
+
+    <aside class="hidden lg:block">
+      {
+        toc.length > 0 && (
+          <nav aria-label="On this page" class="sticky top-24">
+            <p class="mb-3 font-mono text-[11px] tracking-[0.14em] text-fg-dim uppercase">On this page</p>
+            <ul class="space-y-1.5 text-sm">
+              {toc.map((heading) => (
+                <li class={heading.depth === 3 ? "pl-3" : ""}>
+                  <a href={`#${heading.slug}`} class="text-fg-muted hover:text-fg-bright">{heading.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </aside>
+  </div>
+</BaseLayout>
+
+<script>
+  // Add a copy button to every code block. Without JavaScript the code is still there to select.
+  document.querySelectorAll<HTMLElement>("[data-prose] pre").forEach((pre) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "copy-code";
+    button.textContent = "Copy";
+    button.setAttribute("aria-label", "Copy code");
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(pre.querySelector("code")?.innerText ?? pre.innerText);
+        button.textContent = "Copied";
+        setTimeout(() => (button.textContent = "Copy"), 1600);
+      } catch {
+        // Clipboard access can be refused. The code stays selectable.
+      }
+    });
+    pre.appendChild(button);
+  });
+</script>
