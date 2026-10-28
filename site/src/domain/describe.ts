@@ -1,9 +1,20 @@
+/** Apply a replacement until the text stops changing, so a tag split by another tag cannot reappear. */
+function replaceUntilStable(text: string, pattern: RegExp, replacement: string): string {
+  let current = text;
+  for (let previous = ""; previous !== current;) {
+    previous = current;
+    current = current.replace(pattern, replacement);
+  }
+  return current;
+}
+
 /** Turn a markdown fragment into plain text: no code marks, links, images, emphasis or HTML. */
 export function plainText(markdown: string): string {
-  return markdown
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/<[^>]+>/g, "")
+  return replaceUntilStable(
+    markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1"),
+    /<[^>]+>/g,
+    "",
+  )
     .replace(/`+([^`]*)`+/g, "$1")
     .replace(/(\*\*|__)(.*?)\1/g, "$2")
     .replace(/(\*|_)(.*?)\1/g, "$2")
@@ -67,7 +78,11 @@ function blocks(markdown: string): Block[] {
 
 /** A paragraph made only of images and links to images, as a row of badges. */
 function isBadgeOnly(text: string): boolean {
-  return plainText(text) === "" || /^(\s*\[?!\[[^\]]*\]\([^)]*\)\]?(\([^)]*\))?\s*)+$/.test(text);
+  // Remove each badge, then see if anything is left. One pass with no nested repetition, so no backtracking.
+  return (
+    plainText(text) === "" ||
+    text.replace(/\[?!\[[^\]]*\]\([^)]*\)\]?(?:\([^)]*\))?/g, "").trim() === ""
+  );
 }
 
 /** The first level-one heading, as plain text, or the fallback. */
