@@ -6,12 +6,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-10-28
+
 ### Added
 
 - **A documentation site** built with [docs-sitekit](https://github.com/miguelcolmenares/docs-sitekit) from `docs/` and this changelog, published to GitHub Pages by `docs.yml` on changes to `master`. It lives in `site/`, which is excluded from the `.vsix` and from the Markdown lint.
 
 ### Changed
 
+- **`tsconfig.json` sets `skipLibCheck`.** `@types/sinon` 22.0.1 imports `@sinonjs/fake-timers`, which ships no declaration file, so `tsc` stopped inside `node_modules`. Our own code is still fully checked. Also bumped `@types/sinon` to 22.0.1 and `webpack` to 5.112.2.
 - **The minimum VS Code version policy is documented** in [`AGENTS.md`](AGENTS.md#minimum-vs-code-version-policy): `engines.vscode` follows `@types/vscode`, and every file that carries the version is listed, so the next Dependabot bump does not fail the six platform builds again.
 - **Workflows pin `ubuntu-26.04` instead of `ubuntu-latest`.** GitHub moves the `ubuntu-latest` label to Ubuntu 26.04 from 2026-10-19 (see [runner-images#14748](https://github.com/actions/runner-images/issues/14748)), rolling out over several weeks, so jobs would have flipped images at an unpredictable moment. Pinning makes the switch happen in a reviewed PR instead. The required `Test on ubuntu-latest` check keeps its name through an explicit label in [`master.yml`](.github/workflows/master.yml), so the `Protect master` ruleset needs no change. `ubuntu-24.04-arm` is untouched.
 - **Markdown is linted by [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) and no longer reformatted by Prettier.** `*.md` moves to `.prettierignore`: Prettier rewrites code spans and fenced content whose exact whitespace is the subject of the surrounding sentence — the issue templates document GitHub's title prefixes as `` `[Bug]: ` ``, where the trailing space is literal. `.markdownlint-cli2.jsonc` disables the rules whose `--fix` would silently change meaning (`MD029` renumbering, `MD007` re-indenting, `MD038` code-span spaces, `MD028` adjacent callouts) and records why for each. 208 findings across the 16 tracked files were resolved — 197 structural ones (blank lines around headings, lists and fences) applied with `--fix` and verified content-free by `git diff -w`, plus 11 untagged fences given an explicit `text` language.
@@ -29,6 +32,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Security
 
+- Closed 6 more Dependabot alerts on transitive **dev-only** dependencies (`re2js` → 2.8.7 through an override, because `markdownlint` pins 2.8.6 exactly, `serialize-javascript` → 7.1.4, `fast-uri` → 3.1.9). None of them ships in the extension.
 - Closed 6 Dependabot alerts on transitive **dev-only** dependencies reached through the Markdown tooling and `@vscode/l10n-dev`: `markdown-it` → 14.3.3 / 15.0.3 ([GHSA-gfr2-rv44-r23c](https://github.com/advisories/GHSA-gfr2-rv44-r23c), [GHSA-vfgh-jcmw-g37q](https://github.com/advisories/GHSA-vfgh-jcmw-g37q), [GHSA-r7fv-28h4-cvq7](https://github.com/advisories/GHSA-r7fv-28h4-cvq7); quadratic-time rendering and parsing), `smol-toml` → 1.9.1 ([GHSA-r4xh-jqrq-34v2](https://github.com/advisories/GHSA-r4xh-jqrq-34v2)) and `katex` → 0.18.x ([GHSA-238p-pmpm-9mq7](https://github.com/advisories/GHSA-238p-pmpm-9mq7)). Bumping `markdownlint-cli2` to `^0.24.0` brings in the first two; `katex` needed an `overrides` entry because `micromark-extension-math` pins it to `^0.16.0`, a range with no patched release. The shipped production bundle (`dist/extension.js` = `lightningcss` + `oxc-minify`) is unaffected.
 - Applied non-breaking `npm audit fix` to close 2 HIGH-severity alerts on transitive **dev-only** dependencies: `js-yaml` → 4.3.1 ([GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj), quadratic CPU consumption in `!!omap` resolution, reached via `eslint`, `mocha` and `webpack-cli`) and `brace-expansion` → 1.1.18/2.1.4/5.0.9 ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg), [GHSA-rgw5-rvv9-x895](https://github.com/advisories/GHSA-rgw5-rvv9-x895)). Only `package-lock.json` changed; the shipped production bundle (`dist/extension.js` = `lightningcss` + `oxc-minify`) is unaffected. Remaining 3 LOW alerts (`jsdiff` via `mocha` via `@vscode/test-cli`) still require a breaking downgrade to `mocha@11.3.0` and stay deferred.
 
