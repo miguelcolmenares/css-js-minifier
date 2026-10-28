@@ -20,7 +20,10 @@
 			"@/commands": ["./src/commands"],
 			"@/commands/*": ["./src/commands/*"]
 		},
-		"strict": true /* enable all strict type-checking options */
+		"strict": true /* enable all strict type-checking options */,
+		// @types/sinon 22.0.1 imports @sinonjs/fake-timers, which ships no declaration file.
+		// Our own code is still fully checked; only third-party .d.ts files are not.
+		"skipLibCheck": true
 		/* Additional Checks */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
