@@ -6,7 +6,7 @@
 
 ## Description
 
-Documentation: <https://miguelcolmenares.github.io/css-js-minifier/>
+Documentation: <https://miguelcolmenares.com/css-js-minifier/>
 
 The CSS & JS Minifier extension for Visual Studio Code allows you to minify CSS and JavaScript files directly from the editor.
 

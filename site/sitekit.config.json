@@ -2,7 +2,7 @@
   "site": {
     "name": "CSS & JS Minifier",
     "description": "Minify CSS and JavaScript inside VS Code, locally and offline, with LightningCSS and oxc-minify.",
-    "url": "https://miguelcolmenares.github.io",
+    "url": "https://miguelcolmenares.com",
     "base": "/css-js-minifier/",
     "repository": "https://github.com/miguelcolmenares/css-js-minifier",
     "license": "MIT",
