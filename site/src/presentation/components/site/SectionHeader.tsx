@@ -9,12 +9,31 @@ export function SectionHeader({
   children,
   as: Heading = "h2",
 }: {
-  /** Use "h1" for the heading that names the page. */
+  /**
+   * The heading element. Use "h1" for the heading that names the page.
+   *
+   * @defaultValue "h2"
+   */
   as?: "h1" | "h2";
+  /**
+   * A short line in mono type over the heading.
+   */
   eyebrow?: string;
+  /**
+   * The heading.
+   */
   title: string;
+  /**
+   * A sentence under the heading.
+   */
   lede?: React.ReactNode;
+  /**
+   * Classes added to the wrapper.
+   */
   className?: string;
+  /**
+   * An action, shown on the right of the text, or under it on a phone.
+   */
   children?: React.ReactNode;
 }) {
   return (

@@ -1,13 +1,22 @@
 /** One step of a flow: a phase label, a title, an optional detail and an optional command. */
 export interface FlowStep {
+  /** The phase, in mono capitals over the step. */
   label: string;
+  /** The name of the step. */
   title: string;
+  /** A short line under the title. */
   detail?: string;
+  /** A command, in a mono pill under the step. */
   command?: string;
 }
 
 /** Steps in a row from `md` up, stacked below it. */
-export function FlowDiagram({ steps }: { steps: readonly FlowStep[] }) {
+export function FlowDiagram({
+  steps,
+}: {
+  /** The steps, in order. */
+  steps: readonly FlowStep[];
+}) {
   return (
     <ol className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-bg-subtle p-4 md:auto-cols-fr md:grid-flow-col md:p-6">
       {steps.map((step, index) => (

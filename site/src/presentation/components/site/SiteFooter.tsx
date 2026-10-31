@@ -1,9 +1,15 @@
 import { ArrowUpRight, Box } from "lucide-react";
+import { Icon } from "./Icon";
 
 /** A titled column of footer links. */
 export interface FooterColumn {
+  /** The heading of the column, and the name of its navigation. */
   title: string;
-  links: readonly { label: string; href: string; external?: boolean }[];
+  /**
+   * The links. `icon` is a lucide name or `brand:<slug>`, drawn before the label, and `external` opens the link in
+   * a new tab.
+   */
+  links: readonly { label: string; href: string; external?: boolean; icon?: string }[];
 }
 
 /** The brand, link columns and a legal line, one grid track per column. */
@@ -16,13 +22,19 @@ export function SiteFooter({
   version,
   credit,
 }: {
+  /** The name of the site, in the brand and in the legal line. */
   name: string;
+  /** One sentence under the brand. */
   description?: string;
+  /** A command shown under the description. */
   command?: string;
+  /** The link columns, one grid track each. */
   columns: readonly FooterColumn[];
+  /** The license, after the name in the legal line. */
   license?: string;
   /** Shown after the license, linked when `href` is given. */
   version?: { label: string; href?: string };
+  /** A credit at the right of the legal line. */
   credit?: { prefix: string; label: string; href: string };
 }) {
   // One explicit track for the brand and one per column, so columns sit side by side on desktop.
@@ -58,8 +70,9 @@ export function SiteFooter({
                     <a
                       href={link.href}
                       {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                      className="inline-flex min-h-11 items-center gap-1 text-sm text-fg-muted transition-colors hover:text-fg-bright md:min-h-8"
+                      className="inline-flex min-h-11 items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-fg-bright md:min-h-8"
                     >
+                      {link.icon && <Icon name={link.icon} className="size-4" />}
                       {link.label}
                       {link.external && <ArrowUpRight className="size-3.5" aria-hidden="true" />}
                     </a>

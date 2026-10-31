@@ -5,11 +5,17 @@ import { CommandBox } from "./CommandBox";
 import { ToneBadge } from "./ToneBadge";
 
 interface Props {
+  /** A short status in a badge over the headline. */
   badge?: string;
+  /** The headline, as the `h1` of the page. */
   title: string;
+  /** A sentence under the headline. */
   lede: string;
+  /** A command to copy, in a `CommandBox`. */
   command?: string;
+  /** The main action. */
   primary: { label: string; href: string };
+  /** A second action, as an outline button. */
   secondary?: { label: string; href: string };
 }
 const { badge, title, lede, command, primary, secondary } = Astro.props;

@@ -1,3 +1,5 @@
+import { codeBlockTransformers } from "./codeBlocks";
+import { remarkCallouts } from "./remarkCallouts";
 import { remarkRewriteLinks } from "./remarkRewriteLinks";
 import type { LinkContext } from "../domain";
 
@@ -44,8 +46,17 @@ export async function renderMarkdown(
   const { createMarkdownProcessor } = await import("@astrojs/markdown-remark");
   const processor = await createMarkdownProcessor({
     syntaxHighlight: { type: "shiki", excludeLangs: [] },
-    shikiConfig: { theme: "github-dark-default" },
-    remarkPlugins: [[remarkRewriteLinks, options]],
+    // Both themes are written as CSS variables (--shiki-dark, --shiki-light), and the page's theme picks one.
+    // The light theme is the high-contrast one: its darkest token color still reaches 4.5:1 on the code background.
+    shikiConfig: {
+      themes: { light: "github-light-high-contrast", dark: "github-dark-default" },
+      defaultColor: false,
+      transformers: codeBlockTransformers(),
+    },
+    remarkPlugins: [
+      [remarkRewriteLinks, options],
+      [remarkCallouts, {}],
+    ],
     rehypePlugins: [rehypeExternalLinks],
   });
   const result = await processor.render(markdown);

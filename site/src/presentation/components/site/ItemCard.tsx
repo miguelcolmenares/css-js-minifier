@@ -3,7 +3,10 @@ import { cn } from "@/infrastructure/cn";
 import { ToneBadge } from "./ToneBadge";
 import type { Tone } from "./ToneBadge";
 
-/** A link card for a catalog: an optional badge, a mono title, a description and a hint. */
+/**
+ * A link card for a catalog: an optional badge, a mono title, a description and a hint. Any other attribute of
+ * a link, such as a `data-` attribute that a script reads, goes to the link.
+ */
 export function ItemCard({
   href,
   title,
@@ -12,17 +15,38 @@ export function ItemCard({
   tone = "neutral",
   hint,
   className,
-}: {
+  ...rest
+}: Omit<React.ComponentProps<"a">, "children" | "title"> & {
+  /**
+   * Where the card leads. The whole card is the link.
+   */
   href: string;
+  /**
+   * The title, in mono type.
+   */
   title: string;
+  /**
+   * A sentence under the title. An empty text leaves the paragraph out.
+   */
   description: string;
+  /**
+   * The text of a badge over the title.
+   */
   badge?: string;
+  /**
+   * The tone of the badge.
+   *
+   * @defaultValue "neutral"
+   */
   tone?: Tone;
+  /**
+   * A short text at the foot of the card, before the arrow.
+   */
   hint?: string;
-  className?: string;
 }) {
   return (
     <a
+      {...rest}
       href={href}
       className={cn(
         "group flex h-full flex-col rounded-lg border border-border bg-surface p-5 transition-colors duration-200 hover:border-border-hover hover:bg-surface-2",
@@ -54,7 +78,9 @@ export function CardGrid({
   children,
   className,
 }: {
+  /** The cards of the grid. */
   children: React.ReactNode;
+  /** Classes added to the grid. */
   className?: string;
 }) {
   return (

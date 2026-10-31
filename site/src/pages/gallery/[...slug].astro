@@ -6,7 +6,9 @@ import { CommandTable } from "../../presentation/components/site/CommandTable";
 import { FeatureGrid } from "../../presentation/components/site/FeatureGrid";
 import { FlowDiagram } from "../../presentation/components/site/FlowDiagram";
 import { CardGrid, ItemCard } from "../../presentation/components/site/ItemCard";
+import { ReferenceTable } from "../../presentation/components/site/ReferenceTable";
 import { SectionHeader } from "../../presentation/components/site/SectionHeader";
+import { StatRow } from "../../presentation/components/site/StatRow";
 import { ToneBadge } from "../../presentation/components/site/ToneBadge";
 import BaseLayout from "../../presentation/layouts/BaseLayout.astro";
 
@@ -47,6 +49,27 @@ export function getStaticPaths() {
         features={[
           { icon: "layers", eyebrow: "Design", title: "Tokens you own", text: "One source of truth for the look." },
           { icon: "shield-check", eyebrow: "Safety", title: "A closed contract", text: "Unknown keys fail the build." },
+          { icon: "brand:github", eyebrow: "Brands", title: "Logos without a request", text: "Inline SVG, drawn in the text color." },
+        ]}
+      />
+    </section>
+    <section data-gallery="stats">
+      <SectionHeader eyebrow="Stats" title="StatRow" />
+      <StatRow
+        stats={[
+          { value: "22+", label: "Node", note: "Astro 7 needs 22.23.4 or newer" },
+          { value: "0", label: "Runtime requests", note: "Every number comes from props" },
+          { value: "1,234,567,890,123", label: "A long value" },
+        ]}
+      />
+    </section>
+    <section data-gallery="reference">
+      <SectionHeader eyebrow="Reference" title="ReferenceTable" />
+      <ReferenceTable
+        label="Keys of the search group"
+        rows={[
+          { name: "search.enabled", type: "boolean", default: "true", allowed: "true, false", text: "Turn search on. Off, the site has no search button, no dialog and no index." },
+          { name: "search.averyveryveryveryverylongkeynamethatmustnotwidenthepage", type: "string", text: "A long name stays on one line inside the scrolling region." },
         ]}
       />
     </section>
@@ -76,7 +99,9 @@ export function getStaticPaths() {
       <SectionHeader eyebrow="Callouts" title="Callout" />
       <Callout kind="note">A note for the reader.</Callout>
       <Callout kind="tip">A tip that saves time.</Callout>
+      <Callout kind="important">Something the reader needs to know.</Callout>
       <Callout kind="warning">Something that can go wrong.</Callout>
+      <Callout kind="caution">Something that can cause harm.</Callout>
     </section>
   </div>
   <CtaBand title="Start using it" command="npx docs-sitekit init" primary={{ label: "Get started", href: "#" }} secondary={{ label: "GitHub", href: "#" }} />
