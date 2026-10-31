@@ -5,6 +5,8 @@ import {
   extractTitle,
   humanize,
   kebab,
+  normalizeTags,
+  readSideCard,
 } from "../domain";
 import type { CollectionConfig, Document, SourceFile } from "../domain";
 
@@ -35,6 +37,8 @@ function toDocument(file: SourceFile, base: string): Document {
   const title = text(file.frontmatter.title) ?? extractTitle(file.content, humanize(slug));
   const fromFrontmatter = text(file.frontmatter.description);
   const fromContent = fromFrontmatter ? "" : extractDescription(file.content);
+  // What the card's frontmatter got wrong is reported by `validateContent`, which reads it again with the lines.
+  const { card } = readSideCard(file.frontmatter);
   return {
     collection: file.collection,
     path: file.path,
@@ -45,7 +49,9 @@ function toDocument(file: SourceFile, base: string): Document {
     description: fromFrontmatter ?? fromContent,
     descriptionSource: fromFrontmatter ? "frontmatter" : fromContent ? "content" : "none",
     order: orderOf(file.frontmatter.order),
+    tags: normalizeTags(file.frontmatter.tags),
     group: null,
+    ...(card ? { card } : {}),
     body: dropLeadingTitle(file.content, title),
   };
 }
@@ -59,7 +65,7 @@ function byOrderThenSlug(a: Document, b: Document): number {
 }
 
 /**
- * Turn source files into pages. Title, description and order come from the frontmatter first and from the
+ * Turn source files into pages. Title, description, order and tags come from the frontmatter first and from the
  * content second. Two files that would get the same route are an error, not a silent skip. A collection
  * with groups orders its pages by them and fails on a page that is in no group.
  */

@@ -96,5 +96,23 @@
     "replace": {},
     "denyPatterns": [],
     "allow": []
+  },
+  "theme": {
+    "default": "dark"
+  },
+  "search": {
+    "enabled": false
+  },
+  "llms": {
+    "enabled": false,
+    "optional": [],
+    "markdownPages": false
+  },
+  "editLink": {
+    "enabled": false,
+    "branch": "main"
+  },
+  "lastUpdated": {
+    "enabled": false
   }
 }

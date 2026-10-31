@@ -76,9 +76,6 @@
   color: var(--sk-fg-bright);
 }
 .prose-site pre {
-  position: relative;
-  /* The copy button sits in this top band, so it never covers the first line of code. */
-  padding-top: 2.6rem !important;
   overflow-x: auto;
   background: var(--sk-surface) !important;
   border: 1px solid var(--sk-border);
@@ -93,6 +90,25 @@
   border: 0;
   padding: 0;
   color: inherit;
+}
+/* Highlighted tokens take their color from the Shiki variable of the active theme. */
+.prose-site pre code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, normal);
+  font-weight: var(--shiki-dark-font-weight, normal);
+}
+:root[data-theme="light"] .prose-site pre code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, normal);
+  font-weight: var(--shiki-light-font-weight, normal);
+}
+/* A page without the attribute (no JavaScript, theme.default "system") follows the OS. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .prose-site pre code span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style, normal);
+    font-weight: var(--shiki-light-font-weight, normal);
+  }
 }
 .prose-site blockquote {
   border-left: 2px solid var(--sk-accent-strong);
@@ -129,25 +145,6 @@
   max-width: 100%;
   border-radius: var(--sk-radius-md);
 }
-.prose-site .copy-code {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.5rem;
-  min-width: 2.75rem;
-  min-height: 2rem;
-  border: 1px solid var(--sk-border-strong);
-  background: var(--sk-surface-2);
-  color: var(--sk-fg-muted);
-  border-radius: 6px;
-  padding: 0.25rem 0.7rem;
-  font: 500 12px var(--sk-font-mono);
-  cursor: pointer;
-}
-.prose-site .copy-code:hover {
-  color: var(--sk-fg-bright);
-  border-color: var(--sk-border-hover);
-}
-
 .prose-site pre:focus-visible,
 .prose-site table:focus-visible {
   outline: 2px solid var(--sk-accent);
@@ -158,4 +155,61 @@
 .prose-site p,
 .prose-site li {
   overflow-wrap: anywhere;
+}
+
+/* Callouts written as `> [!NOTE]` in markdown. They look like the Callout component, with the tone in a
+   custom property that the kind sets from the tone tokens. The label is always visible, so the tone is
+   never carried by color alone. */
+.prose-site .callout {
+  --callout-tone: var(--sk-accent);
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--sk-border);
+  border-left: 3px solid var(--callout-tone);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-bg-subtle);
+  color: var(--sk-fg);
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+.prose-site .callout-tip {
+  --callout-tone: var(--sk-success);
+}
+.prose-site .callout-important {
+  --callout-tone: var(--sk-fg-bright);
+}
+.prose-site .callout-warning {
+  --callout-tone: var(--sk-warn);
+}
+.prose-site .callout-caution {
+  --callout-tone: var(--sk-danger);
+}
+.prose-site .callout-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.125rem;
+  color: var(--callout-tone);
+}
+.prose-site .callout-body {
+  min-width: 0;
+  flex: 1;
+}
+.prose-site .callout-label {
+  margin: 0 0 0.25rem;
+  color: var(--callout-tone);
+  font: 400 11px/1.625 var(--sk-font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.prose-site .callout-label + * {
+  margin-top: 0;
+}
+.prose-site .callout-body > :last-child {
+  margin-bottom: 0;
+}
+.prose-site .callout :not(pre) > code {
+  font-size: 0.875em;
 }

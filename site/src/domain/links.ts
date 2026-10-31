@@ -27,8 +27,12 @@ function dirname(path: string): string {
   return index === -1 ? "" : path.slice(0, index);
 }
 
-/** Resolve `.` and `..` segments. Returns null when the path climbs out of the repository. */
-function resolvePath(from: string, target: string): string | null {
+/**
+ * Resolve `.` and `..` segments of a path written in a file, against the folder of that file.
+ * A path that starts with `/` is taken from the repository root. Returns null when the path climbs
+ * out of the repository.
+ */
+export function resolveRepositoryPath(from: string, target: string): string | null {
   const parts = (target.startsWith("/") ? target.slice(1) : `${from}/${target}`).split("/");
   const out: string[] = [];
   for (const part of parts) {
@@ -41,19 +45,38 @@ function resolvePath(from: string, target: string): string | null {
   return out.join("/");
 }
 
+/** True for a path written relative to its file, as opposed to a web address, an anchor or a site path. */
+export function isRelativeHref(href: string): boolean {
+  return !(href === "" || href.startsWith("#") || href.startsWith("/") || EXTERNAL.test(href));
+}
+
+function decode(path: string): string {
+  try {
+    return decodeURI(path);
+  } catch {
+    return path;
+  }
+}
+
+/**
+ * The repository path that a relative href points at, without its query or fragment, or null when it
+ * climbs out of the repository.
+ */
+export function hrefTarget(file: string, href: string): string | null {
+  const pathPart = href.split("#")[0]!.split("?")[0]!;
+  return resolveRepositoryPath(dirname(file), decode(pathPart));
+}
+
 /**
  * Decide where a link found in a markdown file should point once the file is published.
  * Web addresses, `mailto:`, in-page anchors and paths that start with `/` are left as they are.
  */
 export function resolveLink(href: string, context: LinkContext): LinkResolution {
-  if (href === "" || href.startsWith("#") || href.startsWith("/") || EXTERNAL.test(href)) {
-    return { kind: "unchanged", href };
-  }
+  if (!isRelativeHref(href)) return { kind: "unchanged", href };
 
   const hashIndex = href.indexOf("#");
   const hash = hashIndex === -1 ? "" : href.slice(hashIndex);
-  const pathPart = (hashIndex === -1 ? href : href.slice(0, hashIndex)).split("?")[0]!;
-  const resolved = resolvePath(dirname(context.file), decodeURI(pathPart));
+  const resolved = hrefTarget(context.file, href);
   if (resolved === null)
     return { kind: "missing", href, warning: `Link "${href}" leaves the repository` };
 

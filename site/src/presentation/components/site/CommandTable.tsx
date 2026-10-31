@@ -1,12 +1,20 @@
 /** A command, what it does, and an optional note shown on wide screens. */
 export interface CommandRow {
+  /** The command, in code. */
   command: string;
+  /** What it does. */
   text: string;
+  /** More detail, shown from the `lg` breakpoint up. */
   note?: string;
 }
 
 /** A two-column list of commands and what they do. */
-export function CommandTable({ rows }: { rows: readonly CommandRow[] }) {
+export function CommandTable({
+  rows,
+}: {
+  /** The commands, in the order shown. */
+  rows: readonly CommandRow[];
+}) {
   return (
     <ul className="grid grid-cols-1 overflow-hidden rounded-lg border border-border bg-surface md:grid-cols-2">
       {rows.map((row) => (

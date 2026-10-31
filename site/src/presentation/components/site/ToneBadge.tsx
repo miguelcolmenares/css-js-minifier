@@ -34,9 +34,25 @@ export function ToneBadge({
   className,
   children,
 }: {
+  /**
+   * The color of the badge.
+   *
+   * @defaultValue "neutral"
+   */
   tone?: Tone;
+  /**
+   * Show a dot before the text. The dot is hidden from assistive technology.
+   *
+   * @defaultValue false
+   */
   dot?: boolean;
+  /**
+   * Classes added to the badge.
+   */
   className?: string;
+  /**
+   * The text of the badge. It always says the status in words, so the color is not the only cue.
+   */
   children: React.ReactNode;
 }) {
   return (
