@@ -4,6 +4,10 @@ import { loadSite } from "../../infrastructure";
 import CollectionIndex from "../../presentation/layouts/CollectionIndex.astro";
 import DocPage from "../../presentation/layouts/DocPage.astro";
 
+// A collection can have a page layout of its own: a file named after its id in layouts/collections/. It takes the
+// props of DocPage and renders it, with more in the slot. A site without such a folder uses DocPage for every page.
+const layouts = import.meta.glob<{ default: typeof DocPage }>("../../presentation/layouts/collections/*.astro", { eager: true });
+
 // One route for every configured collection: /docs/, /docs/getting-started/, /tutorials/, /examples/basic/ ...
 export async function getStaticPaths() {
   const site = loadSite();
@@ -27,11 +31,12 @@ const { collection, documents, doc, html, headings } = Astro.props as {
   headings?: { depth: number; slug: string; text: string }[];
 };
 const { href } = loadSite();
+const Layout = (collection && layouts[`../../presentation/layouts/collections/${collection.id}.astro`]?.default) || DocPage;
 ---
 
 {
   doc && html !== undefined ? (
-    <DocPage
+    <Layout
       doc={doc}
       html={html}
       headings={headings ?? []}

@@ -10,9 +10,9 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
+          "bg-destructive text-background hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border bg-background hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
@@ -35,16 +35,35 @@ const buttonVariants = cva(
   },
 );
 
+type ButtonVariantProps = VariantProps<typeof buttonVariants>;
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: React.ComponentProps<"button"> & {
+  /**
+   * The look of the button.
+   *
+   * @defaultValue "default"
+   */
+  variant?: ButtonVariantProps["variant"];
+  /**
+   * The size of the button. The `icon` sizes are squares for a button that holds only an icon.
+   *
+   * @defaultValue "default"
+   */
+  size?: ButtonVariantProps["size"];
+  /**
+   * Draw the child element instead of a button. It does not work with Astro children, so on an Astro page use
+   * `buttonVariants` on the element.
+   *
+   * @defaultValue false
+   */
+  asChild?: boolean;
+}) {
   const Comp = asChild ? Slot.Root : "button";
 
   return (

@@ -8,8 +8,15 @@ export function CommandBox({
   label,
   className,
 }: {
+  /**
+   * The command, shown and copied as it is.
+   */
   command: string;
+  /** The accessible name of the copy button. Without it the name is "Copy command: " and the command. */
   label?: string;
+  /**
+   * Classes added to the box.
+   */
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -37,7 +44,10 @@ export function CommandBox({
       <span aria-hidden="true" className="font-mono text-sm text-brand">
         $
       </span>
-      <code className="min-w-0 flex-1 overflow-x-auto text-left font-mono text-sm whitespace-nowrap text-fg [scrollbar-width:none]">
+      <code
+        tabIndex={0}
+        className="min-w-0 flex-1 overflow-x-auto text-left font-mono text-sm whitespace-nowrap text-fg [scrollbar-width:none]"
+      >
         {command}
       </code>
       <button

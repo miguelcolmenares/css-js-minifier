@@ -9,7 +9,12 @@ import {
 } from "../ui/breadcrumb";
 
 /** The trail from the home page to the current page. The last item is the page itself and has no link. */
-export function Breadcrumbs({ items }: { items: readonly { label: string; href?: string }[] }) {
+export function Breadcrumbs({
+  items,
+}: {
+  /** The trail, from the home page to the current one. An item with no `href` is the current page. */
+  items: readonly { label: string; href?: string }[];
+}) {
   return (
     <Breadcrumb>
       <BreadcrumbList>

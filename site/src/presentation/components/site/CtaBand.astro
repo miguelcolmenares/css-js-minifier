@@ -3,10 +3,15 @@ import { buttonVariants } from "../ui/button";
 import { CommandBox } from "./CommandBox";
 
 interface Props {
+  /** The headline, as an `h2`. */
   title: string;
+  /** A sentence under the headline. */
   text?: string;
+  /** A command to copy, in a `CommandBox`. */
   command?: string;
+  /** The main action. */
   primary: { label: string; href: string };
+  /** A second action, as an outline button. */
   secondary?: { label: string; href: string };
 }
 const { title, text, command, primary, secondary } = Astro.props;
