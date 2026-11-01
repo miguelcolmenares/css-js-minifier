@@ -374,7 +374,7 @@ jobs:
       - name: Build the docs site
         uses: miguelcolmenares/docs-sitekit@v0.2.2
         with:
-          version: 0.2.0
+          version: 0.2.2
 
   deploy-docs:
     name: Deploy docs to GitHub Pages
