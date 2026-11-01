@@ -44,7 +44,7 @@ export function createSlugger(): (text: string) => string {
 /** Reduce the inline markdown of one line to its text: links keep their label, code keeps its words, marks go. */
 function inlineText(line: string): string {
   return line
-    .replace(/<!--.*?-->/g, " ")
+    .replace(/<!--[sS]*?-->/g, " ")
     .replace(/<\/?[a-zA-Z][^>]*>/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
