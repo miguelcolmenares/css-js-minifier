@@ -8,7 +8,7 @@ function oneLine(text: string): string {
 
 /** Keep a title's brackets from closing the link text early. */
 function linkText(title: string): string {
-  return oneLine(title).replace(/([[\]])/g, "\\$1");
+  return oneLine(title).replace(/\\\\/g, "\\\\\\\\").replace(/([[\]])/g, "\\$1");
 }
 
 /** The heading of a collection: its label from the config, `Changelog`, or the id made readable. */

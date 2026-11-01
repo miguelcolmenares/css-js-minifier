@@ -23,7 +23,7 @@ export function parseCustomSvg(source: string, file: string): BrandGlyph {
   if (source.length > MAX_BYTES)
     fail(`is larger than ${MAX_BYTES / 1000} KB. A logo is a few KB of path data.`);
   const markup = source.replace(/<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>/gi, "");
-  const tags = [...markup.matchAll(/<\/?\s*([a-zA-Z][\w:-]*)([^>]*)>/g)];
+  const tags = [...markup.matchAll(/<\/?\s*(?!!--)([a-zA-Z][\w:-]*)([^>]*)>/g)];
   if (tags[0]?.[1]?.toLowerCase() !== "svg" || markup.trimStart().startsWith("</"))
     fail("is not an SVG: it must start with an <svg> element.");
   const paths: { d: string; fillRule?: "evenodd" | "nonzero" }[] = [];
