@@ -168,7 +168,7 @@
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^26.6.5",
 		"@types/sinon": "^22.0.1",
-		"@types/vscode": "^1.140.0",
+		"@types/vscode": "^1.144.0",
 		"@typescript-eslint/eslint-plugin": "^8.72.0",
 		"@typescript-eslint/parser": "^8.65.0",
 		"@vscode/l10n-dev": "^0.0.35",
