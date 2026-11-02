@@ -205,6 +205,6 @@
 	"dependencies": {
 		"detect-libc": "^2.1.2",
 		"lightningcss": "^1.33.0",
-		"oxc-minify": "^0.155.0"
+		"oxc-minify": "^0.156.0"
 	}
 }
