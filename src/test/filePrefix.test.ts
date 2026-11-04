@@ -75,6 +75,21 @@ function listTree(root: string): string[] {
 	return found.sort();
 }
 
+/**
+ * Removes a temporary file or folder, retrying while Windows reports it as busy.
+ *
+ * @remarks
+ * On Windows the VS Code file watcher can still hold a handle on a folder it observed while a
+ * document inside it was open, so an immediate delete fails with EPERM or EBUSY. Node retries
+ * those errors itself with `maxRetries`. An error that persists after the retries is still
+ * thrown, because leftovers would falsify the tests that list the folder to prove nothing was written.
+ *
+ * @param target - The path to remove
+ */
+function removeTemp(target: string): void {
+	fs.rmSync(target, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+}
+
 suite('File Prefix Validation Test Suite', function () {
 	this.timeout(30000);
 
@@ -214,7 +229,7 @@ suite('File Prefix Validation Test Suite', function () {
 
 		suiteTeardown(async function () {
 			await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-			fs.rmSync(tempDir, { recursive: true, force: true });
+			removeTemp(tempDir);
 		});
 
 		setup(async function () {
@@ -238,7 +253,7 @@ suite('File Prefix Validation Test Suite', function () {
 			await config().update('minifiedNewFilePrefix', undefined, true);
 			await config().update('minifyInNewFile', undefined, true);
 			for (const entry of fs.readdirSync(tempDir)) {
-				fs.rmSync(path.join(tempDir, entry), { recursive: true, force: true });
+				removeTemp(path.join(tempDir, entry));
 			}
 		});
 
