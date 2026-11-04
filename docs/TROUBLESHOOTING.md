@@ -35,40 +35,40 @@ Try the short checklist first, check the message you see in the table below, and
 
 ## Report a bug
 
-Open a bug report on GitHub: [new bug report](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=bug_report.yml). You need a free GitHub account. The form asks for the items below, so it helps to have them ready.
+Open a bug report on GitHub: [new bug report](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=bug_report.yml). You need a free GitHub account. The form asks for the items below, so it helps to have them ready. The first four are required, the rest are optional but make a fix much faster.
 
-Please include:
+Required:
 
-1. **Extension version.** In the Extensions view, click the extension. The version is next to its name.
-2. **VS Code version.** **Help > About** on Windows and Linux, **Code > About Visual Studio Code** on macOS. Use the **Copy** button in that dialog to copy the details.
-3. **Operating system and architecture.** For example Windows 11 x64, macOS 15 on Apple silicon, Ubuntu 24.04 ARM. The **OS** line in the About dialog shows it.
-4. **Steps to reproduce.** What you clicked or pressed, in order, starting from opening the file.
-5. **A minimal sample file.** The smallest CSS or JavaScript that shows the problem. Remove anything private first.
-6. **What you expected, and what happened instead.** The exact text of any error message helps most.
-7. **Your settings.** Copy the `css-js-minifier.*` lines from your `settings.json`, or say that you use the defaults.
-8. **The extension log.** The text from the **CSS & JS Minifier** output (step 7 above), if there is any.
+1. **What happened.** What you expected, and what you got instead. The exact text of any error message helps most.
+2. **Steps to reproduce.** What you clicked or pressed, in order, starting from opening the file. Say whether it is a CSS or a JavaScript file.
+3. **Extension and VS Code version.** For the extension, click it in the Extensions view, the version is next to its name. For VS Code, use **Help > About** on Windows and Linux, or **Code > About Visual Studio Code** on macOS.
+4. **Operating system and architecture.** For example Windows 11 x64, macOS 15 on Apple silicon, Ubuntu 24.04 ARM. The **OS** line in the About dialog shows it.
 
-You can paste this into the report and fill it in:
+Optional:
+
+- **A minimal sample file.** The smallest CSS or JavaScript that shows the problem. Remove anything private first.
+- **Your settings.** Copy the `css-js-minifier.*` lines from your `settings.json`, or say that you use the defaults.
+- **The extension log.** The text from the **CSS & JS Minifier** output (step 7 above), if there is any.
+- **Anything else.** Screenshots, or other extensions you use.
+
+You can also paste this into the report and fill it in:
 
 ```text
-Extension version:
-VS Code version:
-Operating system and architecture:
-File type: CSS / JavaScript
-Steps to reproduce:
+What happened (expected, and actual with the exact message):
+Steps to reproduce (CSS or JavaScript file):
 1.
 2.
-Expected:
-Actual (include the exact message):
-Settings (css-js-minifier.*):
-Sample file (smallest example that shows it):
+Extension version and VS Code version:
+Operating system and architecture:
+Sample file (optional):
+Settings, css-js-minifier.* (optional):
+Extension log (optional):
 ```
 
 ## Ask a question or suggest something
 
-- **A question about how to use the extension:** open a [question](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=question.yml).
 - **An idea or a missing feature:** open a [feature request](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=feature_request.yml).
-- **Something wrong or missing in this guide:** open a [documentation issue](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=documentation.yml).
+- **A question about how to use the extension, or something wrong or missing in this guide:** open a [blank issue](https://github.com/miguelcolmenares/css-js-minifier/issues/new) and write it in your own words. There is no form for these.
 
 Before you open a new one, search the [existing issues](https://github.com/miguelcolmenares/css-js-minifier/issues). Someone may have asked the same thing.
 

@@ -1,75 +1,373 @@
 name: Auto-merge Dependabot PRs
 
+# What this does
+# ==============
+# Squash-merges a Dependabot pull request once everything on it is green, and only when it is a
+# minor or patch update. Major updates are left open for a human to review.
+#
+# "Everything is green" means `mergeable_state == clean`: every check, required or not, has
+# finished and passed. That is deliberately stricter than GitHub's native auto-merge, which only
+# waits for the required checks. The build matrix of `Build & Release` and the VS Code version
+# tests are path filtered and therefore cannot be required (see AGENTS.md), but a red release
+# build must still stop the merge.
+#
+# Why the trigger list is long
+# ============================
+# `workflow_run` fires once per workflow, when that whole workflow is done. The workflow that
+# finishes last is not predictable (it depends on which files the PR touched, because most of
+# these are path filtered), and nothing runs the job again after it exits. So the job has to
+# listen to every workflow that can run on a pull request, and the last one to finish merges.
+#
+# The list matches workflow `name:` values exactly. Keep it in sync when a workflow that runs on
+# `pull_request` is added, renamed or removed. A name that no longer exists fails silently.
+#
+# Security model
+# ==============
+# `workflow_run` workflows run from the default branch with a write token, so this job:
+#   - never checks out or executes anything from the pull request;
+#   - decides only from API data (PR object, commit metadata, check runs);
+#   - passes nothing PR-controlled into a shell or into a `${{ }}` expression inside the script;
+#     the only values handed to the script are the two `workflow_dispatch` inputs, through `env`;
+#   - acts only on a PR authored by `dependabot[bot]`, from a branch of this repository.
+
 on:
   workflow_run:
-    workflows: ["Build - Master", "Test VS Code Minimum", "Test VS Code Stable", "Test VS Code Insiders"]
+    workflows:
+      - "Build - Master"
+      - "Build & Release"
+      - "CodeQL"
+      - "Docs"
+      - "Test VS Code Minimum"
+      - "Test VS Code Stable"
+      - "Test VS Code Insiders"
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Number of the Dependabot pull request to evaluate.
+        required: true
+        type: number
+      dry_run:
+        description: Only report what would happen. Untick it to really merge.
+        required: false
+        default: true
+        type: boolean
 
-permissions:
-  contents: write
-  pull-requests: write
+# No permission by default; the job asks for what it needs.
+permissions: {}
+
+# One run at a time per pull request, so two completions that land together cannot both try to
+# merge. A run that waits is replaced by a newer one, which is harmless: every run re-reads the
+# whole state of the PR. Runs the job will skip get their own group, so they cannot replace a
+# waiting run that matters.
+concurrency:
+  group: >-
+    auto-merge-dependabot-${{
+    github.event_name == 'workflow_dispatch' && format('dispatch-{0}', inputs.pr_number)
+    || (github.event.workflow_run.conclusion == 'success'
+    && github.event.workflow_run.event == 'pull_request'
+    && startsWith(github.event.workflow_run.head_branch, 'dependabot/'))
+    && github.event.workflow_run.head_branch
+    || github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   auto-merge:
     runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    # The branch prefix only avoids starting a runner for every other PR. The author check in the
+    # script is the real guard.
     if: |
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request'
-    
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       startsWith(github.event.workflow_run.head_branch, 'dependabot/'))
+    permissions:
+      contents: write # squash-merge the PR
+      pull-requests: write # merge, and read the PR commits
+      checks: read # tell a failed check from one that is still running
+
     steps:
-      - name: Get PR details
-        id: pr-details
+      - name: Evaluate and merge the Dependabot PR
         uses: actions/github-script@v9
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          DRY_RUN: ${{ inputs.dry_run }}
         with:
           script: |
-            const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: context.payload.workflow_run.head_sha,
-            });
-            
-            if (pullRequests.length === 0) {
-              console.log('No PR found for this commit');
+            const { owner, repo } = context.repo;
+            const DEPENDABOT = 'dependabot[bot]';
+            const MAJOR = 'version-update:semver-major';
+            const MERGEABLE_LEVELS = ['version-update:semver-minor', 'version-update:semver-patch'];
+            const MAX_ATTEMPTS = 6;
+            const WAIT_MS = 10000;
+
+            const isDispatch = context.eventName === 'workflow_dispatch';
+            // A manual run reports only, unless the input is explicitly false. Events always act.
+            const dryRun = isDispatch && process.env.DRY_RUN !== 'false';
+            const defaultBranch = context.payload.repository.default_branch;
+            const summary = [];
+
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+            function say(message, level = 'info') {
+              const text = dryRun ? `Dry run: ${message}` : message;
+              summary.push(`- ${text}`);
+              if (level === 'warning') core.warning(text);
+              else if (level === 'notice') core.notice(text);
+              else core.info(text);
+            }
+
+            // Update type of one dependency, like fetch-metadata: Dependabot's own `update-type`
+            // when present, otherwise computed from the two versions.
+            function levelFromVersions(previous, next) {
+              if (!previous || !next || previous === next) return '';
+              const a = previous.replace(/^v/, '').split('.');
+              const b = next.replace(/^v/, '').split('.');
+              if (a[0] !== b[0]) return MAJOR;
+              if (a.length < 2 || b.length < 2 || a[1] !== b[1]) return 'version-update:semver-minor';
+              return 'version-update:semver-patch';
+            }
+
+            // Reads the YAML block Dependabot writes in its commit message. A grouped PR has one
+            // entry per dependency. Plain line parsing: no YAML library and nothing is evaluated.
+            function parseDependabotMessage(message) {
+              const block = message.match(/^---\r?\n(updated-dependencies:[\s\S]*?)\r?\n\.\.\.[ \t]*$/m);
+              if (!block) return [];
+              const unquote = (value) => value.trim().replace(/^(['"])(.*)\1$/, '$2');
+              const entries = [];
+              for (const line of block[1].split(/\r?\n/)) {
+                let m;
+                if ((m = line.match(/^-\s+dependency-name:\s*(.+)$/))) {
+                  entries.push({ name: unquote(m[1]), version: '', type: '' });
+                } else if (entries.length && (m = line.match(/^\s+dependency-version:\s*(.+)$/))) {
+                  entries[entries.length - 1].version = unquote(m[1]);
+                } else if (entries.length && (m = line.match(/^\s+update-type:\s*(\S+)/))) {
+                  entries[entries.length - 1].type = unquote(m[1]);
+                }
+              }
+              const single = message.match(/^Bumps .* from (\S+) to (\S+)\.$/m);
+              for (const entry of entries) {
+                if (entry.type) {
+                  entry.level = entry.type;
+                  continue;
+                }
+                // Security updates of indirect dependencies carry no `update-type`.
+                const escaped = entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const named = message.match(new RegExp('^Updates `' + escaped + '` from (\\S+) to (\\S+)$', 'm'));
+                const previous = named ? named[1] : entries.length === 1 && single ? single[1] : '';
+                entry.level = levelFromVersions(previous, entry.version);
+              }
+              return entries;
+            }
+
+            // Only commits written and signed by Dependabot are a source of metadata. A commit a
+            // maintainer adds on top is not read and does not change the decision.
+            async function readUpdate(pr) {
+              const commits = await github.paginate(github.rest.pulls.listCommits, {
+                owner,
+                repo,
+                pull_number: pr.number,
+                per_page: 100,
+              });
+              const trusted = commits.filter(
+                (c) =>
+                  c.author &&
+                  c.author.login === DEPENDABOT &&
+                  c.commit.verification &&
+                  c.commit.verification.verified === true,
+              );
+              const entries = trusted.flatMap((c) => parseDependabotMessage(c.commit.message));
+              if (entries.length === 0) {
+                return { ok: false, text: 'no verified Dependabot metadata found on the PR commits' };
+              }
+              // One major in a group makes the whole PR major, like the highest-level rule of
+              // dependabot/fetch-metadata.
+              const majors = entries.filter((e) => e.level === MAJOR);
+              if (majors.length > 0) {
+                return {
+                  ok: false,
+                  major: true,
+                  text: `major update of ${majors.map((e) => e.name).join(', ')}`,
+                };
+              }
+              const unknown = entries.filter((e) => !MERGEABLE_LEVELS.includes(e.level));
+              if (unknown.length > 0) {
+                return {
+                  ok: false,
+                  text: `cannot tell the update type of ${unknown.map((e) => e.name).join(', ')}`,
+                };
+              }
+              const highest = entries.some((e) => e.level === MERGEABLE_LEVELS[0]) ? 'minor' : 'patch';
+              return { ok: true, text: `${entries.length} dependencies, highest change ${highest}` };
+            }
+
+            function problemWith(pr) {
+              if (pr.state !== 'open') return 'it is not open';
+              if (pr.user.login !== DEPENDABOT || pr.user.type !== 'Bot') {
+                return `it was opened by ${pr.user.login}, not by Dependabot, so it is left untouched`;
+              }
+              if (!pr.head.repo || pr.head.repo.full_name !== `${owner}/${repo}`) {
+                return 'its branch is not in this repository';
+              }
+              if (pr.base.ref !== defaultBranch) return `it does not target ${defaultBranch}`;
+              if (pr.draft) return 'it is a draft';
               return null;
             }
-            
-            const pr = pullRequests[0];
-            console.log(`Found PR #${pr.number} by ${pr.user.login}`);
-            
-            return {
-              number: pr.number,
-              user: pr.user.login,
-              mergeable_state: pr.mergeable_state
-            };
 
-      - name: Auto-merge Dependabot PRs
-        if: fromJSON(steps.pr-details.outputs.result).user == 'dependabot[bot]'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const prNumber = ${{ fromJSON(steps.pr-details.outputs.result).number }};
-            
-            // Check if all required checks have passed
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-            
-            console.log(`PR #${prNumber} mergeable_state: ${pr.mergeable_state}`);
-            
-            // Only merge if all checks have passed and PR is ready
-            if (pr.mergeable_state === 'clean') {
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                merge_method: 'squash',
-                commit_title: pr.title,
-                commit_message: `${pr.title}\n\n${pr.body || ''}`
+            async function inspectChecks(sha) {
+              const runs = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: sha,
+                per_page: 100,
               });
-              
-              console.log(`Successfully merged PR #${prNumber}`);
-            } else {
-              console.log(`PR #${prNumber} not ready for merge. State: ${pr.mergeable_state}`);
+              const passing = ['success', 'skipped', 'neutral'];
+              return {
+                failed: runs.filter((r) => r.status === 'completed' && !passing.includes(r.conclusion)).map((r) => r.name),
+                pending: runs.filter((r) => r.status !== 'completed').map((r) => r.name),
+              };
+            }
+
+            async function run() {
+              let prNumber;
+              let expectedSha = null;
+
+              if (isDispatch) {
+                prNumber = Number(process.env.PR_NUMBER);
+                if (!Number.isSafeInteger(prNumber) || prNumber < 1) {
+                  core.setFailed('pr_number must be a positive integer.');
+                  return;
+                }
+              } else {
+                // Match the PR by head branch and sha instead of taking the first PR returned for
+                // the commit, which can be another PR or an unrelated one.
+                const workflowRun = context.payload.workflow_run;
+                if (!workflowRun.head_repository) {
+                  say('The run has no head repository, nothing to do.');
+                  return;
+                }
+                const { data: candidates } = await github.rest.pulls.list({
+                  owner,
+                  repo,
+                  state: 'open',
+                  head: `${workflowRun.head_repository.owner.login}:${workflowRun.head_branch}`,
+                  base: defaultBranch,
+                  per_page: 10,
+                });
+                if (candidates.length === 0) {
+                  say('No open pull request for the branch of this run, nothing to do.');
+                  return;
+                }
+                const current = candidates.find((p) => p.head.sha === workflowRun.head_sha);
+                if (!current) {
+                  say(`PR #${candidates[0].number} has a newer head than this run, a newer run will decide.`);
+                  return;
+                }
+                prNumber = current.number;
+                expectedSha = workflowRun.head_sha;
+              }
+
+              let update = null;
+              let lastState = '';
+
+              for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+                // GitHub computes mergeable_state lazily; it is `unknown` for a moment after a
+                // push or a check finishing. Read the PR again on each attempt.
+                const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+                const problem = problemWith(pr);
+                if (problem) {
+                  say(`PR #${prNumber} is not eligible: ${problem}.`);
+                  return;
+                }
+                if (expectedSha && pr.head.sha !== expectedSha) {
+                  say(`PR #${prNumber} got a new commit while this run was waiting, a newer run will decide.`);
+                  return;
+                }
+                expectedSha = pr.head.sha;
+
+                if (!update) {
+                  update = await readUpdate(pr);
+                  if (!update.ok) {
+                    say(
+                      update.major
+                        ? `PR #${prNumber} is a ${update.text}, waiting for human review. Not merging.`
+                        : `PR #${prNumber}: ${update.text}, waiting for human review. Not merging.`,
+                      'notice',
+                    );
+                    return;
+                  }
+                  say(`PR #${prNumber} is a minor or patch update (${update.text}).`);
+                }
+
+                lastState = pr.mergeable_state;
+                core.info(`PR #${prNumber} mergeable_state: ${lastState} (attempt ${attempt} of ${MAX_ATTEMPTS})`);
+
+                if (lastState === 'clean') {
+                  if (dryRun) {
+                    say(`PR #${prNumber} is clean, it would be squash-merged now.`, 'notice');
+                    return;
+                  }
+                  try {
+                    await github.rest.pulls.merge({
+                      owner,
+                      repo,
+                      pull_number: prNumber,
+                      sha: pr.head.sha, // fails if the PR moved since it was evaluated
+                      merge_method: 'squash',
+                      commit_title: pr.title,
+                      commit_message: `${pr.title}\n\n${pr.body || ''}`,
+                    });
+                    say(`Successfully merged PR #${prNumber}.`, 'notice');
+                  } catch (error) {
+                    if (error.status === 405 || error.status === 409) {
+                      say(`PR #${prNumber} was not merged (${error.status}): it changed or was merged already.`, 'notice');
+                      return;
+                    }
+                    throw error;
+                  }
+                  return;
+                }
+
+                if (lastState === 'dirty' || lastState === 'behind' || lastState === 'draft') {
+                  const why = {
+                    dirty: 'it has merge conflicts',
+                    behind: 'its branch is behind the base branch (ask Dependabot to rebase)',
+                    draft: 'it is a draft',
+                  }[lastState];
+                  say(`PR #${prNumber} is not merged: ${why}.`, 'notice');
+                  return;
+                }
+
+                if (lastState !== 'unknown') {
+                  const checks = await inspectChecks(pr.head.sha);
+                  if (checks.failed.length > 0) {
+                    say(`PR #${prNumber} is not merged: failed checks: ${checks.failed.join(', ')}.`, 'warning');
+                    return;
+                  }
+                  if (checks.pending.length > 0) {
+                    say(
+                      `PR #${prNumber} is not ready (state ${lastState}), still running: ${checks.pending.join(', ')}. The workflow that finishes last will run this job again.`,
+                    );
+                    return;
+                  }
+                  // Every check run passed but the state is not clean yet: usually lag.
+                }
+
+                if (attempt < MAX_ATTEMPTS) await sleep(WAIT_MS);
+              }
+
+              say(
+                `PR #${prNumber} is not merged: mergeable_state is still ${lastState} after ${MAX_ATTEMPTS} attempts although no check failed or is running. Look at the PR (a required review or a check that is not reported on the head commit).`,
+                'warning',
+              );
+            }
+
+            try {
+              await run();
+            } finally {
+              if (summary.length > 0) {
+                await core.summary.addHeading('Auto-merge Dependabot PRs', 3).addRaw(summary.join('\n'), true).write();
+              }
             }

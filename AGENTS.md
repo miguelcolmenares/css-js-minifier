@@ -260,6 +260,16 @@ If you add a new native dependency, update both `.vscodeignore` (to whitelist th
 
 ---
 
+## Dependabot auto-merge
+
+`.github/workflows/auto-merge-dependabot.yml` squash-merges a Dependabot PR when `mergeable_state` is `clean` (every check, required or not, has passed), the author is `dependabot[bot]` and the update is **minor or patch**. A **major** update, or a group that contains one, is never merged by the workflow: it stays open for a human, and so does a PR whose update type cannot be read. Majors are left for review on purpose; do not "fix" that.
+
+- It listens to every workflow that runs on a pull request (`Build - Master`, `Build & Release`, `CodeQL`, `Docs` and the three `Test VS Code ...`), so the one that finishes last triggers it. **When a workflow that runs on `pull_request` is added, renamed or removed, update the `workflow_run.workflows` list.** A name that no longer matches fails silently.
+- It never checks out PR code and passes nothing PR-controlled into a shell. Keep it that way: it runs from `master` with a write token.
+- `gh workflow run auto-merge-dependabot.yml -f pr_number=N` is a dry run (it only reports). Add `-f dry_run=false` to really merge.
+
+---
+
 ## Testing
 
 **Local — VS Code tasks** (`Cmd/Ctrl + Shift + P` → **Tasks: Run Task**):
