@@ -1,4 +1,4 @@
-name: Test VS Code Minimum (1.144.0)
+name: Test VS Code Minimum
 
 on:
   push:
