@@ -478,6 +478,7 @@ ls -lh *.vsix
 - **Dependabot**: Monitors for security vulnerabilities in dependencies
 - **Auto-merge**: Dependabot minor and patch PRs automatically merge when all CI checks pass; major updates are left open for a human to review
 - **Workflow Integration**: Auto-merge is triggered by the completion of any workflow that runs on a pull request, so the last one to finish merges (see "Dependabot auto-merge" in `AGENTS.md`)
+- **After the merge**: the job dispatches `master.yml`, `test-vscode-minimum.yml` and `test-vscode-stable.yml` (and `docs.yml` when docs paths changed) on `master`, because a merge made with `GITHUB_TOKEN` starts no `push` workflow
 - **Critical**: Monitor auto-merged PRs and manual intervention available if needed
 
 ## Local Git Hooks (Husky)

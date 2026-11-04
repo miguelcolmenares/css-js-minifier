@@ -20,6 +20,9 @@ on:
       - 'package.nls*.json'
       - 'scripts/**'
       - '.github/workflows/test-vscode-minimum.yml'
+  # Started by auto-merge-dependabot.yml after it merges a Dependabot PR (a merge made with
+  # GITHUB_TOKEN does not start the `push` trigger above). Can also be run by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read

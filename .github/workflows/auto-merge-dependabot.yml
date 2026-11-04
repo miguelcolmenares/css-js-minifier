@@ -11,6 +11,18 @@ name: Auto-merge Dependabot PRs
 # tests are path filtered and therefore cannot be required (see AGENTS.md), but a red release
 # build must still stop the merge.
 #
+# Testing master after the merge
+# ==============================
+# A merge made with the default GITHUB_TOKEN does not start the workflows that have a `push` to
+# `master` trigger: GitHub starts no workflow from an event that token causes, except
+# `workflow_dispatch`. So after a real merge the job dispatches them itself, on the default
+# branch and with no inputs:
+#   - `master.yml`, `test-vscode-minimum.yml`, `test-vscode-stable.yml`, always;
+#   - `docs.yml`, only when the merged PR changed a path its own `push` filter watches;
+#   - not `test-vscode-insiders.yml`: it runs daily, and Insiders breaking is not a regression.
+# The dispatch is skipped when the default branch has moved past the merge commit, because the
+# run that follows the newer tip covers it. A failed dispatch is a warning, never a failed job.
+#
 # Why the trigger list is long
 # ============================
 # `workflow_run` fires once per workflow, when that whole workflow is done. The workflow that
@@ -86,6 +98,7 @@ jobs:
       contents: write # squash-merge the PR
       pull-requests: write # merge, and read the PR commits
       checks: read # tell a failed check from one that is still running
+      actions: write # dispatch the workflows of master after the merge
 
     steps:
       - name: Evaluate and merge the Dependabot PR
@@ -229,6 +242,76 @@ jobs:
               };
             }
 
+            // Paths that `docs.yml` watches on `push`; keep in sync with that workflow.
+            const DOCS_PATHS = [
+              /^site\//,
+              /^docs\//,
+              /^examples\//,
+              /^README\.md$/,
+              /^CHANGELOG\.md$/,
+              /^\.github\/workflows\/docs\.yml$/,
+            ];
+            const MASTER_WORKFLOWS = ['master.yml', 'test-vscode-minimum.yml', 'test-vscode-stable.yml'];
+
+            async function changesDocs(prNumber) {
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+              return files.some((f) => DOCS_PATHS.some((re) => re.test(f.filename)));
+            }
+
+            // The merge was made with GITHUB_TOKEN, so the `push` to the default branch started no
+            // workflow. `workflow_dispatch` is the exception, hence this. Nothing here may fail
+            // the job: the PR is merged already. Only fixed workflow files, the default branch and
+            // no inputs are used.
+            async function dispatchDefaultBranchWorkflows(prNumber, mergeSha) {
+              try {
+                if (mergeSha) {
+                  const { data: tip } = await github.rest.git.getRef({
+                    owner,
+                    repo,
+                    ref: `heads/${defaultBranch}`,
+                  });
+                  if (tip.object.sha !== mergeSha) {
+                    say(
+                      `${defaultBranch} moved past the merge of PR #${prNumber}, the workflows of the newer tip cover it. Nothing dispatched.`,
+                    );
+                    return;
+                  }
+                }
+              } catch (error) {
+                // Cannot tell: dispatch anyway, a duplicate run costs minutes, a missing one hides a break.
+                core.info(`Could not read ${defaultBranch} before dispatching (${error.message}), dispatching anyway.`);
+              }
+
+              const workflows = [...MASTER_WORKFLOWS];
+              try {
+                if (await changesDocs(prNumber)) workflows.push('docs.yml');
+              } catch (error) {
+                say(`Could not list the files of PR #${prNumber} (${error.message}), docs.yml is not dispatched.`, 'warning');
+              }
+
+              for (const workflow of workflows) {
+                try {
+                  await github.rest.actions.createWorkflowDispatch({
+                    owner,
+                    repo,
+                    workflow_id: workflow,
+                    ref: defaultBranch,
+                  });
+                  say(`Dispatched ${workflow} on ${defaultBranch}.`);
+                } catch (error) {
+                  say(
+                    `Could not dispatch ${workflow} on ${defaultBranch} (${error.status || 'error'}: ${error.message}). PR #${prNumber} is merged; run it by hand if needed.`,
+                    'warning',
+                  );
+                }
+              }
+            }
+
             async function run() {
               let prNumber;
               let expectedSha = null;
@@ -309,8 +392,9 @@ jobs:
                     say(`PR #${prNumber} is clean, it would be squash-merged now.`, 'notice');
                     return;
                   }
+                  let merge;
                   try {
-                    await github.rest.pulls.merge({
+                    merge = await github.rest.pulls.merge({
                       owner,
                       repo,
                       pull_number: prNumber,
@@ -327,6 +411,7 @@ jobs:
                     }
                     throw error;
                   }
+                  await dispatchDefaultBranchWorkflows(prNumber, merge && merge.data && merge.data.sha);
                   return;
                 }
 
