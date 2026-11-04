@@ -217,7 +217,7 @@ There is a Git hook called `reference-transaction` (introduced in Git 2.28) that
 When a Dependabot PR bumps `@types/vscode`, push these changes onto the same PR, all to the same version:
 
 - `package.json` and `package-lock.json`: `engines.vscode`.
-- `.github/workflows/master.yml` and `.github/workflows/test-vscode-minimum.yml`: `VSCODE_VERSION` and the workflow/job names.
+- `.github/workflows/master.yml` and `.github/workflows/test-vscode-minimum.yml`: `VSCODE_VERSION` and the job names. The workflow name in `test-vscode-minimum.yml` (`Test VS Code Minimum`) carries no version on purpose and must not change: `.github/workflows/auto-merge-dependabot.yml` waits for it by that exact name in its `workflow_run` list.
 - `.vscode-test.mjs`: the `VSCODE_VERSION` fallback.
 - `README.md` (badge and version list) and `CONTRIBUTING.md` (requirement line).
 - `CHANGELOG.md`: update the existing Unreleased entry on the minimum version rather than adding a new one, since nothing shipped in between.
