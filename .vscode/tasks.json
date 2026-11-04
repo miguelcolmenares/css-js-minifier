@@ -89,7 +89,7 @@
 				"clear": false
 			},
 			"problemMatcher": [],
-			"detail": "Run only Configuration Test Suite (4 tests) - autoOpenNewFile, custom prefixes, etc."
+			"detail": "Run only Configuration Test Suite (12 tests) - autoOpenNewFile, custom prefixes, etc."
 		},
 		{
 			"label": "Test: CSS nth-child Suite Only",
@@ -143,7 +143,7 @@
 				"clear": false
 			},
 			"problemMatcher": [],
-			"detail": "Run only Main Functionality Test Suite (21 tests) - core minification features"
+			"detail": "Run only Main Functionality Test Suite (25 tests) - core minification features"
 		},
 		{
 			"label": "Test: Internationalization (i18n) Suite Only",

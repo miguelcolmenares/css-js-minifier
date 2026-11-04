@@ -92,7 +92,7 @@ The extension has comprehensive internationalization support across 7 languages 
 - Used for static contributions in `package.json`
 - Command titles, configuration settings, enum descriptions
 - Referenced using `%key%` syntax in package.json
-- 13 keys total across all languages
+- 15 keys total across all languages
 
 ```json
 // In package.json
@@ -107,7 +107,7 @@ The extension has comprehensive internationalization support across 7 languages 
 - Used for dynamic messages in TypeScript code
 - Error messages, success notifications, validation messages
 - Accessed via `@vscode/l10n` package
-- 17 keys total with parameter interpolation support
+- 14 keys total with parameter interpolation support
 
 ```typescript
 // In TypeScript
@@ -148,8 +148,8 @@ VS Code automatically selects the appropriate translation based on:
 
 To add support for a new language:
 
-1. Create `package.nls.{locale}.json` with 13 configuration keys
-2. Create `l10n/bundle.l10n.{locale}.json` with 17 runtime message keys
+1. Create `package.nls.{locale}.json` with 15 configuration keys
+2. Create `l10n/bundle.l10n.{locale}.json` with 14 runtime message keys
 3. Update test constants in `src/test/i18n.test.ts`
 4. Verify all tests pass
 5. See `docs/INTERNATIONALIZATION.md` for detailed guide
@@ -254,10 +254,10 @@ The project includes optimized VS Code tasks for efficient development. Access v
 #### Testing Tasks
 
 - **"Test: Run All Tests"** - Complete 52-test suite with compilation and linting (~2 min)
-- **"Test: Configuration Suite Only"** - Configuration tests only (4 tests, ~20s)
+- **"Test: Configuration Suite Only"** - Configuration tests only (12 tests, ~20s)
 - **"Test: CSS nth-child Suite Only"** - CSS encoding tests only (2 tests, ~7s)  
 - **"Test: Keybinding Suite Only"** - Keyboard shortcut tests (2 tests, ~5s)
-- **"Test: Main Functionality Suite Only"** - Core minification tests (21 tests, ~1.5min)
+- **"Test: Main Functionality Suite Only"** - Core minification tests (25 tests, ~1.5min)
 - **"Test: Specific Test by Name"** - Run individual test with prompt input
 - **"Test: Compile and Build Only"** - Preparation without testing (~10s)
 - **"Test: Quick Compile and Test"** - Fast TypeScript compilation (~3s)
