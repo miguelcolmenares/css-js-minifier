@@ -63,7 +63,7 @@ The matrix:
 
 For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the six fails, the PR is not mergeable.
 
-If your change **doesn't** touch any of the paths above, the matrix is skipped (test suite still runs). This keeps CI cost proportional to risk.
+If your change **doesn't** touch any of the paths above, the matrix is skipped (the `Test on …` checks of `master.yml` still run). The three VS Code version workflows (`test-vscode-minimum.yml`, `test-vscode-stable.yml`, `test-vscode-insiders.yml`) are also skipped unless your change touches code or test inputs; see [AGENTS.md → Cross-platform CI matrix](AGENTS.md#cross-platform-ci-matrix). This keeps CI cost proportional to risk.
 
 ## Pull request checklist
 

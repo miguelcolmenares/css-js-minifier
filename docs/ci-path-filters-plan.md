@@ -45,7 +45,7 @@ Conclusion: no change to `auto-merge-dependabot.yml` is needed for this issue. T
 
 ## Phases
 
-- [ ] Phase 1: path filters and nightly Insiders trigger
-- [ ] Phase 2: concurrency blocks
-- [ ] Phase 3: documentation and CHANGELOG
+- [x] Phase 1: path filters and nightly Insiders trigger
+- [x] Phase 2: concurrency blocks
+- [x] Phase 3: documentation and CHANGELOG
 - [ ] Phase 4: validation, core-review, push
