@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - **Publishing to [Open VSX](https://open-vsx.org)**, the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. A new [`publish-openvsx.yml`](.github/workflows/publish-openvsx.yml) workflow downloads the six `.vsix` files from the GitHub Release and runs `ovsx publish` on each, so both registries serve identical artifacts. `release.yml` calls it as a `publish-openvsx` job that runs in parallel with the Marketplace `publish` job, and the two do not block each other. It can also be dispatched alone for a version that already has a release, to backfill or retry; targets already on Open VSX are skipped. Needs an `OVSX_PAT` repository secret and the `miguel-colmenares` namespace on open-vsx.org.
+- **The documentation site is now a user guide.** New pages for [installing](docs/INSTALL.md) (Marketplace, a downloaded `.vsix` file, and Open VSX once it is active), a [quick start](docs/QUICK-START.md), [commands and shortcuts](docs/COMMANDS-AND-SHORTCUTS.md) for each operating system, [configuration](docs/CONFIGURATION.md), [examples](docs/EXAMPLES.md) with measured sizes, an [FAQ](docs/FAQ.md) and [troubleshooting and bug reporting](docs/TROUBLESHOOTING.md). The home page leads with a three-step start and an Install button. The architecture, testing and internationalization pages moved to a separate "For contributors" group ([#254](https://github.com/miguelcolmenares/css-js-minifier/issues/254)).
 
 ### Changed
 
