@@ -28,14 +28,17 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
   build:
     name: Build docs
     runs-on: ubuntu-26.04
+    # A new push to a PR cancels the superseded build. Builds on master and on dispatch are never
+    # cancelled. Only pull requests share a group per ref. Every other run gets its own group, because
+    # a group also replaces a queued run with a newer one even when cancel-in-progress is false. This
+    # keeps builds out of the `pages` group below, so a deploy can no longer cancel a PR check.
+    concurrency:
+      group: ${{ github.workflow }}-build-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Installs the site, builds it, checks it, and uploads the Pages artifact.
@@ -48,6 +51,10 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-26.04
+    # Deployments are serialized and never cancelled mid-way, the setting GitHub recommends for Pages.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write
