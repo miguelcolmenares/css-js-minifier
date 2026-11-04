@@ -10,6 +10,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - **Publishing to [Open VSX](https://open-vsx.org)**, the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. A new [`publish-openvsx.yml`](.github/workflows/publish-openvsx.yml) workflow downloads the six `.vsix` files from the GitHub Release and runs `ovsx publish` on each, so both registries serve identical artifacts. `release.yml` calls it as a `publish-openvsx` job that runs in parallel with the Marketplace `publish` job, and the two do not block each other. It can also be dispatched alone for a version that already has a release, to backfill or retry; targets already on Open VSX are skipped. Needs an `OVSX_PAT` repository secret and the `miguel-colmenares` namespace on open-vsx.org.
 
+### Changed
+
+- **Minimum VS Code version raised to `1.144.0`** to match the `@types/vscode` bump to `^1.144.0`. `vsce` refuses to package when `@types/vscode` is newer than `engines.vscode`: it exits 1 with `@types/vscode ^1.144.0 greater than engines.vscode ^1.140.0`, which failed all six platform builds. The `test-vscode-minimum` workflow, the `VSCODE_VERSION` pin in [`.github/workflows/master.yml`](.github/workflows/master.yml), the `VSCODE_VERSION` fallback in [`.vscode-test.mjs`](.vscode-test.mjs), the README badge and `CONTRIBUTING.md` now all reference `1.144.0`. Users still on 1.140 through 1.143 stop receiving updates until they upgrade.
+
 ## [1.3.4] - 2026-10-28
 
 ### Added
