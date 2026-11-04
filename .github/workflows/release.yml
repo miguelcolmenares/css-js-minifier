@@ -167,6 +167,11 @@ jobs:
           - { target: linux-arm64,  os: ubuntu-24.04-arm }
           - { target: win32-x64,    os: windows-latest }
           - { target: win32-arm64,  os: windows-11-arm }
+          # Alpine (musl) hosts, e.g. Dev Containers and Remote SSH on Alpine, are
+          # separate VS Code targets. They are built on the glibc Linux runners
+          # (see the musl install step) and smoke-tested inside an Alpine container.
+          - { target: alpine-x64,   os: ubuntu-26.04 }
+          - { target: alpine-arm64, os: ubuntu-24.04-arm }
     runs-on: ${{ matrix.os }}
     steps:
       - name: Configure Git line endings
@@ -182,7 +187,18 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        if: ${{ !startsWith(matrix.target, 'alpine-') }}
         run: npm ci
+
+      # oxc-minify declares `libc` on its bindings, so a plain `npm ci` on a glibc runner
+      # installs the glibc binding only. `--libc=musl` makes npm pick the musl one instead.
+      # lightningcss declares no `libc`, so both its glibc and musl bindings are installed
+      # either way; the glibc one is dropped below, it is dead weight in an Alpine package.
+      - name: Install dependencies (musl bindings)
+        if: ${{ startsWith(matrix.target, 'alpine-') }}
+        run: |
+          npm ci --libc=musl
+          rm -rf node_modules/lightningcss-linux-*-gnu
 
       - name: Build extension bundle (webpack production)
         run: npm run package
@@ -205,10 +221,26 @@ jobs:
             --out css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
 
       - name: Verify native bindings can activate on ${{ matrix.target }}
+        if: ${{ !startsWith(matrix.target, 'alpine-') }}
         shell: bash
         run: |
           node scripts/verify-vsix-activation.mjs \
             css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
+
+      # The musl bindings only load on a musl host, so the check runs in an Alpine container
+      # (the node:20-alpine image is multi-arch, so the arm64 runner gets an arm64 container).
+      # `--expect-libc musl` makes the script fail if it ever ends up on a glibc host.
+      - name: Verify native bindings can activate on ${{ matrix.target }} (Alpine container)
+        if: ${{ startsWith(matrix.target, 'alpine-') }}
+        shell: bash
+        run: |
+          docker run --rm \
+            --volume "$PWD:/work:ro" \
+            --workdir /work \
+            node:20-alpine \
+            node scripts/verify-vsix-activation.mjs \
+              css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix \
+              --expect-libc musl
 
       - name: Upload .vsix artifact
         uses: actions/upload-artifact@v7

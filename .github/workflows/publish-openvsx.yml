@@ -99,14 +99,14 @@ jobs:
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         # `ovsx publish` takes one file per call, unlike `vsce publish
-        # --packagePath`, so this loops over the six platform targets. The
+        # --packagePath`, so this loops over the platform targets. The
         # token is read from OVSX_PAT by ovsx itself and never put on a
         # command line. A target that is already published is skipped (public
         # API lookup, no auth), which makes re-running the job safe. Every
         # target is attempted even if one fails, and the step fails at the end.
         run: |
           set -uo pipefail
-          expected=6
+          expected=8
           count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
           if [ "$count" -ne "$expected" ]; then
             echo "::error::Expected $expected .vsix files in release v${VERSION}, found $count."
