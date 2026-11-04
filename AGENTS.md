@@ -83,7 +83,7 @@ Enforced by repository ruleset **`Protect master`** (id `19564892`, target = def
 | `pull_request` (approvals = 0) | Every change must arrive via PR. Direct `git push origin master` is refused. Zero approvals required — the maintainer can self-merge — but the PR object must exist so checks can run and the history is auditable. |
 | `required_status_checks` | The PR cannot be merged until all four of these checks pass: `Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest` (from `Build - Master`), and `Analyze (javascript-typescript)` (from CodeQL). These four run on **every** PR to `master` regardless of what files it touches, so they never cause "waiting for a check that never runs" deadlocks. The Ubuntu job runs on the pinned `ubuntu-26.04` runner but is deliberately still *named* `Test on ubuntu-latest` (see `master.yml`), so renaming it would deadlock every PR. |
 
-**Not required (deliberate):** the eight `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR.
+**Not required (deliberate):** the eight `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR. The three VS Code version workflows are not required either, and they are path-filtered (see [Cross-platform CI matrix](#cross-platform-ci-matrix)).
 
 **Rules companion:** the tag ruleset **`Immutable release tags (v*)`** (id `19533762`) blocks `deletion` and `non_fast_forward` on `refs/tags/v*`, making every published version permanent.
 
@@ -255,6 +255,8 @@ Each runner:
 - `2` — infrastructure failure (extraction failed, missing files, unexpected `.vsix` layout).
 
 If you add a new native dependency, update both `.vscodeignore` (to whitelist the extra `.node` files) and the smoke script so it exercises the new module.
+
+**VS Code version workflows.** `test-vscode-minimum.yml`, `test-vscode-stable.yml` and `test-vscode-insiders.yml` run their 3-OS test matrix on a pull request only when a change can affect the test results: `src/**`, `package.json`, `package-lock.json`, `webpack.config.cjs`, `tsconfig.json`, `tsdoc.json`, `eslint.config.mjs`, `.vscode-test.mjs`, `l10n/**`, `package.nls*.json`, `scripts/**`, or the workflow file itself. A Markdown-only PR starts none of them. Their `push` trigger to `master` is not filtered, so `master` is always tested. `test-vscode-insiders.yml` also runs daily on a schedule and on `workflow_dispatch`, because Insiders changes upstream rather than with a PR. A new push to a PR cancels the superseded run of the same workflow, including `master.yml`; runs on `master` are never cancelled.
 
 ---
 

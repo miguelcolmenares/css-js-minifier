@@ -3,8 +3,30 @@ name: Test VS Code Stable
 on:
   push:
     branches: [ master ]
+  # Only runs when a change can affect the test results. The `push` trigger
+  # above is unfiltered, so `master` is always tested.
   pull_request:
     branches: [ master ]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.vscode-test.mjs'
+      - 'webpack.config.cjs'
+      - 'tsconfig.json'
+      - 'tsdoc.json'
+      - 'eslint.config.mjs'
+      - 'l10n/**'
+      - 'package.nls*.json'
+      - 'scripts/**'
+      - '.github/workflows/test-vscode-stable.yml'
+
+# A new push to a PR cancels the superseded run. Runs on master are never cancelled.
+concurrency:
+  # Only pull requests share a group per ref. Every other run gets its own group, because a
+  # group also replaces a queued run with a newer one even when cancel-in-progress is false.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test-stable:

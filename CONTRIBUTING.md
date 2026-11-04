@@ -75,7 +75,7 @@ The matrix:
 
 For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the eight fails, the PR is not mergeable.
 
-If your change **doesn't** touch any of the paths above, the matrix is skipped (test suite still runs). This keeps CI cost proportional to risk.
+If your change **doesn't** touch any of the paths above, the matrix is skipped (the `Test on …` checks of `master.yml` still run). The three VS Code version workflows (`test-vscode-minimum.yml`, `test-vscode-stable.yml`, `test-vscode-insiders.yml`) are also skipped unless your change touches code or test inputs; see [AGENTS.md → Cross-platform CI matrix](AGENTS.md#cross-platform-ci-matrix). This keeps CI cost proportional to risk.
 
 The test suite also runs against three VS Code builds: the minimum supported version (`test-vscode-minimum.yml`), the current Stable (`test-vscode-stable.yml`) and VS Code Insiders (`test-vscode-insiders.yml`), each on Ubuntu, macOS and Windows. Minimum and Stable are the ones the README badges report. Insiders is deliberately not badged: it is an early warning for maintainers, not a support promise, and a red badge there would alarm users without telling them anything about the released extension. It is not a required check, so a failure on an Insiders build is not a blocker for your PR. If it is red, check whether the same failure also appears on Stable before assuming your change caused it.
 
