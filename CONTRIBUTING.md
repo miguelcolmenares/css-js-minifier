@@ -111,7 +111,7 @@ The release itself is triggered from GitHub Actions (`workflow_dispatch` on `Bui
 
 - **Bugs:** use the [bug report form](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=bug_report.yml). It asks for what happened, the steps to reproduce, the extension and VS Code versions, and your OS + architecture. The same list is in the [troubleshooting page](docs/TROUBLESHOOTING.md#report-a-bug).
 - **Features:** use the [feature request form](https://github.com/miguelcolmenares/css-js-minifier/issues/new?template=feature_request.yml). Describe the use case first, what problem are you trying to solve, before proposing a specific implementation.
-- **Questions and documentation fixes:** open a blank issue.
+- **Questions and documentation fixes:** open a blank issue. A workflow gives it the generic `needs-triage` label (see `.github/workflows/label-new-issues.yml`), and the maintainer replaces it with a specific one when triaging.
 
 Open issues at: <https://github.com/miguelcolmenares/css-js-minifier/issues>
 
