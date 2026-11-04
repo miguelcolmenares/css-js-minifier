@@ -14,9 +14,9 @@
 /* global require, Buffer */
 
 import * as vscode from 'vscode';
-import { t } from '@/utils/l10nHelper';
-import { MinificationResult, MinificationStats } from '@/types';
-import { formatBytes } from '@/lib';
+import { t } from '../../utils/l10nHelper';
+import { MinificationResult, MinificationStats } from '../../types';
+import { formatBytes } from '../../lib';
 
 // oxc-minify is an ESM-only module, use require() since webpack externalizes it
 // eslint-disable-next-line @typescript-eslint/no-require-imports

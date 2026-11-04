@@ -129,9 +129,9 @@ configuration.showSizeReduction
 capabilities.untrustedWorkspaces.description
 ```
 
-### Runtime Bundle Keys (13 English source strings)
+### Runtime Bundle Keys (14 English source strings)
 
-Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 13 messages:
+Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 14 messages:
 
 ```text
 "File type '{0}' is not supported. Only CSS and JavaScript files can be minified."
@@ -147,6 +147,7 @@ Starting in v1.3.3, runtime bundle keys are the English source strings themselve
 "Failed to open file: {0}"
 "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
 "Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed."
+"Cannot create the minified file: the setting 'css-js-minifier.minifiedNewFilePrefix' has an invalid value ({0}). Use only letters, digits, '.', '-' and '_' (up to {1} characters, and no '..'), for example '.min'. No file was written."
 ```
 
 > The canonical source of truth is `l10n/bundle.l10n.json` (identity map, one entry per source string). To regenerate it from the codebase, run `npx @vscode/l10n-dev export -o ./l10n ./src`.
@@ -341,13 +342,14 @@ Create `l10n/bundle.l10n.it.json`. The **key is the English source string** exac
   "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "Attivazione di CSS & JS Minifier non riuscita: {0}. Controlla il pannello Output per i dettagli.",
   "Failed to open file: {0}": "Impossibile aprire il file: {0}",
   "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Salva il file su disco prima di usare 'Minimizza e salva come nuovo file'. Il nuovo file minimizzato ha bisogno di una posizione esistente accanto a cui essere creato.",
-  "Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "Impossibile creare il file minimizzato: il suo nome sarebbe uguale a quello dell'originale ({0}) e lo sovrascriverebbe. Il file originale non è stato modificato."
+  "Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "Impossibile creare il file minimizzato: il suo nome sarebbe uguale a quello dell'originale ({0}) e lo sovrascriverebbe. Il file originale non è stato modificato.",
+  "Cannot create the minified file: the setting 'css-js-minifier.minifiedNewFilePrefix' has an invalid value ({0}). Use only letters, digits, '.', '-' and '_' (up to {1} characters, and no '..'), for example '.min'. No file was written.": "Impossibile creare il file minimizzato: l'impostazione 'css-js-minifier.minifiedNewFilePrefix' ha un valore non valido ({0}). Usa solo lettere, cifre, '.', '-' e '_' (fino a {1} caratteri e senza '..'), ad esempio '.min'. Nessun file è stato scritto."
 }
 ```
 
 **Critical Requirements:**
 
-- Must contain exactly the 13 English source strings shown above as keys
+- Must contain exactly the 14 English source strings shown above as keys
 - Preserve all placeholders (`{0}`, `{1}`, `{2}`, `{3}`) in the exact positions required by the message
 - Maintain professional tone suitable for error messages
 - Keep technical terms (CSS, JavaScript, KB) untranslated where appropriate
@@ -390,7 +392,7 @@ Run comprehensive validation:
 jq empty package.nls.it.json
 jq empty l10n/bundle.l10n.it.json
 
-# 2. Count keys (should be 15 and 12)
+# 2. Count keys (should be 15 and 14)
 echo "Package keys: $(jq 'keys | length' package.nls.it.json)"
 echo "Runtime keys: $(jq 'keys | length' l10n/bundle.l10n.it.json)"
 
@@ -457,7 +459,7 @@ Update the language support table in:
 ### Added
 - 🇮🇹 Italian (it) language support
   - Complete package.nls.it.json with 15 translations
-  - Complete l10n/bundle.l10n.it.json with 13 runtime messages
+  - Complete l10n/bundle.l10n.it.json with 14 runtime messages
 ```
 
 ### Quick Reference for Common Languages

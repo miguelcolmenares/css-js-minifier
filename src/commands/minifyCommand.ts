@@ -11,10 +11,10 @@
  */
 
 import * as vscode from 'vscode';
-import { validateFileType, validateContentLength } from '@/utils/validators';
-import { getMinifiedText } from '@/services/minificationService';
-import { saveAsNewFile, replaceDocumentContent, createMinifiedUri } from '@/services/fileService';
-import { t } from '@/utils/l10nHelper';
+import { validateFileType, validateContentLength, isValidFilePrefix, getValidFilePrefix } from '../utils/validators';
+import { getMinifiedText } from '../services/minificationService';
+import { saveAsNewFile, replaceDocumentContent, createMinifiedUri } from '../services/fileService';
+import { t } from '../utils/l10nHelper';
 
 // Set to track documents currently being processed to prevent recursion
 // Uses document URI as key to allow per-document tracking
@@ -26,7 +26,10 @@ const processingDocuments = new Set<string>();
 export interface MinifyOptions {
 	/** Whether to save the result as a new file instead of replacing content */
 	saveAsNewFile?: boolean;
-	/** The prefix to use when creating new files (e.g., '.min', '-compressed') */
+	/**
+	 * The prefix to use when creating new files (e.g., '.min', '-compressed').
+	 * Must already be validated with `isValidFilePrefix`: callers read it with `getValidFilePrefix`.
+	 */
 	filePrefix?: string;
 	/** Debug identifier for the source of the command */
 	debugSource?: string;
@@ -67,6 +70,13 @@ async function processDocument(
 	options: MinifyOptions = {},
 	skipSave: boolean = false
 ): Promise<void> {
+	// Never write a new file, or fall back to in-place minification, without a safe prefix.
+	// The callers read it with getValidFilePrefix and have already reported the error; this
+	// keeps an empty or unsafe prefix from ever reaching the file name (issue #259).
+	if (options.saveAsNewFile && !isValidFilePrefix(options.filePrefix)) {
+		return;
+	}
+
 	// Extract file information for validation and processing
 	const fileType = document.languageId;
 	const text = document.getText();
@@ -88,7 +98,7 @@ async function processDocument(
 	const { minifiedText, stats } = result;
 
 	// Save the result based on user preferences
-	if (options.saveAsNewFile && options.filePrefix) {
+	if (options.saveAsNewFile && options.filePrefix !== undefined) {
 		// Create new file next to the source, on the same file system (scheme and authority)
 		// as the document: never assume the local `file:` scheme (virtual workspaces)
 		const newFileUri = createMinifiedUri(document.uri, options.filePrefix);
@@ -194,6 +204,8 @@ export async function minifyCommand(uri?: unknown): Promise<void> {
  * - Creates a new file with minified content
  * - Opens the new file in VS Code editor
  * - Shows user notifications for success/error states
+ * - Writes nothing and shows an error when `minifiedNewFilePrefix` is not a valid
+ *   prefix (see `isValidFilePrefix`), every time the command runs
  *
  * @param uri - Optional argument passed by VS Code. A `vscode.Uri` when
  *   invoked from the file explorer; undefined or other types for other contexts.
@@ -220,19 +232,21 @@ export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
 		return;
 	}
 
-	// Get user configuration for file naming
-	const settings = vscode.workspace.getConfiguration('css-js-minifier');
-	const filePrefix = settings.get('minifiedNewFilePrefix') as string;
-
-	// Configure options for creating new files
-	const options: MinifyOptions = {
-		saveAsNewFile: true,
-		filePrefix,
-		debugSource: 'manual',
-	};
-
 	// Process the document if available
 	if (document) {
+		// Read the file naming setting and check it. An invalid value (possible when it is
+		// written by hand in settings.json) shows an error and writes nothing (issue #259).
+		const filePrefix = getValidFilePrefix();
+		if (filePrefix === undefined) {
+			return;
+		}
+
+		// Configure options for creating new files
+		const options: MinifyOptions = {
+			saveAsNewFile: true,
+			filePrefix,
+			debugSource: 'manual',
+		};
 		await processDocument(document, options);
 	}
 }
@@ -252,6 +266,8 @@ export async function minifyInNewFileCommand(uri?: unknown): Promise<void> {
  * - Modifies the content of the saved file if it's CSS or JavaScript
  * - Shows user notifications for success/error states
  * - Saves the document again after minification (in-place mode only)
+ * - With `minifyInNewFile` on, writes nothing and shows an error when
+ *   `minifiedNewFilePrefix` is not a valid prefix, once per session per value
  *
  * @param document - The document that was saved
  * @returns Resolves when auto-minification is complete
@@ -280,9 +296,16 @@ export async function onSaveMinify(document: vscode.TextDocument): Promise<void>
 			// Get user configuration settings
 			const settings = vscode.workspace.getConfiguration('css-js-minifier');
 			const shouldCreateNewFile = settings.get('minifyInNewFile') as boolean;
-			const filePrefix = settings.get('minifiedNewFilePrefix') as string;
 
 			if (shouldCreateNewFile) {
+				// Check the prefix before anything is written. An invalid value shows an error
+				// once per session per value, so saving does not raise a notification every
+				// time, and writes nothing (issue #259).
+				const filePrefix = getValidFilePrefix(true);
+				if (filePrefix === undefined) {
+					return;
+				}
+
 				// Create new file with minified content
 				// Use processDocument to handle the entire workflow (no duplicate API call)
 				const options: MinifyOptions = {

@@ -13,9 +13,9 @@
 import * as vscode from 'vscode';
 import { Buffer } from 'node:buffer';
 import { transform } from 'lightningcss';
-import { t } from '@/utils/l10nHelper';
-import { MinificationResult, MinificationStats } from '@/types';
-import { formatBytes } from '@/lib';
+import { t } from '../../utils/l10nHelper';
+import { MinificationResult, MinificationStats } from '../../types';
+import { formatBytes } from '../../lib';
 
 /**
  * Minifies CSS code locally using the LightningCSS library.

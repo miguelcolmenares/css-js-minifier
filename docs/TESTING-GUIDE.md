@@ -2,7 +2,7 @@
 
 ## Test Strategy Overview
 
-The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **81 tests** across five files, spanning activation, main functionality, new-file naming, workspace capabilities, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
+The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **171 tests** (2 of them skipped) across six files, spanning activation, main functionality, new-file naming, file prefix validation, workspace capabilities, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
 
 ## Test Structure
 
@@ -76,6 +76,7 @@ npx vscode-test --grep "Keybinding Test Suite"
 npx vscode-test --grep "Virtual Workspace Test Suite"
 npx vscode-test --grep "Internationalization"
 npx vscode-test --grep "File Service Test Suite"
+npx vscode-test --grep "File Prefix Validation"
 npx vscode-test --grep "Activation Events"
 npx vscode-test --grep "Runtime Localization"
 
@@ -151,8 +152,9 @@ const jsMinifiedContent = 'function test(){for(var e=`Hello, World!`,t=``,n=0;n<
 ```text
 src/test/
 ├── activation.test.ts     # Activation Events regression guard (#168)
-├── extension.test.ts      # Main test suite (31 tests)
-├── fileService.test.ts    # New-file naming + overwrite guard (#255, 15 tests)
+├── extension.test.ts      # Main test suite (41 tests, 2 skipped)
+├── filePrefix.test.ts     # minifiedNewFilePrefix validation, command and on-save paths (#259, 77 tests)
+├── fileService.test.ts    # New-file naming + overwrite guard (#255, 18 tests)
 ├── i18n.test.ts           # Static + runtime i18n suites (23 tests)
 ├── workspaceCapabilities.test.ts # Virtual workspace + capabilities (7 tests)
 └── fixtures/
@@ -200,4 +202,4 @@ src/test/
 
 **Last Updated**: 2026-10-28
 **Extension Version**: 1.3.4
-**Test Suite**: 81 tests across 5 files (activation, main, file service, workspace capabilities, i18n)
+**Test Suite**: 171 tests across 6 files (activation, main, file service, file prefix, workspace capabilities, i18n)

@@ -11,5 +11,6 @@
 	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifier激活失败：{0}。请查看输出面板了解详细信息。",
 	"Failed to open file: {0}": "无法打开文件：{0}",
 	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "请先将文件保存到磁盘,然后再使用“压缩并另存为新文件”。新的压缩文件需要一个现有位置以在其旁边创建。",
-	"Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "无法创建压缩文件:其名称将与原始文件({0})相同,并会将其覆盖。原始文件未被更改。"
+	"Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "无法创建压缩文件:其名称将与原始文件({0})相同,并会将其覆盖。原始文件未被更改。",
+	"Cannot create the minified file: the setting 'css-js-minifier.minifiedNewFilePrefix' has an invalid value ({0}). Use only letters, digits, '.', '-' and '_' (up to {1} characters, and no '..'), for example '.min'. No file was written.": "无法创建压缩文件:设置 'css-js-minifier.minifiedNewFilePrefix' 的值({0})无效。只能使用字母、数字、'.'、'-' 和 '_'(最多 {1} 个字符,且不能包含 '..'),例如 '.min'。未写入任何文件。"
 }

@@ -10,7 +10,7 @@ You do not need to change any setting to use the extension. This page also shows
 | --- | --- | --- |
 | `css-js-minifier.minifyOnSave` | `false` | Minify CSS and JavaScript files automatically every time you save them. |
 | `css-js-minifier.minifyInNewFile` | `false` | Only matters together with `minifyOnSave`. When on, saving writes a minified copy to a new file and leaves your file as it is. When off, saving replaces the content of your file with the minified version. |
-| `css-js-minifier.minifiedNewFilePrefix` | `.min` | The text added before the file extension in the name of the new file. Choose one of `.min`, `-min`, `.compressed`, `-compressed`, `.minified`, `-minified`. |
+| `css-js-minifier.minifiedNewFilePrefix` | `.min` | The text added before the file extension in the name of the new file. The Settings screen offers `.min`, `-min`, `.compressed`, `-compressed`, `.minified` and `-minified`. In `settings.json` you can also write your own, such as `.mini`, as long as it follows the rules below. |
 | `css-js-minifier.autoOpenNewFile` | `true` | Open the new minified file in the editor after it is created. |
 | `css-js-minifier.showSizeReduction` | `true` | Include the sizes and the percentage in the success message. When off, the message only says the file was minified. |
 
@@ -18,6 +18,7 @@ Good to know:
 
 - `minifyInNewFile` does not change the two commands. **Minify this File** always replaces the content of the file, and **Minify and Save as New File** always writes a new file, whatever this setting says.
 - `minifiedNewFilePrefix` is used for the new file name by the **Minify and Save as New File** command and by minify on save with `minifyInNewFile` on. With `.min`, `style.css` becomes `style.min.css`. With `-compressed`, `app.js` becomes `app-compressed.js`. The text goes before the last extension, so `module.mjs` becomes `module.min.mjs`.
+- `minifiedNewFilePrefix` accepts 1 to 32 characters, and only letters (`a` to `z`, `A` to `Z`), digits, `.`, `-` and `_`. It cannot contain `/`, `\`, spaces or `..`, because the text becomes part of a file name and must not move the file to another folder. Any other value, including an empty one, is refused: nothing is written, the original file is left as it is, and an error names the setting and the value it found. There is no automatic fallback to `.min`, so you notice and fix it. With minify on save the error appears once for each wrong value until you reload the window, not on every save.
 - With `minifyOnSave` on and `minifyInNewFile` off, no success message is shown, because it would pop up on every save.
 - Change `minifyOnSave` and then reload the window (open the Command Palette and run **Developer: Reload Window**). The extension reads this setting only when it starts. The other four take effect right away.
 
