@@ -70,3 +70,22 @@ jobs:
         env:
           VSCODE_VERSION: 'stable'
         timeout-minutes: 10
+
+      # Coverage is reported from this one job (Ubuntu, VS Code Stable) so the 3 x 3 matrix does
+      # not repeat it. It is informational: `continue-on-error` keeps a coverage problem from
+      # turning the job red, and no threshold is enforced. It reruns the suite once more with the
+      # bundle rebuilt for coverage (see `pretest:coverage`), then writes the table to the job summary.
+      - name: Measure test coverage
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
+        continue-on-error: true
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:coverage
+        env:
+          VSCODE_VERSION: 'stable'
+        timeout-minutes: 10
+      - name: Publish coverage summary
+        if: ${{ matrix.os == 'ubuntu-26.04' }}
+        continue-on-error: true
+        shell: bash
+        run: node scripts/coverage-report.mjs --markdown >> "$GITHUB_STEP_SUMMARY"

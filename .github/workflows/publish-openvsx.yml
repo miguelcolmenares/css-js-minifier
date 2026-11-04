@@ -99,19 +99,22 @@ jobs:
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         # `ovsx publish` takes one file per call, unlike `vsce publish
-        # --packagePath`, so this loops over the six platform targets. The
+        # --packagePath`, so this loops over the platform targets. The
         # token is read from OVSX_PAT by ovsx itself and never put on a
         # command line. A target that is already published is skipped (public
         # API lookup, no auth), which makes re-running the job safe. Every
         # target is attempted even if one fails, and the step fails at the end.
         run: |
           set -uo pipefail
-          expected=6
+          # Releases before the Alpine targets have 6 .vsix files, later ones have 8, so
+          # require a minimum instead of an exact number to keep backfills working.
+          minimum=6
           count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
-          if [ "$count" -ne "$expected" ]; then
-            echo "::error::Expected $expected .vsix files in release v${VERSION}, found $count."
+          if [ "$count" -lt "$minimum" ]; then
+            echo "::error::Expected at least $minimum .vsix files in release v${VERSION}, found $count."
             exit 1
           fi
+          echo "Publishing $count .vsix files from release v${VERSION}."
 
           failed=()
           for file in dist/*.vsix; do

@@ -39,9 +39,19 @@ The fastest way is via the VS Code tasks (`Cmd/Ctrl + Shift + P` → **Tasks: Ru
 
 Or from the CLI: `npm test` (runs pretest + full suite).
 
+### Test coverage
+
+```bash
+npm run test:coverage
+```
+
+This rebuilds the bundle for coverage, runs the full suite once, prints a per-file summary for `src/**` (lines, functions and branches), and writes an `lcov` report to `coverage/lcov.info`. The `coverage/` folder is git-ignored and excluded from the `.vsix`. It adds no dependency (it uses the `c8` that `@vscode/test-cli` already ships) and leaves `npm test` untouched.
+
+Coverage is for orientation only: there is no minimum threshold, and the native code in `lightningcss` and `oxc-minify` cannot be measured. In CI, the Ubuntu job of `test-vscode-stable.yml` publishes the same table in its job summary; it never fails the job. How it works, and why the bundle needs a special source-map path, is in [docs/TESTING-GUIDE.md](docs/TESTING-GUIDE.md#test-coverage).
+
 ## Cross-platform validation
 
-**You do not need to test on multiple operating systems locally.** The `Build & Release` workflow (`.github/workflows/release.yml`) automatically runs a 6-platform build matrix on every pull request that touches:
+**You do not need to test on multiple operating systems locally.** The `Build & Release` workflow (`.github/workflows/release.yml`) automatically runs an 8-target build matrix on every pull request that touches:
 
 - `src/**`
 - `package.json` or `package-lock.json`
@@ -60,10 +70,14 @@ The matrix:
 | `ubuntu-24.04-arm` | `linux-arm64` | ARM Linux (glibc) |
 | `windows-latest` | `win32-x64` | 64-bit Windows |
 | `windows-11-arm` | `win32-arm64` | ARM Windows |
+| `ubuntu-26.04` | `alpine-x64` | 64-bit Alpine Linux (musl, smoke-tested in an Alpine container) |
+| `ubuntu-24.04-arm` | `alpine-arm64` | ARM Alpine Linux (musl, smoke-tested in an Alpine container) |
 
-For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the six fails, the PR is not mergeable.
+For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the eight fails, the PR is not mergeable.
 
 If your change **doesn't** touch any of the paths above, the matrix is skipped (the `Test on …` checks of `master.yml` still run). The three VS Code version workflows (`test-vscode-minimum.yml`, `test-vscode-stable.yml`, `test-vscode-insiders.yml`) are also skipped unless your change touches code or test inputs; see [AGENTS.md → Cross-platform CI matrix](AGENTS.md#cross-platform-ci-matrix). This keeps CI cost proportional to risk.
+
+The test suite also runs against three VS Code builds: the minimum supported version (`test-vscode-minimum.yml`), the current Stable (`test-vscode-stable.yml`) and VS Code Insiders (`test-vscode-insiders.yml`), each on Ubuntu, macOS and Windows. Minimum and Stable are the ones the README badges report. Insiders is deliberately not badged: it is an early warning for maintainers, not a support promise, and a red badge there would alarm users without telling them anything about the released extension. It is not a required check, so a failure on an Insiders build is not a blocker for your PR. If it is red, check whether the same failure also appears on Stable before assuming your change caused it.
 
 ## Pull request checklist
 
