@@ -12,5 +12,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "El nombre del nuevo archivo tendrá la extensión '.minified'.",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "El nombre del nuevo archivo tendrá la extensión '-minified'.",
 	"configuration.autoOpenNewFile": "Abrir automáticamente los archivos minificados recién creados en el editor.",
-	"configuration.showSizeReduction": "Mostrar estadísticas de reducción de tamaño en los mensajes de éxito después de la minificación."
+	"configuration.showSizeReduction": "Mostrar estadísticas de reducción de tamaño en los mensajes de éxito después de la minificación.",
+	"capabilities.untrustedWorkspaces.description": "En Modo restringido, los ajustes que deciden cuándo y dónde se escriben los archivos minificados (minificar al guardar, guardar en un archivo nuevo y el prefijo del archivo nuevo) se ignoran cuando los define un área de trabajo. Solo se aplican los ajustes de usuario."
 }

@@ -23,7 +23,7 @@ The CSS & JS Minifier extension follows a modular architecture pattern that sepa
 - **Purpose**: Business logic and minification orchestration.
 - **Components**:
   - `minificationService.ts` — facade that routes to the appropriate strategy based on `languageId`.
-  - `fileService.ts` — file system operations, filename generation with the configured `minifiedNewFilePrefix` (inserted before the last extension, for any extension and case), the guard that refuses to write the new file over its source (#255), and the size-reduction statistics rendering.
+  - `fileService.ts` — file system operations, URI and filename generation for the minified sibling with the configured `minifiedNewFilePrefix` (inserted before the last extension, for any extension and case; `createMinifiedUri` keeps the source document's scheme and authority), the guard that refuses to write the new file over its source (#255), and the size-reduction statistics rendering.
   - `strategies/localCssMinifier.ts` — CSS via LightningCSS (Rust `transform()`).
   - `strategies/localJsMinifier.ts` — JavaScript via oxc-minify (Rust `minifySync()`).
   - `strategies/index.ts`, `index.ts` — barrel exports.
@@ -143,6 +143,19 @@ extension.ts
 - Settings can be changed without extension restart
 - Configuration changes take effect immediately
 - Per-workspace and global configuration support
+
+## Supported Workspaces
+
+The manifest declares both workspace capabilities explicitly (`capabilities` in `package.json`), so the behaviour is a decision and not a default.
+
+| Environment | Declaration | Behaviour |
+|---|---|---|
+| Virtual workspaces (for example `vscode-vfs://github/...`) | `virtualWorkspaces: true` | Fully supported. Minification works on the document text in memory. In-place minification goes through the document's own file system provider, and `Minify and Save as New File` builds the new file's URI from the source URI (same scheme and authority, new file name), so it is written wherever `vscode.workspace.fs` can write. A read-only provider fails the write with its own error. |
+| Untrusted workspaces (Restricted Mode) | `untrustedWorkspaces: { supported: "limited" }` | The extension and its commands stay enabled. Workspace-level values of `minifyOnSave`, `minifyInNewFile` and `minifiedNewFilePrefix` are ignored, and only user settings apply. |
+
+Why `limited` and not `true`: the extension never runs workspace code, spawns a process or uses the network, but `minifiedNewFilePrefix` is inserted into the target path unchecked at runtime (the `enum` in the schema is not enforced on values read from `settings.json`). A workspace could set a prefix such as `/../../x`, and a save or a `Minify and Save as New File` would then write the minified document outside its folder. Restricting the three settings that decide when a file is written and where it goes closes that, while everything else (manual in-place minification, `autoOpenNewFile`, `showSizeReduction`) keeps working. Why not `false`: nothing else needs trust, and without a declaration VS Code treats an extension as not supporting Workspace Trust and disables it in Restricted Mode.
+
+Out of scope: running in the web (`browser` entry point). `lightningcss` and `oxc-minify` are native Rust bindings and do not load there.
 
 ## Performance Optimizations
 

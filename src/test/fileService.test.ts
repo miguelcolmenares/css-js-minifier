@@ -206,7 +206,7 @@ suite('File Service Test Suite', function () {
 			const infoSpy = sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
 
 			// Same path as the source: what the old name mapping produced for ".mjs"
-			await saveAsNewFile('MINIFIED', originalPath, MINIFICATION_STATS, vscode.Uri.file(originalPath));
+			await saveAsNewFile('MINIFIED', vscode.Uri.file(originalPath), MINIFICATION_STATS, vscode.Uri.file(originalPath));
 
 			assert.strictEqual(fs.readFileSync(originalPath, 'utf8'), jsSource, 'The source must not be overwritten');
 			assert.strictEqual(errorSpy.callCount, 1, 'An error should be shown');
@@ -231,7 +231,7 @@ suite('File Service Test Suite', function () {
 				authority: 'github',
 				path: vscode.Uri.file(targetPath).path,
 			});
-			await saveAsNewFile('MINIFIED', targetPath, MINIFICATION_STATS, otherFileSystem);
+			await saveAsNewFile('MINIFIED', vscode.Uri.file(targetPath), MINIFICATION_STATS, otherFileSystem);
 
 			assert.strictEqual(errorSpy.callCount, 0, 'No error should be shown');
 			assert.strictEqual(fs.readFileSync(targetPath, 'utf8'), 'MINIFIED');
@@ -244,7 +244,7 @@ suite('File Service Test Suite', function () {
 			const errorSpy = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
 			const infoSpy = sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
 
-			await saveAsNewFile('MINIFIED', targetPath, MINIFICATION_STATS, vscode.Uri.file(sourcePath));
+			await saveAsNewFile('MINIFIED', vscode.Uri.file(targetPath), MINIFICATION_STATS, vscode.Uri.file(sourcePath));
 
 			assert.strictEqual(errorSpy.callCount, 0);
 			assert.strictEqual(infoSpy.callCount, 1);
