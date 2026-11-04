@@ -155,7 +155,7 @@ extension.ts
 
 ## Distribution (multi-target `.vsix`)
 
-The extension ships **six platform-specific `.vsix` files** — one per VS Code Marketplace target — instead of a single "universal" archive. This is required because both `lightningcss` and `oxc-minify` ship Rust-based `.node` binaries via `optionalDependencies`, and `vsce package` only bundles the bindings that `npm install` materialized on the packaging host.
+The extension ships **eight platform-specific `.vsix` files** — one per VS Code Marketplace target — instead of a single "universal" archive. This is required because both `lightningcss` and `oxc-minify` ship Rust-based `.node` binaries via `optionalDependencies`, and `vsce package` only bundles the bindings that `npm install` materialized on the packaging host.
 
 | Marketplace target | GitHub Actions runner | Native arch |
 |---|---|---|
@@ -165,15 +165,19 @@ The extension ships **six platform-specific `.vsix` files** — one per VS Code 
 | `linux-arm64` | `ubuntu-24.04-arm` | ARM Linux (glibc) |
 | `win32-x64` | `windows-latest` | x64 Windows |
 | `win32-arm64` | `windows-11-arm` | ARM Windows |
+| `alpine-x64` | `ubuntu-26.04` | x64 Alpine Linux (musl) |
+| `alpine-arm64` | `ubuntu-24.04-arm` | ARM Alpine Linux (musl) |
+
+VS Code reports Alpine hosts (Dev Containers, Remote SSH and WSL distributions based on Alpine) as `alpine-x64` or `alpine-arm64`, and it only installs a package whose target matches exactly, so the `linux-*` packages are never offered there. Both native modules publish musl bindings, which is why these two extra targets exist.
 
 Each runner:
 
-1. `npm ci` — installs the native optional dependencies for its own OS/CPU automatically.
+1. `npm ci` — installs the native optional dependencies for its own OS/CPU automatically. The `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl`: `oxc-minify` declares `libc` on its bindings, so this selects the musl binding. `lightningcss` declares no `libc`, so its glibc and musl bindings are both installed and the glibc one (`lightningcss-linux-*-gnu`) is deleted before packaging.
 2. `npm run package` — webpack production bundle.
 3. `npx vsce package --target <target>` — produces the platform-tagged `.vsix`.
-4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to prove the binaries load on that platform. Exit `1` on a binding regression, `2` on an infrastructure failure.
+4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to prove the binaries load on that platform. The `alpine-*` targets run it inside a `node:20-alpine` container with `--expect-libc musl`, since musl bindings only load on a musl host. Exit `1` on a binding regression, `2` on an infrastructure failure.
 
-The six artifacts are attached to the GitHub Release and published to the Marketplace as separate platform-tagged listings by the `Build & Release` workflow (`.github/workflows/release.yml`). VS Code serves each user the artifact that matches their OS/CPU. The same files are then published to [Open VSX](https://open-vsx.org) (used by VSCodium, Eclipse Theia, Gitpod and other forks) by `.github/workflows/publish-openvsx.yml`, which downloads them from the GitHub Release instead of rebuilding, so both registries serve identical artifacts. See [AGENTS.md → Cross-platform CI matrix](../AGENTS.md#cross-platform-ci-matrix) for the workflow contract and [`.github/instructions/publish-update-extension.instructions.md`](../.github/instructions/publish-update-extension.instructions.md) for the release runbook.
+The eight artifacts are attached to the GitHub Release and published to the Marketplace as separate platform-tagged listings by the `Build & Release` workflow (`.github/workflows/release.yml`). VS Code serves each user the artifact that matches their OS/CPU. The same files are then published to [Open VSX](https://open-vsx.org) (used by VSCodium, Eclipse Theia, Gitpod and other forks) by `.github/workflows/publish-openvsx.yml`, which downloads them from the GitHub Release instead of rebuilding, so both registries serve identical artifacts. See [AGENTS.md → Cross-platform CI matrix](../AGENTS.md#cross-platform-ci-matrix) for the workflow contract and [`.github/instructions/publish-update-extension.instructions.md`](../.github/instructions/publish-update-extension.instructions.md) for the release runbook.
 
 ## Future Extensibility
 
