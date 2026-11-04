@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changed
 
 - **Minimum VS Code version raised to `1.144.0`** to match the `@types/vscode` bump to `^1.144.0`. `vsce` refuses to package when `@types/vscode` is newer than `engines.vscode`: it exits 1 with `@types/vscode ^1.144.0 greater than engines.vscode ^1.140.0`, which failed all six platform builds. The `test-vscode-minimum` workflow, the `VSCODE_VERSION` pin in [`.github/workflows/master.yml`](.github/workflows/master.yml), the `VSCODE_VERSION` fallback in [`.vscode-test.mjs`](.vscode-test.mjs), the README badge and `CONTRIBUTING.md` now all reference `1.144.0`. Users still on 1.140 through 1.143 stop receiving updates until they upgrade.
+- **README badges reduced to the ones that carry signal.** The license badge (GitHub and the Marketplace already show it) and the VS Code Insiders badge (an early warning for maintainers, not a support promise) are gone. A static platform badge is new: Windows, macOS and Linux (glibc only, no Alpine/musl), x64 and arm64. The Minimum and Stable compatibility notes now say they are tested on macOS, Ubuntu and Windows instead of "all platforms". The Insiders workflow still runs and is now described in [`CONTRIBUTING.md`](CONTRIBUTING.md#cross-platform-validation).
 
 ### Fixed
 

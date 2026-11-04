@@ -65,6 +65,8 @@ For each target, the workflow packages a platform-tagged `.vsix` and runs `scrip
 
 If your change **doesn't** touch any of the paths above, the matrix is skipped (test suite still runs). This keeps CI cost proportional to risk.
 
+The test suite also runs against three VS Code builds: the minimum supported version (`test-vscode-minimum.yml`), the current Stable (`test-vscode-stable.yml`) and VS Code Insiders (`test-vscode-insiders.yml`), each on Ubuntu, macOS and Windows. Minimum and Stable are the ones the README badges report. Insiders is deliberately not badged: it is an early warning for maintainers, not a support promise, and a red badge there would alarm users without telling them anything about the released extension. It is not a required check, so a failure on an Insiders build is not a blocker for your PR. If it is red, check whether the same failure also appears on Stable before assuming your change caused it.
+
 ## Pull request checklist
 
 Before opening a PR, please make sure:
