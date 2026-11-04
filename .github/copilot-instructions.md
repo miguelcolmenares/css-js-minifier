@@ -172,7 +172,7 @@ Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. D
 1. Bump `package.json` version (+ `src/extension.ts` `@version` header — see [Version Management](#version-management--documentation-standards) below).
 2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
 3. Commit both in the same commit. Convention: `chore: Release version X.Y.Z`.
-4. Open PR → get the 6-platform matrix green → squash-merge.
+4. Open PR → get the 8-target matrix green → squash-merge.
 5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy. The `OVSX_PAT` secret (Open VSX) must also exist; it is not checked in preflight.
 6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
 
@@ -193,7 +193,7 @@ See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.git
 ```text
 gh workflow run release.yml -f version=X.Y.Z
   ├─ preflight       — version match, changelog entry, tag unused, vsce verify-pat
-  ├─ build (× 6)     — matrix packages one .vsix per platform + activation smoke test
+  ├─ build (× 8)     — matrix packages one .vsix per target + activation smoke test
   ├─ tag-and-release — creates annotated tag, pushes it, creates GitHub Release
   ├─ publish         — vsce publish --packagePath dist/*.vsix (VS Code Marketplace)
   └─ publish-openvsx — publish-openvsx.yml, one `ovsx publish` per .vsix (Open VSX, independent of publish)

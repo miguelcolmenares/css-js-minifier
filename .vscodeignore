@@ -2,6 +2,9 @@
 .vscode-test/**
 out/**
 node_modules/**
+# The `lightningcss-*` and `@oxc-minify/**` globs already cover the musl bindings
+# (`lightningcss-linux-*-musl`, `@oxc-minify/binding-linux-*-musl`) that the
+# `alpine-*` targets ship, so no extra entries are needed for them.
 !node_modules/lightningcss/**
 !node_modules/lightningcss-*/**
 !node_modules/oxc-minify/**

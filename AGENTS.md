@@ -14,7 +14,7 @@ If any instruction here contradicts something you found in the codebase, the cod
 - **Entry point:** `src/extension.ts` → `src/commands/*` → `src/services/*` → `src/services/strategies/{localCssMinifier,localJsMinifier}.ts`.
 - **i18n:** two-layer system (`package.nls.*.json` for static contributions, `l10n/bundle.l10n.*.json` for runtime strings). Seven languages. See [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md).
 - **Test framework:** VS Code extension test runner (Mocha under the hood). Test suites live under `src/test/`.
-- **Package size target:** ~50 KB per `.vsix`. See `.vscodeignore`.
+- **Package size:** about 6 to 7 MB per `.vsix`, dominated by the native bindings. See `.vscodeignore`.
 
 ---
 
@@ -30,7 +30,7 @@ If any instruction here contradicts something you found in the codebase, the cod
 3. Optional: gh workflow run verify-marketplace-auth.yml   (maintainer)
 4. gh workflow run release.yml -f version=X.Y.Z    (maintainer)
    ├─ preflight       — version match, changelog present, tag unused, VSCE_PAT valid
-   ├─ build matrix    — 6 platforms, .vsix per platform, activation smoke test
+   ├─ build matrix    — 8 targets, .vsix per target, activation smoke test
    ├─ tag-and-release — annotated tag pushed, GitHub Release with .vsix assets
    ├─ publish         — vsce publish --packagePath dist/*.vsix            (VS Code Marketplace)
    └─ publish-openvsx — publish-openvsx.yml: ovsx publish, one call per .vsix (Open VSX)
@@ -83,7 +83,7 @@ Enforced by repository ruleset **`Protect master`** (id `19564892`, target = def
 | `pull_request` (approvals = 0) | Every change must arrive via PR. Direct `git push origin master` is refused. Zero approvals required — the maintainer can self-merge — but the PR object must exist so checks can run and the history is auditable. |
 | `required_status_checks` | The PR cannot be merged until all four of these checks pass: `Test on ubuntu-latest`, `Test on macos-latest`, `Test on windows-latest` (from `Build - Master`), and `Analyze (javascript-typescript)` (from CodeQL). These four run on **every** PR to `master` regardless of what files it touches, so they never cause "waiting for a check that never runs" deadlocks. The Ubuntu job runs on the pinned `ubuntu-26.04` runner but is deliberately still *named* `Test on ubuntu-latest` (see `master.yml`), so renaming it would deadlock every PR. |
 
-**Not required (deliberate):** the six `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR.
+**Not required (deliberate):** the eight `Build & Release` matrix jobs are gated by a path filter (only run when `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `webpack.config.cjs`, `scripts/verify-vsix-activation.mjs`, or `.github/workflows/release.yml` change), so requiring them would block docs-only PRs that never trigger them. They still run — and their failure is still visible — on every relevant PR.
 
 **Rules companion:** the tag ruleset **`Immutable release tags (v*)`** (id `19533762`) blocks `deletion` and `non_fast_forward` on `refs/tags/v*`, making every published version permanent.
 
@@ -176,8 +176,8 @@ See [`.github/instructions/tsdoc-standards.instructions.md`](.github/instruction
 
 - Title uses the same format as commit messages (`type: description`).
 - Description includes what changed, why, and how to test.
-- PRs that touch `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `scripts/verify-vsix-activation.mjs`, `webpack.config.cjs`, or `.github/workflows/release.yml` automatically trigger the 6-platform build matrix.
-- Reviewer waits for all 6 matrix jobs to be green before merging. For PRs that do not touch the path-filtered files, the 6-platform matrix will not run; proceed with merging once the four required status checks pass.
+- PRs that touch `src/**`, `package.json`, `package-lock.json`, `.vscodeignore`, `scripts/verify-vsix-activation.mjs`, `webpack.config.cjs`, or `.github/workflows/release.yml` automatically trigger the 8-target build matrix.
+- Reviewer waits for all 8 matrix jobs to be green before merging. For PRs that do not touch the path-filtered files, the 8-target matrix will not run; proceed with merging once the four required status checks pass.
 
 ---
 
@@ -212,7 +212,7 @@ There is a Git hook called `reference-transaction` (introduced in Git 2.28) that
 
 **`engines.vscode` tracks the latest stable VS Code that `@types/vscode` supports.** The project deliberately keeps the floor current rather than supporting old editors, and lets Dependabot's `@types/vscode` bump drive it.
 
-`vsce package` aborts when `@types/vscode` is newer than `engines.vscode` (`@types/vscode ^X greater than engines.vscode ^Y`), which fails all six `Build <platform>` jobs in `release.yml`. The `Test on <os>` and CodeQL checks still pass, so the PR looks mergeable even though the release matrix is red. Do not "fix" that failure by pinning or ignoring `@types/vscode` (an `ignore` entry in `dependabot.yml` was tried and rejected); raise the floor instead.
+`vsce package` aborts when `@types/vscode` is newer than `engines.vscode` (`@types/vscode ^X greater than engines.vscode ^Y`), which fails all eight `Build <target>` jobs in `release.yml`. The `Test on <os>` and CodeQL checks still pass, so the PR looks mergeable even though the release matrix is red. Do not "fix" that failure by pinning or ignoring `@types/vscode` (an `ignore` entry in `dependabot.yml` was tried and rejected); raise the floor instead.
 
 When a Dependabot PR bumps `@types/vscode`, push these changes onto the same PR, all to the same version:
 
@@ -228,7 +228,7 @@ The floor is a minimum, not a maximum: newer VS Code versions keep working, and 
 
 ## Cross-platform CI matrix
 
-The `Build & Release` workflow runs a 6-platform matrix on every relevant PR and every release dispatch:
+The `Build & Release` workflow runs an 8-target matrix (six platforms plus two Alpine/musl targets) on every relevant PR and every release dispatch:
 
 | Runner | Target | Binary validated |
 | --- | --- | --- |
@@ -238,13 +238,15 @@ The `Build & Release` workflow runs a 6-platform matrix on every relevant PR and
 | `ubuntu-24.04-arm` | `linux-arm64` | ARM Linux (glibc) |
 | `windows-latest` | `win32-x64` | 64-bit Windows |
 | `windows-11-arm` | `win32-arm64` | ARM Windows |
+| `ubuntu-26.04` | `alpine-x64` | 64-bit Alpine Linux (musl) |
+| `ubuntu-24.04-arm` | `alpine-arm64` | ARM Alpine Linux (musl) |
 
 Each runner:
 
-1. `npm ci` — installs the native optional dependencies for its platform.
+1. `npm ci` — installs the native optional dependencies for its platform. The `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` (so `oxc-minify` installs its musl binding) and the glibc-only `lightningcss-linux-*-gnu` binding is deleted before packaging.
 2. `npm run package` — webpack production bundle.
 3. `npx vsce package --target <t>` — produces a platform-tagged `.vsix`.
-4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to make sure the binary loads on that platform.
+4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to make sure the binary loads on that platform. The `alpine-*` targets run this inside a `node:20-alpine` container with `--expect-libc musl`, because musl bindings only load on a musl host.
 
 `verify-vsix-activation.mjs` exit codes:
 
@@ -304,7 +306,7 @@ meaning silently, and the config says so rule by rule.
 1. `npm install <package>` — will add to `dependencies` or `optionalDependencies`.
 2. Whitelist the `.node` binaries in `.vscodeignore`.
 3. Extend `scripts/verify-vsix-activation.mjs` to `require()` the new module and call a small function.
-4. Open PR; the 6-platform matrix will validate on every runner.
+4. Open PR; the 8-target matrix will validate on every runner.
 
 ### Add / modify a Husky hook
 

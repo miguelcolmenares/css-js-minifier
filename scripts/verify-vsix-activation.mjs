@@ -7,7 +7,11 @@
  * lightningcss or oxc-minify cannot be loaded on the current platform.
  *
  * Usage:
- *   node scripts/verify-vsix-activation.mjs <path-to-vsix>
+ *   node scripts/verify-vsix-activation.mjs <path-to-vsix> [--expect-libc glibc|musl]
+ *
+ * `--expect-libc` asserts the C library of the machine running the check.
+ * The `alpine-*` targets pass `musl`, so the smoke test cannot silently pass
+ * on a glibc host (which would not prove that the musl bindings load).
  *
  * Contract:
  *   - Exit 0: every required binding loaded and produced non-empty output.
@@ -15,7 +19,8 @@
  *     regression — this is the failure mode the script exists to catch).
  *   - Exit 2: usage error or infrastructure failure before the checks could
  *     run (missing .vsix path, non-existent file, extraction failed, no
- *     `extension/dist/extension.js`, child Node could not be spawned).
+ *     `extension/dist/extension.js`, child Node could not be spawned, or the
+ *     host libc differs from `--expect-libc`).
  *     CI callers should treat exit 2 as a script/runner bug, not a
  *     genuine binding regression.
  *
@@ -36,14 +41,26 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { argv, exit, platform } from "node:process";
+import { argv, exit, platform, report } from "node:process";
 
 // ---------------------------------------------------------------------------
 // CLI parsing
 // ---------------------------------------------------------------------------
-const vsixArg = argv[2];
-if (!vsixArg) {
-  console.error("usage: node scripts/verify-vsix-activation.mjs <path-to-vsix>");
+const args = argv.slice(2);
+let expectLibc;
+const positional = [];
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === "--expect-libc") {
+    expectLibc = args[++i];
+  } else if (args[i].startsWith("--expect-libc=")) {
+    expectLibc = args[i].slice("--expect-libc=".length);
+  } else {
+    positional.push(args[i]);
+  }
+}
+const vsixArg = positional[0];
+if (!vsixArg || (expectLibc !== undefined && expectLibc !== "glibc" && expectLibc !== "musl")) {
+  console.error("usage: node scripts/verify-vsix-activation.mjs <path-to-vsix> [--expect-libc glibc|musl]");
   exit(2);
 }
 const vsixPath = resolve(vsixArg);
@@ -52,9 +69,23 @@ if (!existsSync(vsixPath)) {
   exit(2);
 }
 
+// Linux only: glibc exposes `glibcVersionRuntime` in the diagnostic report
+// header, musl does not. Other platforms have no libc to distinguish.
+const hostLibc =
+  platform === "linux"
+    ? report.getReport().header.glibcVersionRuntime
+      ? "glibc"
+      : "musl"
+    : "n/a";
+
 console.log(`--- verify-vsix-activation ---`);
-console.log(`host:   ${platform}-${process.arch}   node ${process.version}`);
+console.log(`host:   ${platform}-${process.arch} (${hostLibc})   node ${process.version}`);
 console.log(`vsix:   ${basename(vsixPath)}`);
+
+if (expectLibc !== undefined && hostLibc !== expectLibc) {
+  console.error(`error: expected a ${expectLibc} host but this one is ${hostLibc}; the check would not prove anything.`);
+  exit(2);
+}
 
 // ---------------------------------------------------------------------------
 // Extract the .vsix (a ZIP archive) into a temp dir. Windows gets .NET's

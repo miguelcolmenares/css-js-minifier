@@ -41,7 +41,7 @@ Or from the CLI: `npm test` (runs pretest + full suite).
 
 ## Cross-platform validation
 
-**You do not need to test on multiple operating systems locally.** The `Build & Release` workflow (`.github/workflows/release.yml`) automatically runs a 6-platform build matrix on every pull request that touches:
+**You do not need to test on multiple operating systems locally.** The `Build & Release` workflow (`.github/workflows/release.yml`) automatically runs an 8-target build matrix on every pull request that touches:
 
 - `src/**`
 - `package.json` or `package-lock.json`
@@ -60,8 +60,10 @@ The matrix:
 | `ubuntu-24.04-arm` | `linux-arm64` | ARM Linux (glibc) |
 | `windows-latest` | `win32-x64` | 64-bit Windows |
 | `windows-11-arm` | `win32-arm64` | ARM Windows |
+| `ubuntu-26.04` | `alpine-x64` | 64-bit Alpine Linux (musl, smoke-tested in an Alpine container) |
+| `ubuntu-24.04-arm` | `alpine-arm64` | ARM Alpine Linux (musl, smoke-tested in an Alpine container) |
 
-For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the six fails, the PR is not mergeable.
+For each target, the workflow packages a platform-tagged `.vsix` and runs `scripts/verify-vsix-activation.mjs`, which extracts the archive and confirms that both `require('lightningcss').transform(...)` and `require('oxc-minify').minifySync(...)` execute without errors. If any of the eight fails, the PR is not mergeable.
 
 If your change **doesn't** touch any of the paths above, the matrix is skipped (test suite still runs). This keeps CI cost proportional to risk.
 
