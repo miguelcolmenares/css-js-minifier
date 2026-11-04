@@ -44,6 +44,18 @@
 		"onLanguage:javascript"
 	],
 	"main": "./dist/extension.js",
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": "limited",
+			"description": "%capabilities.untrustedWorkspaces.description%",
+			"restrictedConfigurations": [
+				"css-js-minifier.minifyOnSave",
+				"css-js-minifier.minifyInNewFile",
+				"css-js-minifier.minifiedNewFilePrefix"
+			]
+		}
+	},
 	"contributes": {
 		"commands": [
 			{

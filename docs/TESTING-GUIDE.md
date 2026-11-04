@@ -12,6 +12,7 @@ The CSS & JS Minifier extension uses VS Code's extension testing framework with 
 |---|---|---|
 | `activation.test.ts` | 5 | Regression guard for [#168](https://github.com/miguelcolmenares/css-js-minifier/issues/168): asserts `activationEvents` in `package.json` contains `onLanguage:css` and `onLanguage:javascript`, and that the deprecated `onCommand:*` / invalid `onSaveTextDocument` entries are not re-added. |
 | `extension.test.ts` | 31 | Main functionality: CSS/JS minification (in-place + new file), file-prefix configurations, explorer context menu, empty file / unsupported file type validation, configuration behaviors (`autoOpenNewFile`, `minifyInNewFile`, `minifiedNewFilePrefix`, `showSizeReduction`), CSS nth-child selectors, and keybinding smoke tests. |
+| `workspaceCapabilities.test.ts` | 7 | Virtual workspace support: registers an in-memory file system under a non-`file` scheme and checks that `Minify and Save as New File` writes the sibling file through that provider (same scheme and authority, no local file, query and fragment dropped), and that in-place minification persists through it. Also asserts the `capabilities` declared in `package.json` (virtual workspaces supported, untrusted workspaces `limited` with the write-target settings restricted). |
 | `i18n.test.ts` | 22 | Two nested suites: (a) static bundle validation — file existence, JSON validity, key parity across all seven languages, placeholder preservation; and (b) **Runtime Localization (`vscode.l10n`)** — regression guard for [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169): asserts `t()` returns real interpolated text (never a raw key), placeholder interpolation is preserved end-to-end, `vscode.l10n.bundle` matches the shipped `bundle.l10n.<locale>.json` when running under a non-English locale, and every non-English bundle differs from English for at least one key. |
 
 Total: **58 tests**.
@@ -73,6 +74,7 @@ npx vscode-test --grep "Configuration Test Suite"
 npx vscode-test --grep "JS & CSS Minifier Test Suite"
 npx vscode-test --grep "CSS nth-child Test Suite"
 npx vscode-test --grep "Keybinding Test Suite"
+npx vscode-test --grep "Virtual Workspace Test Suite"
 npx vscode-test --grep "Internationalization"
 npx vscode-test --grep "Activation Events"
 npx vscode-test --grep "Runtime Localization"
@@ -124,6 +126,7 @@ src/test/
 ├── activation.test.ts     # Activation Events regression guard (#168)
 ├── extension.test.ts      # Main test suite (31 tests)
 ├── i18n.test.ts           # Static + runtime i18n suites (22 tests)
+├── workspaceCapabilities.test.ts # Virtual workspace + capabilities (7 tests)
 └── fixtures/
     ├── test.css           # Basic CSS test file
     ├── test.js            # Basic JS test file

@@ -14,6 +14,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - **Minimum VS Code version raised to `1.144.0`** to match the `@types/vscode` bump to `^1.144.0`. `vsce` refuses to package when `@types/vscode` is newer than `engines.vscode`: it exits 1 with `@types/vscode ^1.144.0 greater than engines.vscode ^1.140.0`, which failed all six platform builds. The `test-vscode-minimum` workflow, the `VSCODE_VERSION` pin in [`.github/workflows/master.yml`](.github/workflows/master.yml), the `VSCODE_VERSION` fallback in [`.vscode-test.mjs`](.vscode-test.mjs), the README badge and `CONTRIBUTING.md` now all reference `1.144.0`. Users still on 1.140 through 1.143 stop receiving updates until they upgrade.
 
+### Fixed
+
+- **Workspace capabilities are declared, and `Minify and Save as New File` no longer assumes the local `file:` scheme** ([#243](https://github.com/miguelcolmenares/css-js-minifier/issues/243)). The new file's URI is now built from the source document's own URI (same scheme and authority, new file name) instead of `Uri.file(...)`, so in a virtual workspace such as a GitHub repository opened without cloning the file is written next to the source and not to a wrong local path; behaviour in a local workspace is unchanged. The manifest now sets `capabilities.virtualWorkspaces: true` and `capabilities.untrustedWorkspaces: "limited"`: in Restricted Mode the workspace-level values of `minifyOnSave`, `minifyInNewFile` and `minifiedNewFilePrefix` are ignored (only user settings apply), because `minifiedNewFilePrefix` is inserted into the target path and a workspace could otherwise point the written file outside its folder. The new capability description is translated in all seven `package.nls` files.
+
 ## [1.3.4] - 2026-10-28
 
 ### Added

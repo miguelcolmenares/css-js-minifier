@@ -44,6 +44,7 @@ Used for static contributions in `package.json`:
 - Configuration section titles
 - Configuration setting descriptions
 - Enum option descriptions
+- Capability descriptions (`capabilities.untrustedWorkspaces.description`, shown by VS Code in the Workspace Trust editor)
 
 **File Location:** Root directory  
 **Format:** JSON key-value pairs  
@@ -106,7 +107,7 @@ vscode.window.showErrorMessage(
 
 ## Translation Keys Structure
 
-### Package.nls Keys (14 keys)
+### Package.nls Keys (15 keys)
 
 These are dotted symbolic keys because VS Code's contribution system (`package.json`) only supports the `%key%` placeholder syntax — there is no English-as-key equivalent for static contributions. Only the runtime bundle (`l10n/bundle.l10n.*.json`) migrated to English-as-key in v1.3.3.
 
@@ -125,6 +126,7 @@ configuration.minifiedNewFilePrefix.enumDescriptions.5
 configuration.minifiedNewFilePrefix.enumDescriptions.6
 configuration.autoOpenNewFile
 configuration.showSizeReduction
+capabilities.untrustedWorkspaces.description
 ```
 
 ### Runtime Bundle Keys (12 English source strings)
@@ -291,7 +293,7 @@ To add support for a new language, follow these detailed steps:
 
 #### Step 1: Create Package Translation File
 
-Create `package.nls.it.json` in the root directory with all 14 keys:
+Create `package.nls.it.json` in the root directory with all 15 keys:
 
 ```json
 {
@@ -308,13 +310,14 @@ Create `package.nls.it.json` in the root directory with all 14 keys:
   "configuration.minifiedNewFilePrefix.enumDescriptions.5": "Il nome del nuovo file avrà l'estensione '.minified'.",
   "configuration.minifiedNewFilePrefix.enumDescriptions.6": "Il nome del nuovo file avrà l'estensione '-minified'.",
   "configuration.autoOpenNewFile": "Apri automaticamente i file minimizzati appena creati nell'editor.",
-  "configuration.showSizeReduction": "Mostra le statistiche di riduzione delle dimensioni nei messaggi di successo dopo la minimizzazione."
+  "configuration.showSizeReduction": "Mostra le statistiche di riduzione delle dimensioni nei messaggi di successo dopo la minimizzazione.",
+  "capabilities.untrustedWorkspaces.description": "In modalità con restrizioni, le impostazioni che decidono quando e dove vengono scritti i file minimizzati (minimizza al salvataggio, salva in un nuovo file e prefisso del nuovo file) vengono ignorate se definite da un'area di lavoro. Si applicano solo le impostazioni utente."
 }
 ```
 
 **Key Points:**
 
-- Must have exactly 14 keys (same as other languages)
+- Must have exactly 15 keys (same as other languages)
 - Keys must match exactly (case-sensitive)
 - Use native language translations
 - Preserve technical terms in their standard form
@@ -385,7 +388,7 @@ Run comprehensive validation:
 jq empty package.nls.it.json
 jq empty l10n/bundle.l10n.it.json
 
-# 2. Count keys (should be 14 and 12)
+# 2. Count keys (should be 15 and 12)
 echo "Package keys: $(jq 'keys | length' package.nls.it.json)"
 echo "Runtime keys: $(jq 'keys | length' l10n/bundle.l10n.it.json)"
 
@@ -451,7 +454,7 @@ Update the language support table in:
 ```markdown
 ### Added
 - 🇮🇹 Italian (it) language support
-  - Complete package.nls.it.json with 14 translations
+  - Complete package.nls.it.json with 15 translations
   - Complete l10n/bundle.l10n.it.json with 12 runtime messages
 ```
 
