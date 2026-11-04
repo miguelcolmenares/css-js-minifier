@@ -91,7 +91,7 @@ async function processDocument(
 	if (options.saveAsNewFile && options.filePrefix) {
 		// Create new file with minified content
 		const newFileName = createMinifiedFileName(document.fileName, options.filePrefix);
-		await saveAsNewFile(minifiedText, newFileName, stats);
+		await saveAsNewFile(minifiedText, newFileName, stats, document.uri);
 	} else {
 		// Replace current document content with minified version
 		// Skip save if caller (e.g., manual command) will handle it to maintain Set protection

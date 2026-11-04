@@ -10,5 +10,6 @@
 	"JavaScript minification error: {0}": "Erreur de minification JavaScript : {0}",
 	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifier n'a pas pu s'activer : {0}. Consultez le panneau de Sortie pour plus de détails.",
 	"Failed to open file: {0}": "Impossible d'ouvrir le fichier : {0}",
-	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Veuillez enregistrer le fichier sur le disque avant d'utiliser « Minifier et enregistrer comme nouveau fichier ». Le nouveau fichier minifié a besoin d'un emplacement existant à côté duquel il sera créé."
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Veuillez enregistrer le fichier sur le disque avant d'utiliser « Minifier et enregistrer comme nouveau fichier ». Le nouveau fichier minifié a besoin d'un emplacement existant à côté duquel il sera créé.",
+	"Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "Impossible de créer le fichier minifié : son nom serait identique à celui de l'original ({0}) et l'écraserait. Le fichier d'origine n'a pas été modifié."
 }
