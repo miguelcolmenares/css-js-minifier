@@ -1,7 +1,7 @@
 {
   "site": {
     "name": "CSS & JS Minifier",
-    "description": "Minify CSS and JavaScript inside VS Code, locally and offline, with LightningCSS and oxc-minify.",
+    "description": "Minify CSS and JavaScript inside VS Code with one command. Install guide, quick start, shortcuts, settings and help. Runs locally and offline.",
     "url": "https://miguelcolmenares.com",
     "base": "/css-js-minifier/",
     "repository": "https://github.com/miguelcolmenares/css-js-minifier",
@@ -9,47 +9,68 @@
     "installCommand": "code --install-extension miguel-colmenares.css-js-minifier"
   },
   "hero": {
-    "badge": "VS Code extension · Offline · 7 languages",
-    "title": "Minify CSS and JavaScript without leaving VS Code.",
-    "lede": "Two Rust-based engines, LightningCSS for CSS and oxc-minify for JavaScript, run locally with no network and no API keys. Minify a file, save a .min copy, or minify on save.",
+    "badge": "VS Code extension · Works offline · MIT licensed",
+    "title": "Make your CSS and JavaScript smaller with one command.",
+    "lede": "Install it, open a CSS or JavaScript file, and press Ctrl+Alt+M (Control+Option+M on a Mac). Your file gets smaller, you see how many bytes you saved, and nothing leaves your computer.",
     "primary": {
-      "label": "Read the docs",
-      "href": "/docs/"
+      "label": "Install",
+      "href": "/docs/install/"
     },
     "secondary": {
-      "label": "View on the Marketplace",
-      "href": "https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier"
+      "label": "Quick start",
+      "href": "/docs/quick-start/"
     }
   },
   "features": [
     {
-      "icon": "zap",
-      "eyebrow": "Fast engines",
-      "title": "Rust-based minification",
-      "text": "CSS goes through LightningCSS and JavaScript through oxc-minify. Both are native, so large files finish quickly."
+      "icon": "download",
+      "eyebrow": "Step 1 of 3",
+      "title": "Install it",
+      "text": "Search for the extension in the VS Code Extensions view and click Install, or run the command above in a terminal. It takes about a minute."
+    },
+    {
+      "icon": "file-code",
+      "eyebrow": "Step 2 of 3",
+      "title": "Open a CSS or JavaScript file",
+      "text": "Open any .css or .js file you already have. No project setup, no config file."
+    },
+    {
+      "icon": "keyboard",
+      "eyebrow": "Step 3 of 3",
+      "title": "Run the command",
+      "text": "Press Ctrl+Alt+M (Control+Option+M on a Mac), or right-click and choose Minify this File. A message shows the size before and after."
     },
     {
       "icon": "shield-check",
-      "eyebrow": "Fully offline",
+      "eyebrow": "Offline and fast",
       "title": "Your code never leaves your machine",
-      "text": "Minification runs locally. There is no network request, no API key and no file size limit beyond your memory."
+      "text": "CSS goes through LightningCSS and JavaScript through oxc-minify, two native Rust engines that run locally. No account, no API key, no network."
     },
     {
       "icon": "file-text",
       "eyebrow": "Your workflow",
-      "title": "Overwrite, save a copy, or minify on save",
-      "text": "Use the command palette or the context menu, write file.min.css next to the original, and see how many bytes you saved."
+      "title": "Overwrite, save a .min copy, or minify on save",
+      "text": "Keep your original and write style.min.css next to it, or turn on minify on save. Undo works like any other edit."
     },
     {
       "icon": "layers",
       "eyebrow": "Seven languages",
       "title": "English, Spanish, French, German, Portuguese, Japanese and Chinese",
-      "text": "The interface follows your VS Code language, with the strings kept in per-language files."
+      "text": "The extension follows your VS Code display language."
     }
   ],
   "nav": [],
   "footer": {
-    "links": []
+    "links": [
+      {
+        "label": "VS Code Marketplace",
+        "href": "https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier"
+      },
+      {
+        "label": "Report a bug",
+        "href": "/docs/troubleshooting/"
+      }
+    ]
   },
   "sources": {
     "root": "..",
@@ -62,29 +83,42 @@
       "dir": "../docs",
       "groups": [
         {
-          "name": "Start",
+          "name": "Get started",
           "tone": "brand",
           "items": [
-            "overview"
+            "install",
+            "quick-start"
           ]
         },
         {
-          "name": "Development",
-          "tone": "neutral",
-          "items": [
-            "architecture",
-            "testing-guide"
-          ]
-        },
-        {
-          "name": "Internationalization",
+          "name": "Use it",
           "tone": "success",
           "items": [
+            "commands-and-shortcuts",
+            "configuration",
+            "examples"
+          ]
+        },
+        {
+          "name": "Help",
+          "tone": "warn",
+          "items": [
+            "faq",
+            "troubleshooting"
+          ]
+        },
+        {
+          "name": "For contributors",
+          "tone": "neutral",
+          "items": [
+            "overview",
+            "architecture",
+            "testing-guide",
             "internationalization"
           ]
         }
       ],
-      "lede": "How the extension is built, tested and translated."
+      "lede": "Install the extension, use it, and get help. The pages for contributors are at the end."
     }
   ],
   "deploy": {
@@ -114,5 +148,27 @@
   },
   "lastUpdated": {
     "enabled": false
-  }
+  },
+  "stats": [
+    {
+      "value": "44%",
+      "label": "Smaller CSS",
+      "note": "496 B to 280 B, in the example on the Examples page"
+    },
+    {
+      "value": "49%",
+      "label": "Smaller JavaScript",
+      "note": "407 B to 207 B, in the example on the Examples page"
+    },
+    {
+      "value": "2",
+      "label": "Commands",
+      "note": "Minify the file, or save a .min copy"
+    },
+    {
+      "value": "0",
+      "label": "Network calls",
+      "note": "It runs on your computer, offline"
+    }
+  ]
 }

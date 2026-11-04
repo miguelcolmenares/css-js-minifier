@@ -83,7 +83,7 @@ JavaScript files are minified locally using the [oxc-minify](https://github.com/
 You can customize the extension's behavior through the available settings in VS Code:
 
 - `css-js-minifier.minifyOnSave`: Automatically minify CSS and JS files when saving them. (`true` or `false`, default is `false`).
-- `css-js-minifier.minifyInNewFile`: Save the minified content to a new file instead of overwriting the original. (`true` or `false`, default is `false`).
+- `css-js-minifier.minifyInNewFile`: When `minifyOnSave` is on, save the minified content to a new file instead of overwriting the original. It does not change the two commands. (`true` or `false`, default is `false`).
 - `css-js-minifier.minifiedNewFilePrefix`: Specify a custom prefix for the new minified file. (default is `.min`).
 - `css-js-minifier.autoOpenNewFile`: Automatically open newly created minified files in the editor. (`true` or `false`, default is `true`).
 - `css-js-minifier.showSizeReduction`: Show size reduction statistics in success messages. (`true` or `false`, default is `true`).
@@ -168,7 +168,11 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 
 ## Documentation
 
-For detailed technical documentation, see the [`docs/`](docs/) directory:
+The [documentation site](https://miguelcolmenares.com/css-js-minifier/) is a user guide, and its pages live in the [`docs/`](docs/) directory:
+
+- **[Install](docs/INSTALL.md)**, **[Quick start](docs/QUICK-START.md)**, **[Commands and shortcuts](docs/COMMANDS-AND-SHORTCUTS.md)**, **[Configuration](docs/CONFIGURATION.md)**, **[Examples](docs/EXAMPLES.md)**, **[FAQ](docs/FAQ.md)** and **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Everything a user needs
+
+For contributors:
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Extension design and modular structure
 - **[Testing Guide](docs/TESTING-GUIDE.md)** - Test strategies and testing workflows
