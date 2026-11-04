@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 out/**
+coverage/**
 node_modules/**
 # The `lightningcss-*` and `@oxc-minify/**` globs already cover the musl bindings
 # (`lightningcss-linux-*-musl`, `@oxc-minify/binding-linux-*-musl`) that the

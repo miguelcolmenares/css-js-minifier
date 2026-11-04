@@ -272,6 +272,7 @@ If you add a new native dependency, update both `.vscodeignore` (to whitelist th
 ```bash
 npm test            # full suite
 npm run pretest     # compile + lint + copy fixtures (no test run)
+npm run test:coverage # coverage summary for src/** + coverage/lcov.info (see docs/TESTING-GUIDE.md)
 npm run lint         # just ESLint
 npm run lint:md      # markdownlint over the tracked Markdown (report only)
 npm run format       # write prettier formatting (TypeScript, JSON, cjs/mjs)
