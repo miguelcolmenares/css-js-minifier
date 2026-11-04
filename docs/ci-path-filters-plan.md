@@ -33,9 +33,9 @@ Cases after the change:
 - **GitHub Actions bump that edits one of the three version workflows** (for example `actions/checkout` in `test-vscode-stable.yml`). That workflow matches its own filter and runs, so it behaves as the npm case.
 - **Scheduled or dispatched Insiders run**. Its `workflow_run` event is `schedule` or `workflow_dispatch`, so the `event == 'pull_request'` guard skips the auto-merge job. A nightly Insiders failure never merges or blocks anything.
 - **Cancelled run** (new push to the PR, concurrency). Conclusion `cancelled` is not `success`, so no merge is attempted. The replacement run emits its own completion and the check runs again.
-- **Pre-existing defect, not fixed here**: the list names `Test VS Code Minimum (1.109.0)`, but the workflow is named `Test VS Code Minimum (1.144.0)`. The minimum workflow never triggers the auto-merge. PR #248 renames both to `Test VS Code Minimum`. This branch does not touch that line, so the two PRs do not conflict.
+- **Stale name, already fixed on master**: the list used to name `Test VS Code Minimum (1.109.0)` while the workflow was named `Test VS Code Minimum (1.144.0)`, so the minimum workflow never triggered the auto-merge. PR #248 (commit `710f319`) renamed both to `Test VS Code Minimum`. This branch was rebased onto that commit and does not touch the line.
 
-Conclusion: no change to `auto-merge-dependabot.yml` is needed for this issue. The CodeQL race and the stale name are reported as follow-ups.
+Conclusion: no change to `auto-merge-dependabot.yml` is needed for this issue. The CodeQL race is reported as a follow-up.
 
 ## Testing strategy
 
