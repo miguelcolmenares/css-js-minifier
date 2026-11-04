@@ -19,9 +19,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - **The Dependabot auto-merge workflow waits for the minimum-version workflow again.** `auto-merge-dependabot.yml` listed it as `Test VS Code Minimum (1.109.0)`, a name that stopped matching when the minimum moved to 1.110.0, so that trigger never fired. The workflow is now named `Test VS Code Minimum`, without a version, so a bump of the minimum VS Code version no longer breaks the match ([#247](https://github.com/miguelcolmenares/css-js-minifier/issues/247)).
-
-### Fixed
-
 - **Workspace capabilities are declared, and `Minify and Save as New File` no longer assumes the local `file:` scheme** ([#243](https://github.com/miguelcolmenares/css-js-minifier/issues/243)). The new file's URI is now built from the source document's own URI (same scheme and authority, new file name) instead of `Uri.file(...)`, so in a virtual workspace such as a GitHub repository opened without cloning the file is written next to the source and not to a wrong local path; behaviour in a local workspace is unchanged. The manifest now sets `capabilities.virtualWorkspaces: true` and `capabilities.untrustedWorkspaces: "limited"`: in Restricted Mode the workspace-level values of `minifyOnSave`, `minifyInNewFile` and `minifiedNewFilePrefix` are ignored (only user settings apply), because `minifiedNewFilePrefix` is inserted into the target path and a workspace could otherwise point the written file outside its folder. The new capability description is translated in all seven `package.nls` files.
 
 ## [1.3.4] - 2026-10-28
