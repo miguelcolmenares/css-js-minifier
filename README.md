@@ -39,7 +39,7 @@ Minify and Save as New File through context menu
 
 - **CSS and JavaScript Minification**: Minify open CSS and JS files in the editor using commands from the command palette or the context menu.
 - **Size Reduction Statistics**: See exactly how much space you saved with percentage reduction and before/after file sizes.
-- **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css` or `file.min.js`).
+- **Minify to New File**: Save the minified file to a new file with the `.min` suffix (e.g., `file.min.css`, `file.min.js` or `file.min.mjs`). The original file is never overwritten.
 - **Automatic Minification on Save**: Configure the extension to automatically minify CSS and JS files when saving them.
 - **Intuitive Commands**: Easily access minification features through the command palette and the editor's context menu.
 - **Fully Offline**: Both CSS and JS minification work locally with no network dependency.

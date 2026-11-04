@@ -127,9 +127,9 @@ configuration.autoOpenNewFile
 configuration.showSizeReduction
 ```
 
-### Runtime Bundle Keys (12 English source strings)
+### Runtime Bundle Keys (13 English source strings)
 
-Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 12 messages:
+Starting in v1.3.3, runtime bundle keys are the English source strings themselves. The extension currently ships translations for 13 messages:
 
 ```text
 "File type '{0}' is not supported. Only CSS and JavaScript files can be minified."
@@ -144,6 +144,7 @@ Starting in v1.3.3, runtime bundle keys are the English source strings themselve
 "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details."
 "Failed to open file: {0}"
 "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to."
+"Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed."
 ```
 
 > The canonical source of truth is `l10n/bundle.l10n.json` (identity map, one entry per source string). To regenerate it from the codebase, run `npx @vscode/l10n-dev export -o ./l10n ./src`.
@@ -180,7 +181,7 @@ User-facing runtime messages live in these modules (all call sites pass an Engli
 
 **`src/utils/validators.ts`** — 2 messages (file-type + content-empty validation)
 
-**`src/services/fileService.ts`** — 4 messages (in-place / new-file success, with and without size stats)
+**`src/services/fileService.ts`** — 5 messages (in-place / new-file success, with and without size stats, and the refusal to overwrite the source file)
 
 **`src/services/minificationService.ts`** — 1 message (unsupported file type)
 
@@ -336,13 +337,14 @@ Create `l10n/bundle.l10n.it.json`. The **key is the English source string** exac
   "JavaScript minification error: {0}": "Errore di minimizzazione JavaScript: {0}",
   "CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "Attivazione di CSS & JS Minifier non riuscita: {0}. Controlla il pannello Output per i dettagli.",
   "Failed to open file: {0}": "Impossibile aprire il file: {0}",
-  "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Salva il file su disco prima di usare 'Minimizza e salva come nuovo file'. Il nuovo file minimizzato ha bisogno di una posizione esistente accanto a cui essere creato."
+  "Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "Salva il file su disco prima di usare 'Minimizza e salva come nuovo file'. Il nuovo file minimizzato ha bisogno di una posizione esistente accanto a cui essere creato.",
+  "Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "Impossibile creare il file minimizzato: il suo nome sarebbe uguale a quello dell'originale ({0}) e lo sovrascriverebbe. Il file originale non è stato modificato."
 }
 ```
 
 **Critical Requirements:**
 
-- Must contain exactly the 12 English source strings shown above as keys
+- Must contain exactly the 13 English source strings shown above as keys
 - Preserve all placeholders (`{0}`, `{1}`, `{2}`, `{3}`) in the exact positions required by the message
 - Maintain professional tone suitable for error messages
 - Keep technical terms (CSS, JavaScript, KB) untranslated where appropriate
@@ -452,7 +454,7 @@ Update the language support table in:
 ### Added
 - 🇮🇹 Italian (it) language support
   - Complete package.nls.it.json with 14 translations
-  - Complete l10n/bundle.l10n.it.json with 12 runtime messages
+  - Complete l10n/bundle.l10n.it.json with 13 runtime messages
 ```
 
 ### Quick Reference for Common Languages

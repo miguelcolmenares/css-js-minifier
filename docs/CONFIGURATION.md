@@ -17,7 +17,7 @@ You do not need to change any setting to use the extension. This page also shows
 Good to know:
 
 - `minifyInNewFile` does not change the two commands. **Minify this File** always replaces the content of the file, and **Minify and Save as New File** always writes a new file, whatever this setting says.
-- `minifiedNewFilePrefix` is used for the new file name by the **Minify and Save as New File** command and by minify on save with `minifyInNewFile` on. With `.min`, `style.css` becomes `style.min.css`. With `-compressed`, `app.js` becomes `app-compressed.js`. The name has to end in `.css` or `.js` for this to work.
+- `minifiedNewFilePrefix` is used for the new file name by the **Minify and Save as New File** command and by minify on save with `minifyInNewFile` on. With `.min`, `style.css` becomes `style.min.css`. With `-compressed`, `app.js` becomes `app-compressed.js`. The text goes before the last extension, so `module.mjs` becomes `module.min.mjs`.
 - With `minifyOnSave` on and `minifyInNewFile` off, no success message is shown, because it would pop up on every save.
 - Change `minifyOnSave` and then reload the window (open the Command Palette and run **Developer: Reload Window**). The extension reads this setting only when it starts. The other four take effect right away.
 

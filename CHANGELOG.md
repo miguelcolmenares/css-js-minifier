@@ -22,6 +22,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - **The Dependabot auto-merge workflow waits for the minimum-version workflow again.** `auto-merge-dependabot.yml` listed it as `Test VS Code Minimum (1.109.0)`, a name that stopped matching when the minimum moved to 1.110.0, so that trigger never fired. The workflow is now named `Test VS Code Minimum`, without a version, so a bump of the minimum VS Code version no longer breaks the match ([#247](https://github.com/miguelcolmenares/css-js-minifier/issues/247)).
+- **Minify and Save as New File no longer overwrites the original for `.mjs`, `.cjs` and uppercase extensions.** The new name was built with a regex that only matched a lowercase `.css` or `.js`, so for any other name (`.mjs`, `.cjs`, `.JS`, `.CSS`, or no extension) the name came back unchanged and the minified text replaced the source. The prefix is now inserted before the last extension, whatever it is and in any letter case (`a.mjs` becomes `a.min.mjs`, `A.CSS` becomes `A.min.CSS`); a name with no extension or only a leading dot gets the prefix at the end (`Makefile.min`). `saveAsNewFile` also refuses to write when the new file resolves to the same URI as the source and shows an error (new message, translated in all seven languages), so no future name can collide with the original. The FAQ no longer needs its `.mjs` and `.cjs` workaround ([#255](https://github.com/miguelcolmenares/css-js-minifier/issues/255)).
 
 ## [1.3.4] - 2026-10-28
 
