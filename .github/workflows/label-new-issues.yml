@@ -1,0 +1,39 @@
+name: Label new issues
+
+# The two issue forms (bug report, feature request) set their own label. A blank
+# issue, which is how questions and documentation fixes arrive, gets none, and
+# GitHub offers no way to give a blank issue a default label. This adds one
+# generic label so those issues are easy to find: `needs-triage`.
+#
+# Nothing from the issue is executed or interpolated: the script only reads
+# whether the issue already has labels.
+
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  label:
+    name: Label issues that arrive without a label
+    runs-on: ubuntu-26.04
+    permissions:
+      issues: write
+    steps:
+      - name: Add needs-triage
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const issue = context.payload.issue;
+            if (issue.user.type === 'Bot' || issue.labels.length > 0) {
+              core.info('Bot author or already labeled, nothing to do.');
+              return;
+            }
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['needs-triage'],
+            });
+            core.info(`Labeled #${issue.number} with needs-triage.`);
