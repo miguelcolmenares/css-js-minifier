@@ -31,7 +31,7 @@ Try the short checklist first, check the message you see in the table below, and
 - **Minify on save does nothing after I turned it on.** Reload the window. The extension reads that setting only when it starts.
 - **The shortcut does nothing.** Check the [shortcuts table](COMMANDS-AND-SHORTCUTS.md#keyboard-shortcuts) for your system. Another extension may use the same keys: open the Keyboard Shortcuts editor (`Ctrl+K Ctrl+S` or `Cmd+K Cmd+S`), search for `minify`, and look for a conflict. You can also run the command from the Command Palette.
 - **My file was minified and I want it back.** Press `Ctrl+Z` or `Cmd+Z` in the editor, then save. If that is too late, restore it from version control.
-- **It is not installable on my system.** Windows, macOS and standard Linux (glibc) are covered. Alpine Linux is not yet, see [Install](INSTALL.md#step-1-download-the-right-file).
+- **It is not installable on my system.** Windows, macOS and standard Linux (glibc) are covered. Alpine Linux is not in the current release, it arrives with the next one, see [Install](INSTALL.md#step-1-download-the-right-file).
 
 ## Report a bug
 

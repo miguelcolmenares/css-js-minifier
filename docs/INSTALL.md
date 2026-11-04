@@ -83,7 +83,7 @@ Not sure which one is yours? Match the architecture of VS Code itself: open the 
 Good to know:
 
 - The six files above are the ones released so far (the latest release at the time of writing, 1.3.4, has exactly these six). New platforms are added to the table when they ship.
-- Alpine Linux (and other musl-based Linux, common in small Docker images and Dev Containers) is **not covered yet**. The Linux files are built for the standard glibc Linux. Support for Alpine is being worked on in [issue #244](https://github.com/miguelcolmenares/css-js-minifier/issues/244).
+- Alpine Linux (and other musl-based Linux, common in small Docker images and Dev Containers) is **not in the current release**. Version 1.3.4 only has Linux files for the standard glibc Linux. Alpine packages (`alpine-x64` and `alpine-arm64`) are already built for the next release, see [issue #244](https://github.com/miguelcolmenares/css-js-minifier/issues/244).
 - Each file is for one platform because the extension includes fast native code. That is why a release has several downloads.
 
 ### Step 2: install the file
