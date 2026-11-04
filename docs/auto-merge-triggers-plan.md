@@ -195,9 +195,29 @@ within `0.y.z` with `y > 0`. It is a few lines in the same function.
   stale sha, merge 409.
 - Only the next real Dependabot PR proves the `workflow_run` wiring (it runs from `master`).
 
+## Verified locally, and what only a real run proves
+
+Verified with the shipped `script:` text extracted from the YAML and run as plain Node against
+fake `github`, `context` and `core` objects (46 cases, all passing; a mutant that disables the
+major check fails 5 of them): patch, minor, major, group with one major, GitHub Actions minor and
+major, indirect security update without `update-type`, unverified or foreign commit, maintainer
+commit on top, other author, fork, draft, stale sha, no PR, failed, cancelled and pending checks,
+`unknown` then `clean`, lagging state, stuck state, `dirty`, `behind`, merge 405 and 409, dry run
+and real dispatch, bad `pr_number`.
+
+The same script also ran against the real commits of 26 past Dependabot PRs: #205 (mocha 12) and
+the six GitHub Actions majors (#111, #152, #157, #166, #188, #189) are classified major; the
+other 19 (groups, security updates of indirect dependencies, the 0.x `oxc-minify` bump) as
+mergeable.
+
+Only the next real Dependabot PR proves: that `workflow_run` fires from the new list, the real
+`mergeable_state` timing, the real token permissions (`checks: read`) and `github.paginate` on
+check runs. `workflow_dispatch` exists only once the file is on `master`, so the dry run can be
+done after the merge with `gh workflow run auto-merge-dependabot.yml -f pr_number=N`.
+
 ## Phases
 
 - [x] Phase 1: verify premises, write this plan
-- [ ] Phase 2: rewrite the workflow, fix the typo
-- [ ] Phase 3: local decision-logic tests, validations
+- [x] Phase 2: rewrite the workflow, fix the typo
+- [x] Phase 3: local decision-logic tests, validations
 - [ ] Phase 4: docs, changelog, review, push

@@ -1,8 +1,9 @@
 # Configuration for Dependabot version updates
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 # 
-# Auto-merge: PRs are automatically merged when all CI checks pass
-# See: .github/workflows/auto-merge-dependabot.ym
+# Auto-merge: minor and patch update PRs are merged automatically once every CI check has
+# passed. Major updates are never auto-merged; they stay open for a human to review.
+# See: .github/workflows/auto-merge-dependabot.yml
 
 version: 2
 updates:
