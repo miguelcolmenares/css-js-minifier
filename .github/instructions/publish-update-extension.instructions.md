@@ -91,7 +91,7 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
    - **PATCH** (1.3.**4**): bug fixes only, no user-visible feature changes.
    - **MINOR** (1.**4**.0): new features, backwards compatible.
    - **MAJOR** (**2**.0.0): breaking changes.
-2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`.
+2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`. Keep the workflow name in `test-vscode-minimum.yml` as `Test VS Code Minimum`, without a version: `auto-merge-dependabot.yml` matches it by name.
 3. Add a new entry at the top of `CHANGELOG.md` following the existing style: `## [X.Y.Z] - YYYY-MM-DD` with `### Added` / `### Fixed` / `### Changed` sections describing user-visible impact. **The release workflow verifies this entry exists before creating the tag** — a missing entry aborts the release.
 4. Run the full local check:
 
@@ -110,7 +110,7 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
    gh pr create --title "chore: Release X.Y.Z" --base master | cat
    ```
 
-6. Merge the PR (squash). The 6-platform build matrix runs automatically on the PR because `package.json` is in the workflow's path filter.
+6. Merge the PR (squash). The 8-target build matrix runs automatically on the PR because `package.json` is in the workflow's path filter.
 
 ### Step 2 — Verify `VSCE_PAT` is healthy
 
@@ -147,16 +147,16 @@ The workflow runs these jobs in order:
    - The tag `vX.Y.Z` does not already exist on `origin`.
    - `VSCE_PAT` is present.
    - `vsce verify-pat miguel-colmenares` succeeds.
-2. **Build matrix** (~10–15 min). Packages one `.vsix` per platform (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each.
-3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all six `.vsix` files attached and auto-generated release notes.
-4. **Publish** (~2 min). Uploads all six `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
-5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the six `.vsix` files from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
+2. **Build matrix** (~10–15 min). Packages one `.vsix` per target (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`, `alpine-x64`, `alpine-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each. The two `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` and smoke-tested inside a `node:20-alpine` container.
+3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all eight `.vsix` files attached and auto-generated release notes.
+4. **Publish** (~2 min). Uploads all eight `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
+5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the `.vsix` files of the release (eight since the Alpine targets, six for older releases; the workflow fails if it finds fewer than six) from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
 
 If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
 If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and GitHub Release stay in place, and users can install manually from the release assets via `code --install-extension` while the maintainer investigates. Re-running just the publish job is not currently supported — a manual `vsce publish` from the maintainer's machine using the already-attached `.vsix` files is the recovery path (see [Emergency procedures](#emergency-procedures) below).
 
-> **Note:** If the `.vsix` files are missing from the GitHub Release, rebuild them locally with `vsce package --target <platform>` for each of the six platforms before running the emergency publish steps.
+> **Note:** If the `.vsix` files are missing from the GitHub Release, rebuild them locally with `vsce package --target <platform>` for each of the eight targets before running the emergency publish steps.
 
 ### Step 5 — Verify publication
 
@@ -201,6 +201,7 @@ The PAT is expired, has the wrong scope, or does not belong to the `miguel-colme
 Look at the failing job's log. Common causes:
 
 - Native binding regression: `scripts/verify-vsix-activation.mjs` will report exactly which `require()` failed. Usually points at a missing entry in `optionalDependencies` or `.vscodeignore`.
+- `alpine-x64` / `alpine-arm64` fail with `oxc-minify` unable to find its native binding: the musl binding was not installed. The `Install dependencies (musl bindings)` step must run `npm ci --libc=musl`. `--expect-libc musl` exiting `2` means the smoke test ran on a glibc host instead of the `node:20-alpine` container.
 - Test flake: retry the job. If it fails twice, treat it as a real failure.
 
 ### Publish fails after tag was created
@@ -231,7 +232,7 @@ Use this only when the workflow's publish step failed and you cannot re-run it (
 # 1. Authenticate vsce locally with a fresh PAT.
 export VSCE_PAT=<your-pat>
 
-# 2. Download all six .vsix files from the GitHub Release.
+# 2. Download all the .vsix files from the GitHub Release.
 mkdir -p /tmp/release-X.Y.Z
 gh release download vX.Y.Z --repo miguelcolmenares/css-js-minifier --dir /tmp/release-X.Y.Z --pattern '*.vsix'
 

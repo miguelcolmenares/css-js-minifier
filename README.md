@@ -1,8 +1,8 @@
 # CSS & JS Minifier Extension for VS Code
 
-![GitHub License](https://img.shields.io/github/license/miguelcolmenares/css-js-minifier?style=flat-square)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/master.yml?style=flat-square)
+[![Build status of master](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/master.yml?branch=master&style=flat-square&label=build)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/master.yml 'Build and test status of the master branch')
 [![CodeQL](https://github.com/miguelcolmenares/css-js-minifier/workflows/CodeQL/badge.svg)](https://github.com/miguelcolmenares/css-js-minifier/actions?query=workflow%3ACodeQL 'Code quality workflow status')
+[![Platforms: Windows, macOS and Linux (glibc), x64 and arm64](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20(glibc)%20%C2%B7%20x64%20%7C%20arm64-blue?style=flat-square)](https://github.com/miguelcolmenares/css-js-minifier/blob/master/docs/ARCHITECTURE.md#distribution-multi-target-vsix 'Six platform-specific packages: Windows, macOS and Linux (glibc only, no Alpine/musl), x64 and arm64')
 
 ## Description
 
@@ -17,15 +17,13 @@ Both minification engines are Rust-based, work fully offline, and require no API
 
 ## VS Code Compatibility Testing
 
-[![VS Code 1.144.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.144.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml 'Minimum supported VS Code version - tested on all platforms')
-[![VS Code Stable Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-stable.yml?style=flat-square&label=VS%20Code%20Stable&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-stable.yml 'Current stable VS Code version - tested on all platforms')
-[![VS Code Insiders Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-insiders.yml?style=flat-square&label=VS%20Code%20Insiders&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-insiders.yml 'Pre-release VS Code version - tested on Ubuntu only')
+[![VS Code 1.144.0 Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-minimum.yml?style=flat-square&label=VS%20Code%201.144.0&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-minimum.yml 'Minimum supported VS Code version - tested on macOS, Ubuntu, and Windows')
+[![VS Code Stable Tests](https://img.shields.io/github/actions/workflow/status/miguelcolmenares/css-js-minifier/test-vscode-stable.yml?style=flat-square&label=VS%20Code%20Stable&logo=visual-studio-code&logoColor=white)](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/test-vscode-stable.yml 'Current stable VS Code version - tested on macOS, Ubuntu, and Windows')
 
 This extension is thoroughly tested across multiple VS Code versions to ensure compatibility:
 
 - **1.144.0 (Minimum)**: Engine requirement baseline - tested on macOS, Ubuntu, and Windows
-- **Stable**: Current production release - tested on all platforms
-- **Insiders**: Pre-release builds - tested on Ubuntu for early compatibility validation
+- **Stable**: Current production release - tested on macOS, Ubuntu, and Windows
 
 ## Demo
 
