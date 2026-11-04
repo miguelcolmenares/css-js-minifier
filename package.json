@@ -162,6 +162,9 @@
 		"format:check": "prettier --check \"src/**/*.ts\" \"*.{json,cjs,mjs}\"",
 		"lint:md": "markdownlint-cli2",
 		"test": "vscode-test",
+		"compile:coverage": "webpack --env coverage",
+		"pretest:coverage": "npm run compile-tests && npm run compile:coverage && npm run lint && npm run copy-fixtures",
+		"test:coverage": "vscode-test --coverage --coverage-output coverage && node scripts/coverage-report.mjs",
 		"prepare": "husky"
 	},
 	"devDependencies": {

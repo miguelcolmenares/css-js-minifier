@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 out/**
+coverage/**
 node_modules/**
 !node_modules/lightningcss/**
 !node_modules/lightningcss-*/**

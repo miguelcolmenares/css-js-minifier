@@ -9,7 +9,7 @@ export default [
 	js.configs.recommended,
 	prettierConfig,
 	{
-		ignores: ['out/**', 'dist/**', '**/*.d.ts'],
+		ignores: ['out/**', 'dist/**', 'coverage/**', '**/*.d.ts'],
 	},
 	{
 		files: ['*.cjs', '*.mjs'],
