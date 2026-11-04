@@ -173,7 +173,7 @@ Each runner:
 3. `npx vsce package --target <target>` — produces the platform-tagged `.vsix`.
 4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to prove the binaries load on that platform. Exit `1` on a binding regression, `2` on an infrastructure failure.
 
-The six artifacts are attached to the GitHub Release and published to the Marketplace as separate platform-tagged listings by the `Build & Release` workflow (`.github/workflows/release.yml`). VS Code serves each user the artifact that matches their OS/CPU. See [AGENTS.md → Cross-platform CI matrix](../AGENTS.md#cross-platform-ci-matrix) for the workflow contract and [`.github/instructions/publish-update-extension.instructions.md`](../.github/instructions/publish-update-extension.instructions.md) for the release runbook.
+The six artifacts are attached to the GitHub Release and published to the Marketplace as separate platform-tagged listings by the `Build & Release` workflow (`.github/workflows/release.yml`). VS Code serves each user the artifact that matches their OS/CPU. The same files are then published to [Open VSX](https://open-vsx.org) (used by VSCodium, Eclipse Theia, Gitpod and other forks) by `.github/workflows/publish-openvsx.yml`, which downloads them from the GitHub Release instead of rebuilding, so both registries serve identical artifacts. See [AGENTS.md → Cross-platform CI matrix](../AGENTS.md#cross-platform-ci-matrix) for the workflow contract and [`.github/instructions/publish-update-extension.instructions.md`](../.github/instructions/publish-update-extension.instructions.md) for the release runbook.
 
 ## Future Extensibility
 

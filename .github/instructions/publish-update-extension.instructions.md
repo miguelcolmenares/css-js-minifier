@@ -4,9 +4,9 @@ applyTo: '**'
 
 # VS Code Extension Publishing Instructions
 
-This document is the runbook for publishing updates to the CSS & JS Minifier extension on the Visual Studio Code Marketplace.
+This document is the runbook for publishing updates to the CSS & JS Minifier extension on the Visual Studio Code Marketplace and on [Open VSX](https://open-vsx.org).
 
-**As of v1.3.3 the entire release flow — build, tag, GitHub Release, Marketplace publish — is orchestrated from a single GitHub Actions workflow (`Build & Release`, `.github/workflows/release.yml`). There is no local `vsce publish` in the primary path anymore. See "Emergency procedures" at the end for the offline fallback.**
+**As of v1.3.3 the entire release flow — build, tag, GitHub Release, Marketplace publish, Open VSX publish — is orchestrated from a single GitHub Actions workflow (`Build & Release`, `.github/workflows/release.yml`). There is no local `vsce publish` in the primary path anymore. See "Emergency procedures" at the end for the offline fallback.**
 
 ## Why this workflow-driven flow
 
@@ -40,7 +40,27 @@ The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
    - **Name**: `VSCE_PAT`
    - **Secret**: paste the PAT verbatim, no wrapping quotes.
 
-### 2. Local tooling (only if you plan to run the emergency fallback)
+### 2. Open VSX: account, namespace and `OVSX_PAT`
+
+[Open VSX](https://open-vsx.org) is the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. It is a separate registry with its own token, and publishing there is independent of the Marketplace. One-time setup:
+
+1. Create an Eclipse account at <https://accounts.eclipse.org> whose "GitHub Username" field matches the GitHub account you use to log in to open-vsx.org.
+2. Log in to <https://open-vsx.org> with GitHub, then on your profile use **Log in with Eclipse** and sign the **Publisher Agreement** (it is separate from the Eclipse Contributor Agreement). Publishing fails without it.
+3. Settings → **Access Tokens** → **Generate New Token**. Copy it immediately, it is shown only once. Use a dedicated token for CI.
+4. Create the namespace, which must equal the `publisher` field in `package.json`:
+
+   ```bash
+   npx ovsx create-namespace miguel-colmenares -p <token>
+   ```
+
+   Creating the namespace does not make you a verified owner. Claim ownership from open-vsx.org separately so the listing shows as verified.
+5. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**, name `OVSX_PAT`, value the token verbatim.
+
+Unlike `VSCE_PAT`, `OVSX_PAT` is not checked in `preflight` because `ovsx` has no documented `verify-pat`. A missing token fails only the `publish-openvsx` job, after the tag exists, and nothing is burned: re-run it through `publish-openvsx.yml`.
+
+Open VSX also supports tokenless trusted publishing through OIDC (`ovsx publish --trusted-publishing` with `id-token: write`), which would remove the secret. It needs a trusted publisher registered by a namespace owner on open-vsx.org, so it is not wired up yet.
+
+### 3. Local tooling (only if you plan to run the emergency fallback)
 
 ```bash
 npm install -g @vscode/vsce
@@ -119,7 +139,7 @@ gh workflow run release.yml -f version=X.Y.Z
 
 ### Step 4 — Wait for the workflow to finish
 
-The workflow runs four jobs in order:
+The workflow runs these jobs in order:
 
 1. **Preflight** (~1 min). Validates:
    - The `version` input matches `package.json` on `master`.
@@ -130,6 +150,7 @@ The workflow runs four jobs in order:
 2. **Build matrix** (~10–15 min). Packages one `.vsix` per platform (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each.
 3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all six `.vsix` files attached and auto-generated release notes.
 4. **Publish** (~2 min). Uploads all six `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
+5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the six `.vsix` files from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
 
 If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
@@ -140,7 +161,7 @@ If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and Git
 ### Step 5 — Verify publication
 
 1. Wait 5–10 minutes for the Marketplace CDN to update.
-2. Confirm the new version is live: <https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier>.
+2. Confirm the new version is live: <https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier> and <https://open-vsx.org/extension/miguel-colmenares/css-js-minifier>.
 3. Install and smoke-test:
 
    ```bash
@@ -190,6 +211,16 @@ The tag and GitHub Release are in place; the Marketplace is missing the version.
 2. If the PAT was revoked mid-run, rotate it, then run the emergency manual publish using the `.vsix` files from the GitHub Release.
 3. Do **not** try to re-cut the release under a different tag — the tag/release pair is immutable and users may already have installed from the GitHub assets.
 
+### Publish to Open VSX fails
+
+The tag, the GitHub Release and the Marketplace publish are unaffected, since the two registries do not depend on each other. The job's log lists the failed targets. Fix the cause (missing or expired `OVSX_PAT`, namespace not created, Publisher Agreement not signed, registry outage) and re-run, either the failed job or:
+
+```bash
+gh workflow run publish-openvsx.yml -f version=X.Y.Z
+```
+
+Targets already on Open VSX are skipped, so it only uploads what is missing. The same dispatch publishes a version that was released before Open VSX support existed. Do not publish from a local machine.
+
 ## Emergency procedures
 
 ### Manual publish from a local machine
@@ -234,12 +265,15 @@ The tag and GitHub Release remain untouched by unpublishing — they must be dea
 
 - [`.github/workflows/release.yml`](../workflows/release.yml) — the release workflow.
 - [`.github/workflows/verify-marketplace-auth.yml`](../workflows/verify-marketplace-auth.yml) — the standalone PAT check.
+- [`.github/workflows/publish-openvsx.yml`](../workflows/publish-openvsx.yml) — the Open VSX publish, called by the release and dispatchable alone.
 - [`AGENTS.md`](../../AGENTS.md) — agent-oriented summary of the release flow and Husky hooks.
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md) — contributor onboarding and CI matrix explanation.
 - [VS Code Extension Publishing Guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
 - [vsce CLI documentation](https://github.com/microsoft/vscode-vsce)
 - [Azure DevOps PAT management](https://dev.azure.com)
 - [Marketplace Publisher Portal](https://marketplace.visualstudio.com/manage)
+- [Open VSX: Publishing Extensions](https://github.com/eclipse/openvsx/wiki/Publishing-Extensions)
+- [`ovsx` CLI](https://github.com/eclipse/openvsx/blob/master/cli/README.md)
 - [Semantic Versioning](https://semver.org/)
 
 ---
