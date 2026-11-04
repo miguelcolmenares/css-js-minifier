@@ -26,8 +26,12 @@ import { t } from '@/utils/l10nHelper';
  * - Opens the new file in VS Code editor
  * - Shows success notification to the user
  *
+ * The target is a `vscode.Uri` rather than a path string so the new file keeps the
+ * scheme and authority of the source document (for example `vscode-vfs` in a
+ * virtual workspace). Build it with {@link createMinifiedUri}.
+ *
  * @param minifiedText - The minified content to save
- * @param newFileName - The complete file path for the new file (including extension)
+ * @param newFileUri - The URI of the new file, on the same file system as the source document
  * @param stats - Statistics about the minification process
  * @returns Resolves when the file is successfully created and opened
  *
@@ -36,26 +40,23 @@ import { t } from '@/utils/l10nHelper';
  * @example
  * ```typescript
  * const minifiedCSS = 'body{margin:0;color:red}';
- * const newPath = '/path/to/style.min.css';
+ * const newUri = createMinifiedUri(document.uri, '.min');
  * const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
- * await saveAsNewFile(minifiedCSS, newPath, stats);
+ * await saveAsNewFile(minifiedCSS, newUri, stats);
  * // File is created, opened in editor, and user sees success message with statistics
  * ```
  */
 export async function saveAsNewFile(
 	minifiedText: string,
-	newFileName: string,
+	newFileUri: vscode.Uri,
 	stats: MinificationStats
 ): Promise<void> {
-	// Create a VS Code URI for the new file path
-	const uri = vscode.Uri.file(newFileName);
-
 	// Encode the text content as UTF-8 bytes for file writing
 	const textEncoder = new TextEncoder();
 	const encodedContent = textEncoder.encode(minifiedText);
 
 	// Write the minified content to the file system
-	await vscode.workspace.fs.writeFile(uri, encodedContent);
+	await vscode.workspace.fs.writeFile(newFileUri, encodedContent);
 
 	// Check if the new file should be opened automatically
 	const settings = vscode.workspace.getConfiguration('css-js-minifier');
@@ -63,11 +64,12 @@ export async function saveAsNewFile(
 
 	if (autoOpenNewFile) {
 		// Open the newly created file in the VS Code editor
-		await vscode.window.showTextDocument(uri);
+		await vscode.window.showTextDocument(newFileUri);
 	}
 
 	// Provide user feedback about the successful operation with statistics
-	const fileName = path.basename(newFileName);
+	// Use the POSIX basename of the URI path: URI paths always use "/", on every platform and scheme
+	const fileName = path.posix.basename(newFileUri.path);
 	const config = vscode.workspace.getConfiguration('css-js-minifier');
 	const showSizeReduction = config.get('showSizeReduction', true);
 
@@ -180,7 +182,7 @@ export async function replaceDocumentContent(
  * inserting a user-configurable prefix (like '.min' or '-compressed') before
  * the file extension. It only works with supported file extensions (.css, .js).
  *
- * @param originalFileName - The complete path to the original file
+ * @param originalFileName - The complete path to the original file (a file system path or a URI path)
  * @param prefix - The prefix to insert before the extension (e.g., '.min', '-compressed')
  * @returns The new filename with the prefix inserted before the extension
  *
@@ -203,6 +205,29 @@ export function createMinifiedFileName(originalFileName: string, prefix: string)
 	// Use regex to insert the prefix before the file extension
 	// Matches .css or .js at the end of the filename and replaces with prefix + extension
 	return originalFileName.replace(/(\.css|\.js)$/, `${prefix}$1`);
+}
+
+/**
+ * Builds the URI of the minified sibling of a source document.
+ *
+ * The result keeps the scheme and authority of the source URI, so it points to the
+ * same file system as the source (a local `file:` path, a `vscode-vfs` virtual
+ * workspace, a remote or a custom provider) instead of always resolving to a local
+ * path. Query and fragment are dropped: they identify a view of the source (for
+ * example a revision), not a location a new file can be written to.
+ *
+ * @param source - The URI of the document being minified
+ * @param prefix - The prefix to insert before the extension (e.g., '.min', '-compressed')
+ * @returns The URI of the new file, next to the source
+ *
+ * @example
+ * ```typescript
+ * createMinifiedUri(vscode.Uri.parse('vscode-vfs://github/owner/repo/css/style.css'), '.min').toString();
+ * // Returns: 'vscode-vfs://github/owner/repo/css/style.min.css'
+ * ```
+ */
+export function createMinifiedUri(source: vscode.Uri, prefix: string): vscode.Uri {
+	return source.with({ path: createMinifiedFileName(source.path, prefix), query: '', fragment: '' });
 }
 
 /**

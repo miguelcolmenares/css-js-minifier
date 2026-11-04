@@ -12,5 +12,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "新しいファイル名に '.minified' 拡張子が付きます。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "新しいファイル名に '-minified' 拡張子が付きます。",
 	"configuration.autoOpenNewFile": "新しく作成された縮小ファイルをエディタで自動的に開く。",
-	"configuration.showSizeReduction": "縮小後の成功メッセージにサイズ削減統計を表示する。"
+	"configuration.showSizeReduction": "縮小後の成功メッセージにサイズ削減統計を表示する。",
+	"capabilities.untrustedWorkspaces.description": "制限モードでは、縮小ファイルをいつ、どこに書き込むかを決める設定 (保存時に縮小、新しいファイルに保存、新しいファイルのプレフィックス) は、ワークスペースで定義されていても無視されます。ユーザー設定のみが適用されます。"
 }

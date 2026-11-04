@@ -12,5 +12,6 @@
 	"configuration.minifiedNewFilePrefix.enumDescriptions.5": "新文件名将带有 '.minified' 扩展名。",
 	"configuration.minifiedNewFilePrefix.enumDescriptions.6": "新文件名将带有 '-minified' 扩展名。",
 	"configuration.autoOpenNewFile": "在编辑器中自动打开新创建的压缩文件。",
-	"configuration.showSizeReduction": "在压缩后的成功消息中显示大小缩减统计信息。"
+	"configuration.showSizeReduction": "在压缩后的成功消息中显示大小缩减统计信息。",
+	"capabilities.untrustedWorkspaces.description": "在受限模式下，决定何时以及在何处写入压缩文件的设置（保存时压缩、保存到新文件以及新文件前缀）如果由工作区定义，则会被忽略。只有用户设置会生效。"
 }

@@ -13,7 +13,7 @@
 import * as vscode from 'vscode';
 import { validateFileType, validateContentLength } from '@/utils/validators';
 import { getMinifiedText } from '@/services/minificationService';
-import { saveAsNewFile, replaceDocumentContent, createMinifiedFileName } from '@/services/fileService';
+import { saveAsNewFile, replaceDocumentContent, createMinifiedUri } from '@/services/fileService';
 import { t } from '@/utils/l10nHelper';
 
 // Set to track documents currently being processed to prevent recursion
@@ -89,9 +89,10 @@ async function processDocument(
 
 	// Save the result based on user preferences
 	if (options.saveAsNewFile && options.filePrefix) {
-		// Create new file with minified content
-		const newFileName = createMinifiedFileName(document.fileName, options.filePrefix);
-		await saveAsNewFile(minifiedText, newFileName, stats);
+		// Create new file next to the source, on the same file system (scheme and authority)
+		// as the document: never assume the local `file:` scheme (virtual workspaces)
+		const newFileUri = createMinifiedUri(document.uri, options.filePrefix);
+		await saveAsNewFile(minifiedText, newFileUri, stats);
 	} else {
 		// Replace current document content with minified version
 		// Skip save if caller (e.g., manual command) will handle it to maintain Set protection

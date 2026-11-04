@@ -61,6 +61,7 @@ const EXPECTED_PACKAGE_KEYS = [
 	'configuration.minifiedNewFilePrefix.enumDescriptions.6',
 	'configuration.autoOpenNewFile',
 	'configuration.showSizeReduction',
+	'capabilities.untrustedWorkspaces.description',
 ];
 
 /**
@@ -290,6 +291,27 @@ suite('Internationalization (i18n) Test Suite', function () {
 				assert.ok(
 					prop.description.startsWith('%') && prop.description.endsWith('%'),
 					`Property description '${prop.description}' should use i18n key format`
+				);
+			});
+		});
+	});
+
+	suite('Capability descriptions', function () {
+		test('Untrusted workspace description uses an i18n key that exists in every language', function () {
+			const packageJson = JSON.parse(fs.readFileSync(path.join(workspaceRoot, 'package.json'), 'utf8'));
+			const description = packageJson.capabilities.untrustedWorkspaces.description as string;
+
+			assert.ok(
+				description.startsWith('%') && description.endsWith('%'),
+				`Capability description '${description}' should use i18n key format (%key%)`
+			);
+
+			const key = description.slice(1, -1);
+			SUPPORTED_LANGUAGES.forEach((lang) => {
+				const content = JSON.parse(fs.readFileSync(path.join(workspaceRoot, lang.file), 'utf8'));
+				assert.ok(
+					typeof content[key] === 'string' && content[key].trim().length > 0,
+					`${lang.name} is missing the capability description key: ${key}`
 				);
 			});
 		});

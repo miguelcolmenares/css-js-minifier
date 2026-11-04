@@ -298,7 +298,7 @@ meaning silently, and the config says so rule by rule.
 
 ### Add a new translation language
 
-1. Create `package.nls.<locale>.json` (14 keys — copy from `package.nls.json`, translate values). These stay as dotted symbolic keys because VS Code's `%placeholder%` mechanism for `package.json` contributions has no English-as-key equivalent.
+1. Create `package.nls.<locale>.json` (15 keys — copy from `package.nls.json`, translate values). These stay as dotted symbolic keys because VS Code's `%placeholder%` mechanism for `package.json` contributions has no English-as-key equivalent.
 2. Create `l10n/bundle.l10n.<locale>.json` (12 keys — the keys are the English source strings themselves, per the v1.3.3 `vscode.l10n` migration; copy from `l10n/bundle.l10n.json` and translate the values).
 3. Add the locale to the arrays in `src/test/i18n.test.ts`.
 4. Run `Test: Internationalization (i18n) Suite Only` to verify key parity.
