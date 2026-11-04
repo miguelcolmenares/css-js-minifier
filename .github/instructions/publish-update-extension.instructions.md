@@ -91,7 +91,7 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
    - **PATCH** (1.3.**4**): bug fixes only, no user-visible feature changes.
    - **MINOR** (1.**4**.0): new features, backwards compatible.
    - **MAJOR** (**2**.0.0): breaking changes.
-2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`.
+2. If `@types/vscode` was updated, keep `engines.vscode` in sync with it (`^1.X.Y` on both) and update the matching entry in `.github/workflows/test-vscode-minimum.yml` and `.vscode-test.mjs`. Keep the workflow name in `test-vscode-minimum.yml` as `Test VS Code Minimum`, without a version: `auto-merge-dependabot.yml` matches it by name.
 3. Add a new entry at the top of `CHANGELOG.md` following the existing style: `## [X.Y.Z] - YYYY-MM-DD` with `### Added` / `### Fixed` / `### Changed` sections describing user-visible impact. **The release workflow verifies this entry exists before creating the tag** — a missing entry aborts the release.
 4. Run the full local check:
 
