@@ -92,7 +92,7 @@ async function processDocument(
 		// Create new file next to the source, on the same file system (scheme and authority)
 		// as the document: never assume the local `file:` scheme (virtual workspaces)
 		const newFileUri = createMinifiedUri(document.uri, options.filePrefix);
-		await saveAsNewFile(minifiedText, newFileUri, stats);
+		await saveAsNewFile(minifiedText, newFileUri, stats, document.uri);
 	} else {
 		// Replace current document content with minified version
 		// Skip save if caller (e.g., manual command) will handle it to maintain Set protection

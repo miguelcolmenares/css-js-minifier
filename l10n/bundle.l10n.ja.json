@@ -10,5 +10,6 @@
 	"JavaScript minification error: {0}": "JavaScript縮小エラー：{0}",
 	"CSS & JS Minifier failed to activate: {0}. Check the Output panel for details.": "CSS & JS Minifierのアクティベーションに失敗しました：{0}。詳細は出力パネルを確認してください。",
 	"Failed to open file: {0}": "ファイルを開けませんでした：{0}",
-	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "『縮小して新規ファイルとして保存』を使用する前に、ファイルをディスクに保存してください。新しい縮小ファイルは、既存の場所の隣に作成する必要があります。"
+	"Please save the file to disk before using 'Minify and Save as New File'. The new minified file needs an existing location to be created next to.": "『縮小して新規ファイルとして保存』を使用する前に、ファイルをディスクに保存してください。新しい縮小ファイルは、既存の場所の隣に作成する必要があります。",
+	"Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.": "縮小ファイルを作成できません：ファイル名が元のファイル（{0}）と同じになり、上書きされてしまいます。元のファイルは変更されていません。"
 }

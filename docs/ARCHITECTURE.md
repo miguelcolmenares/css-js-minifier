@@ -23,7 +23,7 @@ The CSS & JS Minifier extension follows a modular architecture pattern that sepa
 - **Purpose**: Business logic and minification orchestration.
 - **Components**:
   - `minificationService.ts` — facade that routes to the appropriate strategy based on `languageId`.
-  - `fileService.ts` — file system operations, URI and filename generation for the minified sibling with the configured `minifiedNewFilePrefix` (`createMinifiedUri` keeps the source document's scheme and authority), and the size-reduction statistics rendering.
+  - `fileService.ts` — file system operations, URI and filename generation for the minified sibling with the configured `minifiedNewFilePrefix` (inserted before the last extension, for any extension and case; `createMinifiedUri` keeps the source document's scheme and authority), the guard that refuses to write the new file over its source (#255), and the size-reduction statistics rendering.
   - `strategies/localCssMinifier.ts` — CSS via LightningCSS (Rust `transform()`).
   - `strategies/localJsMinifier.ts` — JavaScript via oxc-minify (Rust `minifySync()`).
   - `strategies/index.ts`, `index.ts` — barrel exports.

@@ -12,7 +12,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { MinificationStats } from './minificationService';
-import { t } from '@/utils/l10nHelper';
+import { t } from '../utils/l10nHelper';
 
 /**
  * Saves minified content to a new file and opens it in the editor.
@@ -25,6 +25,9 @@ import { t } from '@/utils/l10nHelper';
  * - Creates a new file on the file system
  * - Opens the new file in VS Code editor
  * - Shows success notification to the user
+ * - Never writes over the source: when the new file resolves to the same URI as
+ *   `sourceUri` (scheme, authority and path all equal), it shows an error and returns
+ *   without writing anything (issue #255)
  *
  * The target is a `vscode.Uri` rather than a path string so the new file keeps the
  * scheme and authority of the source document (for example `vscode-vfs` in a
@@ -33,7 +36,8 @@ import { t } from '@/utils/l10nHelper';
  * @param minifiedText - The minified content to save
  * @param newFileUri - The URI of the new file, on the same file system as the source document
  * @param stats - Statistics about the minification process
- * @returns Resolves when the file is successfully created and opened
+ * @param sourceUri - The URI of the document being minified, used to refuse to overwrite it
+ * @returns Resolves when the file is successfully created and opened, or when the write was refused
  *
  * @throws When file system operations fail (e.g., permissions, disk space)
  *
@@ -42,15 +46,28 @@ import { t } from '@/utils/l10nHelper';
  * const minifiedCSS = 'body{margin:0;color:red}';
  * const newUri = createMinifiedUri(document.uri, '.min');
  * const stats = { originalSize: 100, minifiedSize: 50, reductionPercent: 50, ... };
- * await saveAsNewFile(minifiedCSS, newUri, stats);
+ * await saveAsNewFile(minifiedCSS, newUri, stats, document.uri);
  * // File is created, opened in editor, and user sees success message with statistics
  * ```
  */
 export async function saveAsNewFile(
 	minifiedText: string,
 	newFileUri: vscode.Uri,
-	stats: MinificationStats
+	stats: MinificationStats,
+	sourceUri: vscode.Uri
 ): Promise<void> {
+	// Data-loss guard: never write the minified text over the source file. The full URI
+	// (scheme, authority, path, query) is compared, not just the path string.
+	if (newFileUri.toString() === sourceUri.toString()) {
+		vscode.window.showErrorMessage(
+			t(
+				'Cannot create the minified file: its name would be the same as the original ({0}) and would overwrite it. The original file was not changed.',
+				path.posix.basename(newFileUri.path)
+			)
+		);
+		return;
+	}
+
 	// Encode the text content as UTF-8 bytes for file writing
 	const textEncoder = new TextEncoder();
 	const encodedContent = textEncoder.encode(minifiedText);
@@ -180,7 +197,19 @@ export async function replaceDocumentContent(
  *
  * This utility function generates appropriate filenames for minified files by
  * inserting a user-configurable prefix (like '.min' or '-compressed') before
- * the file extension. It only works with supported file extensions (.css, .js).
+ * the last extension of the file name. It works for any extension, in any letter
+ * case, so `.mjs`, `.cjs`, `.JS` and `.CSS` get a new name just like `.css` and `.js`.
+ *
+ * @remarks
+ * - Only the last path segment is inspected, and both `/` and `\` count as separators,
+ *   so a dot in a folder name (`/a.d/Makefile`) is never taken for an extension.
+ * - The extension keeps its original case (`A.CSS` becomes `A.min.CSS`).
+ * - A name with no extension, or only a leading dot (`Makefile`, `.eslintrc`), has the
+ *   prefix appended at the end (`Makefile.min`, `.eslintrc.min`).
+ * - A name that already contains the prefix is not special-cased: `a.min.js` becomes
+ *   `a.min.min.js`, which never equals the original.
+ * - For any non-empty prefix the result differs from the input. `saveAsNewFile` still
+ *   checks it, so an empty prefix cannot overwrite the source.
  *
  * @param originalFileName - The complete path to the original file (a file system path or a URI path)
  * @param prefix - The prefix to insert before the extension (e.g., '.min', '-compressed')
@@ -196,15 +225,33 @@ export async function replaceDocumentContent(
  * createMinifiedFileName('/path/to/script.js', '-compressed');
  * // Returns: '/path/to/script-compressed.js'
  *
- * // Works with absolute paths
+ * // Works with any extension, in any case
+ * createMinifiedFileName('/path/to/module.mjs', '.min');
+ * // Returns: '/path/to/module.min.mjs'
+ *
+ * // Works with Windows paths
  * createMinifiedFileName('C:\\projects\\app.css', '.minified');
  * // Returns: 'C:\\projects\\app.minified.css'
+ *
+ * // No extension: the prefix goes at the end
+ * createMinifiedFileName('/path/to/Makefile', '.min');
+ * // Returns: '/path/to/Makefile.min'
  * ```
  */
 export function createMinifiedFileName(originalFileName: string, prefix: string): string {
-	// Use regex to insert the prefix before the file extension
-	// Matches .css or .js at the end of the filename and replaces with prefix + extension
-	return originalFileName.replace(/(\.css|\.js)$/, `${prefix}$1`);
+	// Split the directory part (kept as is) from the last path segment (the file name)
+	const nameStart = Math.max(originalFileName.lastIndexOf('/'), originalFileName.lastIndexOf('\\')) + 1;
+	const directory = originalFileName.slice(0, nameStart);
+	const baseName = originalFileName.slice(nameStart);
+
+	// The extension starts at the last dot of the file name. A dot at index 0 is a hidden
+	// file marker (".eslintrc"), not an extension, so it is treated like "no extension".
+	const extensionStart = baseName.lastIndexOf('.');
+	if (extensionStart <= 0) {
+		return `${directory}${baseName}${prefix}`;
+	}
+
+	return `${directory}${baseName.slice(0, extensionStart)}${prefix}${baseName.slice(extensionStart)}`;
 }
 
 /**

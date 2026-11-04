@@ -2,7 +2,7 @@
 
 ## Test Strategy Overview
 
-The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **66 tests** across four files, spanning activation, main functionality, workspace capabilities, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
+The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **81 tests** across five files, spanning activation, main functionality, new-file naming, workspace capabilities, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
 
 ## Test Structure
 
@@ -12,10 +12,9 @@ The CSS & JS Minifier extension uses VS Code's extension testing framework with 
 |---|---|---|
 | `activation.test.ts` | 5 | Regression guard for [#168](https://github.com/miguelcolmenares/css-js-minifier/issues/168): asserts `activationEvents` in `package.json` contains `onLanguage:css` and `onLanguage:javascript`, and that the deprecated `onCommand:*` / invalid `onSaveTextDocument` entries are not re-added. |
 | `extension.test.ts` | 31 | Main functionality: CSS/JS minification (in-place + new file), file-prefix configurations, explorer context menu, empty file / unsupported file type validation, configuration behaviors (`autoOpenNewFile`, `minifyInNewFile`, `minifiedNewFilePrefix`, `showSizeReduction`), CSS nth-child selectors, and keybinding smoke tests. |
-| `workspaceCapabilities.test.ts` | 7 | Virtual workspace support: registers an in-memory file system under a non-`file` scheme and checks that `Minify and Save as New File` writes the sibling file through that provider (same scheme and authority, no local file, query and fragment dropped), and that in-place minification persists through it. Also asserts the `capabilities` declared in `package.json` (virtual workspaces supported, untrusted workspaces `limited` with the write-target settings restricted). |
+| `fileService.test.ts` | 15 | (18 when run: the end-to-end check is generated for four file names) Regression guard for [#255](https://github.com/miguelcolmenares/css-js-minifier/issues/255): `createMinifiedFileName` for `.css`, `.js`, `.mjs`, `.cjs`, uppercase extensions, Windows paths, no extension, leading dot and already-prefixed names, with every prefix the setting offers; and an extension-host proof that **Minify and Save as New File** never overwrites the original (temp files in the OS temp folder, read back from disk) and that `saveAsNewFile` refuses to write when the target URI equals the source URI. |
 | `i18n.test.ts` | 23 | Two nested suites: (a) static bundle validation — file existence, JSON validity, key parity across all seven languages, placeholder preservation; and (b) **Runtime Localization (`vscode.l10n`)** — regression guard for [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169): asserts `t()` returns real interpolated text (never a raw key), placeholder interpolation is preserved end-to-end, `vscode.l10n.bundle` matches the shipped `bundle.l10n.<locale>.json` when running under a non-English locale, and every non-English bundle differs from English for at least one key. |
-
-Total: **66 tests**.
+| `workspaceCapabilities.test.ts` | 7 | Virtual workspace support: registers an in-memory file system under a non-`file` scheme and checks that `Minify and Save as New File` writes the sibling file through that provider (same scheme and authority, no local file, query and fragment dropped), and that in-place minification persists through it. Also asserts the `capabilities` declared in `package.json` (virtual workspaces supported, untrusted workspaces `limited` with the write-target settings restricted). |
 
 ## File Management & Test Isolation
 
@@ -53,7 +52,7 @@ Access via `Ctrl/Cmd + Shift + P` → "Tasks: Run Task":
 
 | Task | Focus |
 |---|---|
-| Test: Run All Tests | Full 58-test suite (compile + lint + all suites) |
+| Test: Run All Tests | Full 73-test suite (compile + lint + all suites) |
 | Test: Configuration Suite Only | `Configuration Test Suite` in `extension.test.ts` |
 | Test: Main Functionality Suite Only | `JS & CSS Minifier Test Suite` in `extension.test.ts` |
 | Test: CSS nth-child Suite Only | `CSS nth-child Test Suite` in `extension.test.ts` |
@@ -76,6 +75,7 @@ npx vscode-test --grep "CSS nth-child Test Suite"
 npx vscode-test --grep "Keybinding Test Suite"
 npx vscode-test --grep "Virtual Workspace Test Suite"
 npx vscode-test --grep "Internationalization"
+npx vscode-test --grep "File Service Test Suite"
 npx vscode-test --grep "Activation Events"
 npx vscode-test --grep "Runtime Localization"
 
@@ -152,6 +152,7 @@ const jsMinifiedContent = 'function test(){for(var e=`Hello, World!`,t=``,n=0;n<
 src/test/
 ├── activation.test.ts     # Activation Events regression guard (#168)
 ├── extension.test.ts      # Main test suite (31 tests)
+├── fileService.test.ts    # New-file naming + overwrite guard (#255, 15 tests)
 ├── i18n.test.ts           # Static + runtime i18n suites (23 tests)
 ├── workspaceCapabilities.test.ts # Virtual workspace + capabilities (7 tests)
 └── fixtures/
@@ -199,4 +200,4 @@ src/test/
 
 **Last Updated**: 2026-10-28
 **Extension Version**: 1.3.4
-**Test Suite**: 66 tests across 4 files (activation, main, workspace capabilities, i18n)
+**Test Suite**: 81 tests across 5 files (activation, main, file service, workspace capabilities, i18n)

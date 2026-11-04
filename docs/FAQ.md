@@ -45,7 +45,7 @@ Turn on the `css-js-minifier.minifyOnSave` setting, and reload the window. See [
 
 Yes. The `css-js-minifier.minifiedNewFilePrefix` setting gives six choices: `.min`, `-min`, `.compressed`, `-compressed`, `.minified` and `-minified`. See [Configuration](CONFIGURATION.md).
 
-The new name is made by adding the text before `.css` or `.js`. A file with a different ending, such as `.mjs` or `.cjs`, keeps the same name, so **Minify and Save as New File** would write over the original (a bug tracked in [issue #255](https://github.com/miguelcolmenares/css-js-minifier/issues/255)). For those files use **Minify this File**.
+The text is added before the last extension of the file name, whatever it is and in whichever letter case: `style.css` becomes `style.min.css`, `module.mjs` becomes `module.min.mjs`, `common.cjs` becomes `common.min.cjs` and `APP.JS` becomes `APP.min.JS`. A name with no extension, such as `Makefile`, gets the text at the end (`Makefile.min`). The new file is never given the same name as the original, and the extension refuses to write a file over the one it is minifying.
 
 ## Does it work in Remote SSH, WSL, Dev Containers or virtual workspaces?
 
