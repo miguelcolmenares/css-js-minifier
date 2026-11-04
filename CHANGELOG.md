@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Added
+
+- **Publishing to [Open VSX](https://open-vsx.org)**, the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. A new [`publish-openvsx.yml`](.github/workflows/publish-openvsx.yml) workflow downloads the six `.vsix` files from the GitHub Release and runs `ovsx publish` on each, so both registries serve identical artifacts. `release.yml` calls it as a `publish-openvsx` job that runs in parallel with the Marketplace `publish` job, and the two do not block each other. It can also be dispatched alone for a version that already has a release, to backfill or retry; targets already on Open VSX are skipped. Needs an `OVSX_PAT` repository secret and the `miguel-colmenares` namespace on open-vsx.org.
+
 ## [1.3.4] - 2026-10-28
 
 ### Added

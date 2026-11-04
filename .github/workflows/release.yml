@@ -9,7 +9,7 @@ name: Build & Release
 #    contributor's PR "yes, your change also works on Linux ARM and Win x64".
 #
 # 2. `workflow_dispatch` → the maintainer manually cuts a release. The tag,
-#    the GitHub Release and the Marketplace publish all happen from inside
+#    the GitHub Release and the Marketplace and Open VSX publishes all happen from inside
 #    this workflow, gated on a preflight that includes `vsce verify-pat`.
 #    This guarantees that a tag is NEVER created if the PAT is expired or
 #    the version metadata is inconsistent — which, combined with the tag
@@ -351,6 +351,23 @@ jobs:
           count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
           echo "Publishing $count .vsix files to Marketplace..."
           npx vsce publish --packagePath dist/*.vsix
+
+  # Open VSX (VSCodium, Theia, Gitpod, ...) gets the same .vsix files as the Marketplace, taken from
+  # the GitHub Release. It only needs the tag-and-release job, not the Marketplace publish, so a failure
+  # on one registry never blocks the other. See publish-openvsx.yml, which can also be dispatched
+  # alone to backfill or retry a version.
+  publish-openvsx:
+    name: Publish to Open VSX
+    needs: [preflight, tag-and-release]
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      needs.tag-and-release.result == 'success'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-openvsx.yml
+    with:
+      version: ${{ needs.preflight.outputs.version }}
+    secrets: inherit
 
   # The documentation site is rebuilt as the last step of a release, so it shows the version that was
   # just published. A release created with GITHUB_TOKEN does not start other workflows, so this cannot

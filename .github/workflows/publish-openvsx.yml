@@ -1,0 +1,154 @@
+name: Publish to Open VSX
+
+# Publishes the platform-specific .vsix files of an existing GitHub Release to
+# the Open VSX registry (https://open-vsx.org), which VSCodium, Eclipse Theia,
+# Gitpod and other VS Code forks use instead of the Microsoft Marketplace.
+#
+# Two entry points, one implementation:
+#
+# 1. `workflow_call` → `release.yml` runs this after `tag-and-release`, in
+#    parallel with the Marketplace `publish` job. The two registries are
+#    independent: a failure on one never blocks the other.
+#
+# 2. `workflow_dispatch` → the maintainer backfills a version that already has
+#    a GitHub Release (the first Open VSX publish) or retries after a failure.
+#
+# The .vsix files are always downloaded from the GitHub Release, never rebuilt,
+# so Open VSX serves byte-for-byte the same artifacts as the Marketplace.
+#
+# Retries are safe: a target that is already on Open VSX is skipped, so a
+# re-run only uploads what is missing.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version to publish (must have a GitHub Release v<version>).
+        required: true
+        type: string
+    secrets:
+      OVSX_PAT:
+        description: Open VSX access token (open-vsx.org → Settings → Access Tokens).
+        required: false
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Version to publish to Open VSX (e.g. 1.3.4). The GitHub Release
+          v<version> must already exist with its .vsix assets attached.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-openvsx-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish .vsix files to Open VSX
+    runs-on: ubuntu-26.04
+    env:
+      VERSION: ${{ inputs.version }}
+      OVSX_NAMESPACE: miguel-colmenares
+      OVSX_EXTENSION: css-js-minifier
+    steps:
+      - name: Validate version input
+        shell: bash
+        # The value reaches shell commands and a release tag name, so accept
+        # only a plain X.Y.Z before using it anywhere.
+        run: |
+          set -euo pipefail
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version '$VERSION'. Expected X.Y.Z, without the leading 'v'."
+            exit 1
+          fi
+
+      - name: Verify OVSX_PAT is present
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        # Fail fast with a pointer to the fix instead of letting ovsx fail
+        # with a less obvious authentication error halfway through.
+        run: |
+          if [ -z "${OVSX_PAT:-}" ]; then
+            echo "::error::OVSX_PAT secret is not configured on this repository."
+            echo "::error::Create a token at https://open-vsx.org (Settings → Access Tokens) and add it under Settings → Secrets and variables → Actions."
+            echo "::error::The namespace '${OVSX_NAMESPACE}' must exist and the Eclipse Publisher Agreement must be signed."
+            exit 1
+          fi
+          echo "OVSX_PAT is present (length: ${#OVSX_PAT})."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          # ovsx 1.x requires Node >= 22 (the rest of the repo's workflows use 20).
+          node-version: 22
+
+      - name: Download .vsix files from the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh release download "v${VERSION}" --dir dist --pattern '*.vsix'
+          ls -lh dist/
+
+      - name: Publish each .vsix to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        # `ovsx publish` takes one file per call, unlike `vsce publish
+        # --packagePath`, so this loops over the six platform targets. The
+        # token is read from OVSX_PAT by ovsx itself and never put on a
+        # command line. A target that is already published is skipped (public
+        # API lookup, no auth), which makes re-running the job safe. Every
+        # target is attempted even if one fails, and the step fails at the end.
+        run: |
+          set -uo pipefail
+          expected=6
+          count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
+          if [ "$count" -ne "$expected" ]; then
+            echo "::error::Expected $expected .vsix files in release v${VERSION}, found $count."
+            exit 1
+          fi
+
+          failed=()
+          for file in dist/*.vsix; do
+            name=$(basename "$file" .vsix)
+            target="${name#"${OVSX_EXTENSION}-${VERSION}-"}"
+            if [ "$target" = "$name" ]; then
+              echo "::error::Cannot derive the target from '$name'; expected ${OVSX_EXTENSION}-${VERSION}-<target>.vsix."
+              failed+=("$name")
+              continue
+            fi
+
+            url="https://open-vsx.org/api/${OVSX_NAMESPACE}/${OVSX_EXTENSION}/${target}/${VERSION}"
+            status=$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)
+            if [ "$status" = "200" ]; then
+              echo "::notice::${target} ${VERSION} is already on Open VSX, skipping."
+              continue
+            fi
+
+            echo "Publishing ${target} ${VERSION}..."
+            # Pinned: this step handles the token, so a new ovsx release is
+            # adopted by a reviewed change, not silently.
+            if ! npx --yes ovsx@1.3.0 publish "$file"; then
+              echo "::error::Publishing ${target} failed."
+              failed+=("$target")
+            fi
+          done
+
+          if [ "${#failed[@]}" -gt 0 ]; then
+            echo "::error::Failed targets: ${failed[*]}. Fix the cause and re-run; published targets will be skipped."
+            exit 1
+          fi
+
+      - name: Summary
+        if: success()
+        run: |
+          {
+            echo "## Open VSX"
+            echo ""
+            echo "Version \`${VERSION}\` is published for all targets: https://open-vsx.org/extension/${OVSX_NAMESPACE}/${OVSX_EXTENSION}"
+          } >> "$GITHUB_STEP_SUMMARY"
