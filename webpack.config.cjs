@@ -7,8 +7,13 @@ const path = require('path');
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-/** @type WebpackConfig */
-const extensionConfig = {
+/**
+ * Builds the extension bundle configuration.
+ *
+ * @param {{ coverage?: boolean }} [env] - Webpack `--env` flags. `--env coverage` is set only by `npm run test:coverage`.
+ * @returns {WebpackConfig}
+ */
+const createExtensionConfig = (env = {}) => ({
 	target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
@@ -18,6 +23,11 @@ const extensionConfig = {
 		path: path.resolve(__dirname, 'dist'),
 		filename: 'extension.js',
 		libraryTarget: 'commonjs2',
+		// Coverage only: map the bundle back to the absolute paths of `src/**` so c8 can read
+		// the sources. Webpack's default `webpack://<name>/./src/...` paths resolve to nothing,
+		// which makes c8 report every file at a bogus 100% or 0%. Left unset otherwise, so
+		// regular builds and the shipped source maps never carry machine-specific paths.
+		...(env.coverage && { devtoolModuleFilenameTemplate: '[absolute-resource-path]' }),
 	},
 	externals: {
 		vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
@@ -54,5 +64,7 @@ const extensionConfig = {
 	infrastructureLogging: {
 		level: 'log', // enables logging required for problem matchers
 	},
-};
-module.exports = [extensionConfig];
+});
+
+/** @param {{ coverage?: boolean }} [env] */
+module.exports = (env) => [createExtensionConfig(env)];

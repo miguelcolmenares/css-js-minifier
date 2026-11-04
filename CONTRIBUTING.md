@@ -39,6 +39,16 @@ The fastest way is via the VS Code tasks (`Cmd/Ctrl + Shift + P` → **Tasks: Ru
 
 Or from the CLI: `npm test` (runs pretest + full suite).
 
+### Test coverage
+
+```bash
+npm run test:coverage
+```
+
+This rebuilds the bundle for coverage, runs the full suite once, prints a per-file summary for `src/**` (lines, functions and branches), and writes an `lcov` report to `coverage/lcov.info`. The `coverage/` folder is git-ignored and excluded from the `.vsix`. It adds no dependency (it uses the `c8` that `@vscode/test-cli` already ships) and leaves `npm test` untouched.
+
+Coverage is for orientation only: there is no minimum threshold, and the native code in `lightningcss` and `oxc-minify` cannot be measured. In CI, the Ubuntu job of `test-vscode-stable.yml` publishes the same table in its job summary; it never fails the job. How it works, and why the bundle needs a special source-map path, is in [docs/TESTING-GUIDE.md](docs/TESTING-GUIDE.md#test-coverage).
+
 ## Cross-platform validation
 
 **You do not need to test on multiple operating systems locally.** The `Build & Release` workflow (`.github/workflows/release.yml`) automatically runs an 8-target build matrix on every pull request that touches:

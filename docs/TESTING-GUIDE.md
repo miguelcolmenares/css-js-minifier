@@ -87,9 +87,36 @@ VSCODE_LOCALE=qps-ploc npm test  # pseudo-locale, no pack needed
 
 # Build only (no tests)
 npm run pretest
+
+# Coverage: per-file summary for src/** plus coverage/lcov.info
+npm run test:coverage
 ```
 
 See [`docs/INTERNATIONALIZATION.md#testing-under-a-specific-locale`](INTERNATIONALIZATION.md#testing-under-a-specific-locale) for the runtime localization test wiring.
+
+### Test coverage
+
+`npm run test:coverage` is opt-in. `npm test` is unchanged and collects nothing.
+
+```bash
+npm run test:coverage
+```
+
+It runs `pretest:coverage` (compile tests, rebuild the bundle with `webpack --env coverage`, lint, copy fixtures), then `vscode-test --coverage --coverage-output coverage`, then `scripts/coverage-report.mjs`. The output is a per-file table of lines, functions and branches for `src/**` (without `src/test/**`) and `coverage/lcov.info` with repository-relative paths. There is no threshold: the numbers are for orientation.
+
+How it is wired:
+
+- `.vscode-test.mjs` holds a `coverage` block (`include`, `exclude`, `reporter: ['lcovonly']`). It is a sibling of `tests` inside `defineConfig({ tests, coverage })`; a flat `defineConfig({ files, version, coverage })` ignores it silently. The CLI also ignores `coverage.output`, so the folder comes from `--coverage-output` in the npm script. Patterns are matched against absolute paths, which is why they start with `**/`.
+- The extension under test runs from the webpack bundle `dist/extension.js`, not from the `out/` files that `tsc` emits. Webpack's default source-map paths (`webpack://css-js-minifier/./src/...`) point at nothing c8 can read, so it reports every file at a false 100% or 0%. `--env coverage` makes `webpack.config.cjs` set `devtoolModuleFilenameTemplate` to `[absolute-resource-path]`, which maps the bundle back to the real `src/**` files. Regular builds and the shipped source maps never get these absolute paths.
+- c8 also lists non-source modules of the bundle (`external commonjs "vscode"`, `webpack/bootstrap`) as 100% covered. `scripts/coverage-report.mjs` drops them, rewrites `lcov.info` with only `src/**`, and prints the table.
+- `scripts/coverage-report.mjs` exits 1 when `src/extension.ts` is missing from the lcov file. That means the bundle was built without `--env coverage` and only the few files the tests import from `out/` were measured, so the run is refused instead of showing a tiny table that looks complete.
+- With `includeAll: false`, a file nothing loads, such as a type-only module, does not appear.
+
+**What it cannot measure**: the minification itself runs in the Rust bindings `lightningcss` and `oxc-minify`, so the percentages describe the VS Code orchestration around them.
+
+**CI**: the Ubuntu job of `.github/workflows/test-vscode-stable.yml` (VS Code Stable) reruns the suite with `npm run test:coverage` and appends the table to `$GITHUB_STEP_SUMMARY`. Both steps use `continue-on-error`, so a coverage problem never changes a required check. The other jobs are unchanged.
+
+**Local note**: on macOS, VS Code needs the user-data path under 103 characters for its IPC socket. In a deeply nested checkout (for example a git worktree) the run fails with `listen EINVAL ... main.sock`. Pass a short directory through `launchArgs: ['--user-data-dir=/tmp/short']` in a local, uncommitted copy of the config.
 
 ### Development Workflow
 
