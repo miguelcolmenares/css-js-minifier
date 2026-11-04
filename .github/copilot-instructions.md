@@ -476,8 +476,8 @@ ls -lh *.vsix
 
 - **CodeQL**: Automated security scanning runs on push, PRs, and weekly schedule
 - **Dependabot**: Monitors for security vulnerabilities in dependencies
-- **Auto-merge**: Dependabot PRs automatically merge when all CI checks pass
-- **Workflow Integration**: Auto-merge triggered after Build-Master and all VS Code version tests succeed
+- **Auto-merge**: Dependabot minor and patch PRs automatically merge when all CI checks pass; major updates are left open for a human to review
+- **Workflow Integration**: Auto-merge is triggered by the completion of any workflow that runs on a pull request, so the last one to finish merges (see "Dependabot auto-merge" in `AGENTS.md`)
 - **Critical**: Monitor auto-merged PRs and manual intervention available if needed
 
 ## Local Git Hooks (Husky)
