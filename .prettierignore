@@ -19,8 +19,7 @@ src/test/fixtures/
 
 # Markdown is linted by markdownlint-cli2, never reformatted by Prettier.
 # Prettier rewrites code spans and fenced content whose exact whitespace is the
-# subject of the surrounding sentence — the issue templates document GitHub's
-# title prefixes as `[Bug]: `, where the trailing space is literal.
+# subject of the surrounding sentence.
 # See .markdownlint-cli2.jsonc.
 *.md
 

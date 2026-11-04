@@ -1,11 +1,14 @@
 blank_issues_enabled: true
 contact_links:
-  - name: 📚 Documentation
-    url: https://github.com/miguelcolmenares/css-js-minifier#readme
-    about: Read the extension documentation and user guide
-  - name: 💬 Discussions
-    url: https://github.com/miguelcolmenares/css-js-minifier/discussions
-    about: Ask questions and discuss ideas with the community
-  - name: 🐛 Report Security Vulnerability
+  - name: 📚 User guide
+    url: https://miguelcolmenares.com/css-js-minifier/
+    about: Install, quick start, commands, settings and examples
+  - name: ❓ FAQ
+    url: https://miguelcolmenares.com/css-js-minifier/docs/faq/
+    about: Short answers to common questions. If yours is not there, open a blank issue and ask
+  - name: 🛠️ Troubleshooting
+    url: https://miguelcolmenares.com/css-js-minifier/docs/troubleshooting/
+    about: What to try when something does not work, and what to include in a bug report
+  - name: 🔒 Report a security vulnerability
     url: https://github.com/miguelcolmenares/css-js-minifier/security/advisories/new
-    about: Privately report security vulnerabilities
+    about: Report it privately, do not open a public issue
