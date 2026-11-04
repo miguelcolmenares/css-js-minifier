@@ -2,7 +2,7 @@
 
 ## Test Strategy Overview
 
-The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **58 tests** across three files, spanning activation, main functionality, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
+The CSS & JS Minifier extension uses VS Code's extension testing framework with Mocha. The current test suite covers **66 tests** across four files, spanning activation, main functionality, workspace capabilities, and internationalization. Both CSS and JS minification are fully local (LightningCSS + oxc-minify) so tests run fast with no network dependency or rate-limiting concerns.
 
 ## Test Structure
 
@@ -15,7 +15,7 @@ The CSS & JS Minifier extension uses VS Code's extension testing framework with 
 | `workspaceCapabilities.test.ts` | 7 | Virtual workspace support: registers an in-memory file system under a non-`file` scheme and checks that `Minify and Save as New File` writes the sibling file through that provider (same scheme and authority, no local file, query and fragment dropped), and that in-place minification persists through it. Also asserts the `capabilities` declared in `package.json` (virtual workspaces supported, untrusted workspaces `limited` with the write-target settings restricted). |
 | `i18n.test.ts` | 23 | Two nested suites: (a) static bundle validation — file existence, JSON validity, key parity across all seven languages, placeholder preservation; and (b) **Runtime Localization (`vscode.l10n`)** — regression guard for [#169](https://github.com/miguelcolmenares/css-js-minifier/issues/169): asserts `t()` returns real interpolated text (never a raw key), placeholder interpolation is preserved end-to-end, `vscode.l10n.bundle` matches the shipped `bundle.l10n.<locale>.json` when running under a non-English locale, and every non-English bundle differs from English for at least one key. |
 
-Total: **58 tests**.
+Total: **66 tests**.
 
 ## File Management & Test Isolation
 
@@ -172,4 +172,4 @@ src/test/
 
 **Last Updated**: 2026-10-28
 **Extension Version**: 1.3.4
-**Test Suite**: 58 tests across 3 files (activation, main, i18n)
+**Test Suite**: 66 tests across 4 files (activation, main, workspace capabilities, i18n)
