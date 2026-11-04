@@ -14,7 +14,7 @@ If any instruction here contradicts something you found in the codebase, the cod
 - **Entry point:** `src/extension.ts` → `src/commands/*` → `src/services/*` → `src/services/strategies/{localCssMinifier,localJsMinifier}.ts`.
 - **i18n:** two-layer system (`package.nls.*.json` for static contributions, `l10n/bundle.l10n.*.json` for runtime strings). Seven languages. See [`docs/INTERNATIONALIZATION.md`](docs/INTERNATIONALIZATION.md).
 - **Test framework:** VS Code extension test runner (Mocha under the hood). Test suites live under `src/test/`.
-- **Package size target:** ~50 KB per `.vsix`. See `.vscodeignore`.
+- **Package size:** about 6 to 7 MB per `.vsix`, dominated by the native bindings. See `.vscodeignore`.
 
 ---
 

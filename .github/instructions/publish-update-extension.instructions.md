@@ -150,7 +150,7 @@ The workflow runs these jobs in order:
 2. **Build matrix** (~10–15 min). Packages one `.vsix` per target (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`, `alpine-x64`, `alpine-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each. The two `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` and smoke-tested inside a `node:20-alpine` container.
 3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all eight `.vsix` files attached and auto-generated release notes.
 4. **Publish** (~2 min). Uploads all eight `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
-5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the eight `.vsix` files (the workflow fails if the release does not have exactly eight) from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
+5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the `.vsix` files of the release (eight since the Alpine targets, six for older releases; the workflow fails if it finds fewer than six) from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
 
 If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
@@ -232,7 +232,7 @@ Use this only when the workflow's publish step failed and you cannot re-run it (
 # 1. Authenticate vsce locally with a fresh PAT.
 export VSCE_PAT=<your-pat>
 
-# 2. Download all eight .vsix files from the GitHub Release.
+# 2. Download all the .vsix files from the GitHub Release.
 mkdir -p /tmp/release-X.Y.Z
 gh release download vX.Y.Z --repo miguelcolmenares/css-js-minifier --dir /tmp/release-X.Y.Z --pattern '*.vsix'
 
