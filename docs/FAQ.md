@@ -61,7 +61,7 @@ The extension contains fast native code, and native code is different for each t
 
 ## Marketplace or Open VSX, what is the difference?
 
-They are two places to get the same extension. The VS Code Marketplace is the one VS Code uses. Open VSX is the registry used by VSCodium, Eclipse Theia, Gitpod and other forks. The extension is not active on Open VSX yet, so use the Marketplace or a `.vsix` file. See [Install](INSTALL.md).
+They are two places to get the same extension. The VS Code Marketplace is the one VS Code uses. Open VSX is the registry used by VSCodium, Eclipse Theia, Gitpod and other forks. The extension is published on both, from the same files, so use whichever your editor reads. See [Install](INSTALL.md).
 
 ## Which VS Code versions work?
 

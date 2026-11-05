@@ -6,7 +6,7 @@ This directory holds the documentation of the CSS & JS Minifier VS Code extensio
 
 For people who want to install and use the extension.
 
-- **[INSTALL.md](INSTALL.md)**: install from the VS Code Marketplace, Open VSX (coming soon) or a `.vsix` file, then update and uninstall.
+- **[INSTALL.md](INSTALL.md)**: install from the VS Code Marketplace, Open VSX or a `.vsix` file, then update and uninstall.
 - **[QUICK-START.md](QUICK-START.md)**: minify a first file in about a minute.
 - **[COMMANDS-AND-SHORTCUTS.md](COMMANDS-AND-SHORTCUTS.md)**: the two commands, the menus and the keyboard shortcuts for Windows, Linux and macOS.
 - **[CONFIGURATION.md](CONFIGURATION.md)**: the five settings, with ready-to-copy `settings.json` snippets.
