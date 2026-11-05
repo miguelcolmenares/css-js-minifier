@@ -62,7 +62,7 @@ Editors such as VSCodium, Eclipse Theia and Gitpod use [Open VSX](https://open-v
 
 Open the [extension page on Open VSX](https://open-vsx.org/extension/miguel-colmenares/css-js-minifier) to see the versions and the available packages, then install from your editor.
 
-### From the terminal
+### From the terminal of your editor
 
 ```bash
 codium --install-extension miguel-colmenares.css-js-minifier
