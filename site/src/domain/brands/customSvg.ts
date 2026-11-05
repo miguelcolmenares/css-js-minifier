@@ -12,6 +12,20 @@ const attribute = (tag: string, name: string) =>
     .find((value) => value !== undefined);
 
 /**
+ * Take out the XML declaration, the comments and the doctype. A single pass can leave a comment behind that the
+ * removal itself closed up (`<!<!-- -->--`), so it runs until the text stops changing. Each removed part becomes
+ * a space, so two tags that were split by a comment stay apart.
+ */
+function withoutMarkupNoise(source: string): string {
+  let markup = source;
+  for (let previous = ""; previous !== markup;) {
+    previous = markup;
+    markup = markup.replace(/<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>/gi, " ");
+  }
+  return markup;
+}
+
+/**
  * Read an SVG file the author added to the brands folder and keep only what a monochrome logo needs:
  * the view box and the path data. Anything else is refused, with the file named, so a logo never draws
  * differently from what the file shows, and a file never brings a script or a request with it.
@@ -22,17 +36,8 @@ export function parseCustomSvg(source: string, file: string): BrandGlyph {
   };
   if (source.length > MAX_BYTES)
     fail(`is larger than ${MAX_BYTES / 1000} KB. A logo is a few KB of path data.`);
-  
-  // Robust removal of comments and processing instructions to satisfy CodeQL.
-  // We use a loop to handle nested or malformed comments that might bypass a single pass.
-  let markup = source;
-  let prev;
-  do {
-    prev = markup;
-    markup = markup.replace(/<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>/gi, " ");
-  } while (markup !== prev);
-
-  const tags = [...markup.matchAll(/<\/?\s*(?!!--)([a-zA-Z][\w:-]*)([^>]*)>/g)];
+  const markup = withoutMarkupNoise(source);
+  const tags = [...markup.matchAll(/<\/?\s*([a-zA-Z][\w:-]*)([^>]*)>/g)];
   if (tags[0]?.[1]?.toLowerCase() !== "svg" || markup.trimStart().startsWith("</"))
     fail("is not an SVG: it must start with an <svg> element.");
   const paths: { d: string; fillRule?: "evenodd" | "nonzero" }[] = [];
