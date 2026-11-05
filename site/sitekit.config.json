@@ -6,7 +6,8 @@
     "base": "/css-js-minifier/",
     "repository": "https://github.com/miguelcolmenares/css-js-minifier",
     "license": "MIT",
-    "installCommand": "code --install-extension miguel-colmenares.css-js-minifier"
+    "installCommand": "code --install-extension miguel-colmenares.css-js-minifier",
+    "image": "/social.png"
   },
   "hero": {
     "badge": "VS Code extension · Works offline · MIT licensed",
