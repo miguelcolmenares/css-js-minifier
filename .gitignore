@@ -5,3 +5,6 @@ node_modules
 *.vsix
 .env*
 coverage
+
+# Drawn by the docs workflow with social-card-action
+site/public/social.png
