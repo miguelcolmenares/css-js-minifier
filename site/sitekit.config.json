@@ -60,12 +60,33 @@
       "text": "The extension follows your VS Code display language."
     }
   ],
-  "nav": [],
+  "nav": [
+    {
+      "label": "Docs",
+      "href": "/docs/"
+    },
+    {
+      "label": "Examples",
+      "href": "/docs/examples/"
+    },
+    {
+      "label": "Help",
+      "href": "/docs/faq/"
+    },
+    {
+      "label": "Contributors",
+      "href": "/docs/overview/"
+    }
+  ],
   "footer": {
     "links": [
       {
         "label": "VS Code Marketplace",
         "href": "https://marketplace.visualstudio.com/items?itemName=miguel-colmenares.css-js-minifier"
+      },
+      {
+        "label": "Open VSX",
+        "href": "https://open-vsx.org/extension/miguel-colmenares/css-js-minifier"
       },
       {
         "label": "Report a bug",
