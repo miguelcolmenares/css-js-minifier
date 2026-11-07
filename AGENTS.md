@@ -33,10 +33,14 @@ If any instruction here contradicts something you found in the codebase, the cod
    ├─ build matrix    — 8 targets, .vsix per target, activation smoke test
    ├─ tag-and-release — annotated tag pushed, GitHub Release with .vsix assets
    ├─ publish         — vsce publish --packagePath dist/*.vsix            (VS Code Marketplace)
-   └─ publish-openvsx — publish-openvsx.yml: ovsx publish, one call per .vsix (Open VSX)
+   └─ publish-openvsx — dispatches publish-openvsx.yml, which runs ovsx publish (Open VSX, OIDC)
 ```
 
-`publish` and `publish-openvsx` both start after `tag-and-release` and are independent: a failure on one registry never blocks the other. `publish-openvsx.yml` is also dispatchable on its own (`gh workflow run publish-openvsx.yml -f version=X.Y.Z`) to backfill or retry a version that already has a GitHub Release; it downloads the `.vsix` files from that release and skips targets already on Open VSX.
+`publish` and `publish-openvsx` both start after `tag-and-release` and are independent: a failure on one registry never blocks the other.
+
+`publish-openvsx` is only a dispatcher. It runs `gh workflow run publish-openvsx.yml`, so the Open VSX publish happens in its own workflow run and cannot fail the release; the release job's summary links to it. The same command backfills or retries a version that already has a GitHub Release (`gh workflow run publish-openvsx.yml -f version=X.Y.Z`): it downloads the `.vsix` files from that release, and `--skip-duplicate` makes a target that is already on Open VSX a no-op.
+
+**`publish-openvsx.yml` must stay a dispatch, not a `uses:` call.** It authenticates with Open VSX trusted publishing (OIDC) and no stored token. The trusted publisher registered at open-vsx.org names the file `publish-openvsx.yml`, and Open VSX matches the OIDC `workflow_ref` claim (it records `job_workflow_ref` without matching it). With `workflow_call` that claim names the *calling* workflow, so a reusable call would present `release.yml` and the token exchange would be refused. Renaming the file, or turning the dispatch back into `uses:`, breaks publishing until the registration is deleted and recreated.
 
 ### Why this design
 
@@ -55,14 +59,15 @@ The preflight-first release workflow gives us: if the PAT is broken, nothing get
 - `CHANGELOG.md` has a heading matching `^## \[X.Y.Z\]`.
 - The tag `vX.Y.Z` does not already exist on `origin` (workflow will refuse otherwise).
 - `VSCE_PAT` is configured as a repository secret with `Marketplace (Manage)` scope for publisher `miguel-colmenares`.
-- `OVSX_PAT` is configured as a repository secret (Open VSX access token), the `miguel-colmenares` namespace exists on open-vsx.org, and the Eclipse Publisher Agreement is signed. Unlike `VSCE_PAT`, it is not checked in `preflight`: a missing or bad token fails only the `publish-openvsx` job, after the tag exists, and the job can be re-run alone through `publish-openvsx.yml`.
+- Open VSX needs **no secret**: the `miguel-colmenares` namespace is verified, the Eclipse Publisher Agreement is signed, and a trusted publisher for `publish-openvsx.yml` is registered, so the publish authenticates with OIDC. Nothing about it is checked in `preflight` because there is no credential to check; a failure there happens after the tag exists and is retried by dispatching `publish-openvsx.yml` again. To confirm the registry side at any time: `curl -s https://open-vsx.org/api/miguel-colmenares | jq '.verified'` returns `true`.
 
 The workflow re-checks all four in its `preflight` job, so you can't accidentally skip them.
 
 ### Explicit anti-patterns
 
 - ❌ Do **not** run `vsce publish` locally except in the emergency-fallback scenario documented in `publish-update-extension.instructions.md` (workflow publish step failed AND cannot be re-run).
-- ❌ Do **not** run `ovsx publish` locally. If `publish-openvsx` fails, fix the cause and dispatch `publish-openvsx.yml` for the same version; it skips targets that are already published.
+- ❌ Do **not** run `ovsx publish` locally. If `publish-openvsx` fails, fix the cause and dispatch `publish-openvsx.yml` for the same version; it skips targets that are already published. A local publish would also need a token, which is exactly what trusted publishing removed.
+- ❌ Do **not** set `OVSX_PAT` anywhere in `publish-openvsx.yml`. `ovsx` reads that variable itself and a token takes precedence over trusted publishing, so one left in the environment silently disables OIDC.
 - ❌ If the tag-and-release job succeeds but publish fails, re-running the publish job is the first recovery step. If the job cannot be re-run, follow the emergency-fallback in `publish-update-extension.instructions.md`. Do NOT create a new tag for the same version.
 - ❌ Do **not** push tags manually. `pre-push` will block you.
 - ❌ Do **not** try to delete or re-tag a `v*` — the ruleset blocks it and the fix is always "bump to the next version".
@@ -366,4 +371,4 @@ gh workflow run release.yml -f version=X.Y.Z
 
 ---
 
-**Last updated:** 2026-07-22 (v1.3.3 introduced Husky hooks and workflow-driven releases).
+**Last updated:** 2026-11-05 (Open VSX namespace verified; publishing there moved to trusted publishing, so `release.yml` dispatches `publish-openvsx.yml` instead of calling it).

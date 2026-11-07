@@ -173,7 +173,7 @@ Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. D
 2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
 3. Commit both in the same commit. Convention: `chore: Release version X.Y.Z`.
 4. Open PR → get the 8-target matrix green → squash-merge.
-5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy. The `OVSX_PAT` secret (Open VSX) must also exist; it is not checked in preflight.
+5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy. Open VSX needs no secret: it publishes with trusted publishing (OIDC) and is not checked in preflight.
 6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
 
 #### Prohibitions
@@ -181,6 +181,7 @@ Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. D
 - Never run `vsce publish` locally (except the emergency-fallback scenario in the publishing instructions).
 - Never push a `v*` tag by hand.
 - Never delete/re-tag an existing `v*` (the ruleset blocks it; the fix is always "bump to the next version").
+- Never turn the `publish-openvsx` dispatch into a reusable-workflow call, and never rename `publish-openvsx.yml`. The Open VSX trusted publisher is registered against that filename and matched on the OIDC `workflow_ref` claim, which names the *calling* workflow under `workflow_call`.
 
 #### Background (rationale & pipeline details)
 
@@ -196,7 +197,7 @@ gh workflow run release.yml -f version=X.Y.Z
   ├─ build (× 8)     — matrix packages one .vsix per target + activation smoke test
   ├─ tag-and-release — creates annotated tag, pushes it, creates GitHub Release
   ├─ publish         — vsce publish --packagePath dist/*.vsix (VS Code Marketplace)
-  └─ publish-openvsx — publish-openvsx.yml, one `ovsx publish` per .vsix (Open VSX, independent of publish)
+  └─ publish-openvsx — dispatches publish-openvsx.yml → `ovsx publish --trusted-publishing` (Open VSX, independent of publish)
 ```
 
 ### Version Management & Documentation Standards

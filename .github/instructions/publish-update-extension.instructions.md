@@ -40,25 +40,29 @@ The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
    - **Name**: `VSCE_PAT`
    - **Secret**: paste the PAT verbatim, no wrapping quotes.
 
-### 2. Open VSX: account, namespace and `OVSX_PAT`
+### 2. Open VSX: namespace and trusted publishing
 
-[Open VSX](https://open-vsx.org) is the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. It is a separate registry with its own token, and publishing there is independent of the Marketplace. One-time setup:
+[Open VSX](https://open-vsx.org) is the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks. Publishing there is independent of the Marketplace and needs **no stored token**: `publish-openvsx.yml` uses Open VSX trusted publishing, which exchanges the run's OIDC ID token for a publishing token that lives a few minutes and is scoped to this one extension.
 
-1. Create an Eclipse account at <https://accounts.eclipse.org> whose "GitHub Username" field matches the GitHub account you use to log in to open-vsx.org.
-2. Log in to <https://open-vsx.org> with GitHub, then on your profile use **Log in with Eclipse** and sign the **Publisher Agreement** (it is separate from the Eclipse Contributor Agreement). Publishing fails without it.
-3. Settings → **Access Tokens** → **Generate New Token**. Copy it immediately, it is shown only once. Use a dedicated token for CI.
-4. Create the namespace, which must equal the `publisher` field in `package.json`:
+This setup is already done. It is recorded here because it cannot be read back from the repository:
 
-   ```bash
-   npx ovsx create-namespace miguel-colmenares -p <token>
-   ```
+1. An Eclipse account at <https://accounts.eclipse.org> whose "GitHub Username" field matches the GitHub account used to log in to open-vsx.org.
+2. The **Publisher Agreement** signed at <https://open-vsx.org> (profile → **Log in with Eclipse**). It is separate from the Eclipse Contributor Agreement, and publishing fails without it.
+3. The `miguel-colmenares` namespace, which must equal the `publisher` field in `package.json`, **case for case**, and whose ownership is verified. Ownership was claimed through [EclipseFdn/open-vsx.org](https://github.com/EclipseFdn/open-vsx.org) and granted on 2026-11-05; before that the extension was uploaded but stayed inactive and the public API answered 404 for it ([#240](https://github.com/miguelcolmenares/css-js-minifier/issues/240)).
+4. A trusted publisher registered at open-vsx.org → Settings → **Trusted Publishers** (`/user-settings/trusted-publishers`): owner `miguelcolmenares`, repository `css-js-minifier`, workflow filename **`publish-openvsx.yml`**, no environment. Registrations cannot be edited, only deleted and recreated, and an extension may have only one.
 
-   Creating the namespace does not make you a verified owner. Claim ownership from open-vsx.org separately so the listing shows as verified.
-5. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**, name `OVSX_PAT`, value the token verbatim.
+**The registered workflow filename is load-bearing.** Open VSX matches the OIDC `workflow_ref` claim, which with `workflow_call` names the *calling* workflow. So `release.yml` starts `publish-openvsx.yml` with `gh workflow run` rather than calling it as a reusable workflow; a reusable call would present `release.yml` and be refused. Do not turn that dispatch back into a `uses:` call, and do not rename `publish-openvsx.yml` without recreating the registration first.
 
-Unlike `VSCE_PAT`, `OVSX_PAT` is not checked in `preflight` because `ovsx` has no documented `verify-pat`. A missing token fails only the `publish-openvsx` job, after the tag exists, and nothing is burned: re-run it through `publish-openvsx.yml`.
+Nothing is checked in `preflight`, because there is no credential to check. If the publish fails, nothing is burned: the tag and the GitHub Release already exist, and `publish-openvsx.yml` can be dispatched again for the same version. `--skip-duplicate` makes the targets that already landed a no-op.
 
-Open VSX also supports tokenless trusted publishing through OIDC (`ovsx publish --trusted-publishing` with `id-token: write`), which would remove the secret. It needs a trusted publisher registered by a namespace owner on open-vsx.org, so it is not wired up yet.
+To verify the namespace and the extension at any time, without publishing:
+
+```bash
+curl -s https://open-vsx.org/api/miguel-colmenares | jq '.verified'
+curl -s -o /dev/null -w '%{http_code}\n' https://open-vsx.org/api/miguel-colmenares/css-js-minifier
+```
+
+`true` and `200` mean the namespace is verified and the extension is active.
 
 ### 3. Local tooling (only if you plan to run the emergency fallback)
 
@@ -214,13 +218,27 @@ The tag and GitHub Release are in place; the Marketplace is missing the version.
 
 ### Publish to Open VSX fails
 
-The tag, the GitHub Release and the Marketplace publish are unaffected, since the two registries do not depend on each other. The job's log lists the failed targets. Fix the cause (missing or expired `OVSX_PAT`, namespace not created, Publisher Agreement not signed, registry outage) and re-run, either the failed job or:
+The tag, the GitHub Release and the Marketplace publish are unaffected, since the two registries do not depend on each other. The Open VSX publish also runs as its own workflow run, started by the release, so it cannot mark the release as failed: look for it under [Publish to Open VSX](https://github.com/miguelcolmenares/css-js-minifier/actions/workflows/publish-openvsx.yml), not inside the release run. The release job's summary links to it.
+
+`ovsx` reports every target it could not publish and exits non-zero, so the log names the failures. Fix the cause and re-run, either the failed job or:
 
 ```bash
 gh workflow run publish-openvsx.yml -f version=X.Y.Z
 ```
 
-Targets already on Open VSX are skipped, so it only uploads what is missing. The same dispatch publishes a version that was released before Open VSX support existed. Do not publish from a local machine.
+Targets already on Open VSX are skipped (`--skip-duplicate`), so it only uploads what is missing. The same dispatch publishes a version that was released before Open VSX support existed. Do not publish from a local machine.
+
+Causes to check, in the order they are worth checking:
+
+| Symptom in the log | Cause | Fix |
+| --- | --- | --- |
+| `No OIDC ID token available for trusted publishing` | The job lost `id-token: write`. | Restore the permission on the `publish` job in `publish-openvsx.yml`. |
+| The token exchange is refused, and the log points at `/user-settings/trusted-publishers` | The OIDC claims do not match the registration. Almost always because the publish ran through `workflow_call` (the `workflow_ref` claim then names the caller) or `publish-openvsx.yml` was renamed. | Restore the `gh workflow run` dispatch in `release.yml` and the filename, or delete and recreate the registration for the new name. |
+| `is not a verified owner of the namespace`, or the extension looks published but the API answers 404 | Namespace ownership lapsed. | `curl -s https://open-vsx.org/api/miguel-colmenares \| jq '.verified'` must return `true`. |
+| Publishing is rejected over the publisher name | `publisher` in `package.json` no longer matches the namespace case for case. | It must stay exactly `miguel-colmenares`. |
+| A timeout such as `No response from https://open-vsx.org/api/-/publish` | Registry outage or a slow upload. | Wait and dispatch again; nothing is duplicated. |
+
+A token is never the cause any more: there is no `OVSX_PAT`. If one is ever added back as a repository secret **and** referenced in the job, `ovsx` prefers it and trusted publishing stops being used, silently.
 
 ## Emergency procedures
 

@@ -160,6 +160,8 @@ The extension provides convenient keyboard shortcuts for quick access to its com
 3. Search for "`CSS & JS Minifier`".
 4. Click Install.
 
+Using VSCodium, Eclipse Theia, Gitpod or another fork? They read [Open VSX](https://open-vsx.org/extension/miguel-colmenares/css-js-minifier), where the extension is published from the same files. The [install guide](docs/INSTALL.md) covers that route and installing a downloaded `.vsix` file.
+
 ## Usage
 
 1. Open a CSS or JS file in VS Code.

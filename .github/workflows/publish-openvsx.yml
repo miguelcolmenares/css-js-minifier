@@ -4,32 +4,42 @@ name: Publish to Open VSX
 # the Open VSX registry (https://open-vsx.org), which VSCodium, Eclipse Theia,
 # Gitpod and other VS Code forks use instead of the Microsoft Marketplace.
 #
-# Two entry points, one implementation:
+# Authentication is tokenless: `ovsx publish --trusted-publishing` exchanges the
+# run's OIDC ID token for a publishing token that lives a few minutes and is
+# scoped to this one extension. There is no OVSX_PAT. See "Trusted publishing"
+# below for why this workflow is dispatched instead of being called.
 #
-# 1. `workflow_call` → `release.yml` runs this after `tag-and-release`, in
-#    parallel with the Marketplace `publish` job. The two registries are
+# `workflow_dispatch` is the only entry point, used two ways:
+#
+# 1. `release.yml` starts it with `gh workflow run` after `tag-and-release`,
+#    alongside the Marketplace `publish` job. The two registries are
 #    independent: a failure on one never blocks the other.
 #
-# 2. `workflow_dispatch` → the maintainer backfills a version that already has
-#    a GitHub Release (the first Open VSX publish) or retries after a failure.
+# 2. The maintainer starts it by hand to backfill a version that already has a
+#    GitHub Release, or to retry after a failure. Both paths run this same file
+#    from `master`, so a retry cannot behave differently from a release.
+#
+# Trusted publishing
+# ==================
+# The trusted publisher registered at open-vsx.org names this file,
+# `publish-openvsx.yml`. Open VSX matches the OIDC `workflow_ref` claim and
+# records `job_workflow_ref` without matching it (see `matches()` in
+# GitHubTrustedPublishingProviderSupport.java). With `workflow_call`,
+# `workflow_ref` names the CALLING workflow, so a release would present
+# `release.yml` and be refused. That is why `release.yml` dispatches this
+# workflow instead of calling it, and why `workflow_call` is deliberately
+# absent: adding it back would create a path that always fails to authenticate.
+#
+# The registration is not tied to a branch or tag, so any ref that runs this
+# file is trusted. The `Protect master` ruleset is what guards the file itself.
 #
 # The .vsix files are always downloaded from the GitHub Release, never rebuilt,
 # so Open VSX serves byte-for-byte the same artifacts as the Marketplace.
 #
-# Retries are safe: a target that is already on Open VSX is skipped, so a
-# re-run only uploads what is missing.
+# Retries are safe: `--skip-duplicate` makes a target that is already on Open
+# VSX a no-op, so a re-run only uploads what is missing.
 
 on:
-  workflow_call:
-    inputs:
-      version:
-        description: Version to publish (must have a GitHub Release v<version>).
-        required: true
-        type: string
-    secrets:
-      OVSX_PAT:
-        description: Open VSX access token (open-vsx.org → Settings → Access Tokens).
-        required: false
   workflow_dispatch:
     inputs:
       version:
@@ -50,6 +60,11 @@ jobs:
   publish:
     name: Publish .vsix files to Open VSX
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      # Required for trusted publishing: it is what lets ovsx request an OIDC
+      # ID token from GitHub to exchange for a short-lived publishing token.
+      id-token: write
     env:
       VERSION: ${{ inputs.version }}
       OVSX_NAMESPACE: miguel-colmenares
@@ -66,20 +81,6 @@ jobs:
             exit 1
           fi
 
-      - name: Verify OVSX_PAT is present
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        # Fail fast with a pointer to the fix instead of letting ovsx fail
-        # with a less obvious authentication error halfway through.
-        run: |
-          if [ -z "${OVSX_PAT:-}" ]; then
-            echo "::error::OVSX_PAT secret is not configured on this repository."
-            echo "::error::Create a token at https://open-vsx.org (Settings → Access Tokens) and add it under Settings → Secrets and variables → Actions."
-            echo "::error::The namespace '${OVSX_NAMESPACE}' must exist and the Eclipse Publisher Agreement must be signed."
-            exit 1
-          fi
-          echo "OVSX_PAT is present (length: ${#OVSX_PAT})."
-
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
@@ -95,17 +96,20 @@ jobs:
           gh release download "v${VERSION}" --dir dist --pattern '*.vsix'
           ls -lh dist/
 
-      - name: Publish each .vsix to Open VSX
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        # `ovsx publish` takes one file per call, unlike `vsce publish
-        # --packagePath`, so this loops over the platform targets. The
-        # token is read from OVSX_PAT by ovsx itself and never put on a
-        # command line. A target that is already published is skipped (public
-        # API lookup, no auth), which makes re-running the job safe. Every
-        # target is attempted even if one fails, and the step fails at the end.
+      - name: Publish every .vsix to Open VSX
+        # One `ovsx publish` call for all targets, not one per file: the OIDC
+        # token exchange, the registry version lookup and the namespace size
+        # limit then happen once for the whole release instead of once per
+        # target. ovsx uploads the files concurrently, reports every failure,
+        # and exits 1 if any of them failed, so a partial failure is still
+        # visible and the targets that worked stay published.
+        #
+        # No OVSX_PAT is set anywhere in this job on purpose: ovsx reads that
+        # variable itself and a token always takes precedence over trusted
+        # publishing, so leaving one in the environment would silently disable
+        # OIDC.
         run: |
-          set -uo pipefail
+          set -euo pipefail
           # Releases before the Alpine targets have 6 .vsix files, later ones have 8, so
           # require a minimum instead of an exact number to keep backfills working.
           minimum=6
@@ -114,38 +118,14 @@ jobs:
             echo "::error::Expected at least $minimum .vsix files in release v${VERSION}, found $count."
             exit 1
           fi
-          echo "Publishing $count .vsix files from release v${VERSION}."
+          echo "Publishing $count .vsix files from release v${VERSION} with trusted publishing."
 
-          failed=()
-          for file in dist/*.vsix; do
-            name=$(basename "$file" .vsix)
-            target="${name#"${OVSX_EXTENSION}-${VERSION}-"}"
-            if [ "$target" = "$name" ]; then
-              echo "::error::Cannot derive the target from '$name'; expected ${OVSX_EXTENSION}-${VERSION}-<target>.vsix."
-              failed+=("$name")
-              continue
-            fi
-
-            url="https://open-vsx.org/api/${OVSX_NAMESPACE}/${OVSX_EXTENSION}/${target}/${VERSION}"
-            status=$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)
-            if [ "$status" = "200" ]; then
-              echo "::notice::${target} ${VERSION} is already on Open VSX, skipping."
-              continue
-            fi
-
-            echo "Publishing ${target} ${VERSION}..."
-            # Pinned: this step handles the token, so a new ovsx release is
-            # adopted by a reviewed change, not silently.
-            if ! npx --yes ovsx@1.3.0 publish "$file"; then
-              echo "::error::Publishing ${target} failed."
-              failed+=("$target")
-            fi
-          done
-
-          if [ "${#failed[@]}" -gt 0 ]; then
-            echo "::error::Failed targets: ${failed[*]}. Fix the cause and re-run; published targets will be skipped."
-            exit 1
-          fi
+          # Pinned: this step handles the publishing credential, so a new ovsx
+          # release is adopted by a reviewed change, not silently.
+          npx --yes ovsx@1.3.0 publish \
+            --trusted-publishing \
+            --skip-duplicate \
+            --packagePath dist/*.vsix
 
       - name: Summary
         if: success()
@@ -154,4 +134,6 @@ jobs:
             echo "## Open VSX"
             echo ""
             echo "Version \`${VERSION}\` is published for all targets: https://open-vsx.org/extension/${OVSX_NAMESPACE}/${OVSX_EXTENSION}"
+            echo ""
+            echo "Published with trusted publishing (OIDC), no stored token."
           } >> "$GITHUB_STEP_SUMMARY"

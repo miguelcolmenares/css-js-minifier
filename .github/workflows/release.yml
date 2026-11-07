@@ -386,20 +386,79 @@ jobs:
 
   # Open VSX (VSCodium, Theia, Gitpod, ...) gets the same .vsix files as the Marketplace, taken from
   # the GitHub Release. It only needs the tag-and-release job, not the Marketplace publish, so a failure
-  # on one registry never blocks the other. See publish-openvsx.yml, which can also be dispatched
-  # alone to backfill or retry a version.
+  # on one registry never blocks the other.
+  #
+  # Started with `gh workflow run` rather than `uses:`, and this is load-bearing. publish-openvsx.yml
+  # authenticates with Open VSX trusted publishing (OIDC), whose registration names that file. Open VSX
+  # matches the `workflow_ref` claim, and with `workflow_call` that claim names the CALLING workflow, so
+  # a called publish-openvsx.yml would present `release.yml` and be refused. A workflow_dispatch run
+  # presents publish-openvsx.yml itself, which is what is registered. Do not convert this back into a
+  # reusable-workflow call. See the "Trusted publishing" note in publish-openvsx.yml.
+  #
+  # workflow_dispatch is also the one event GITHUB_TOKEN may start, which is why no PAT is needed here.
+  # The publish then runs as its own workflow run: it cannot fail this release, matching the rule that
+  # the two registries never block each other. The run's URL is put in this job's summary so the result
+  # is still easy to find.
   publish-openvsx:
-    name: Publish to Open VSX
+    name: Start the Open VSX publish
     needs: [preflight, tag-and-release]
     if: |
       github.event_name == 'workflow_dispatch' &&
       needs.tag-and-release.result == 'success'
+    runs-on: ubuntu-26.04
     permissions:
-      contents: read
-    uses: ./.github/workflows/publish-openvsx.yml
-    with:
-      version: ${{ needs.preflight.outputs.version }}
-    secrets: inherit
+      # Only to dispatch publish-openvsx.yml. This job reads no code and holds nothing else.
+      actions: write
+    steps:
+      - name: Dispatch publish-openvsx.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+          WORKFLOW: publish-openvsx.yml
+        # Dispatched on master, the same ref a manual retry uses, so a retry can never run different
+        # code from the release that preceded it. The trusted publisher registration is not tied to a
+        # ref, so the ref choice does not affect authentication.
+        #
+        # The REST endpoint rather than `gh workflow run`, which reads the workflow file to validate
+        # the inputs it is given and so would also need `contents: read`. This keeps the job to the
+        # single `actions: write` scope it needs, the same way auto-merge-dependabot.yml dispatches.
+        # The body is built with jq, so the version is a JSON string value and never concatenated.
+        run: |
+          set -euo pipefail
+
+          # Captured before dispatching: the lookup below reports the newest run of this workflow,
+          # which is only ours if it changed. Without this a previous backfill would be linked as if
+          # it were this release's publish.
+          before=$(gh run list --workflow "$WORKFLOW" --limit 1 --json databaseId --jq '.[0].databaseId // ""' || true)
+
+          jq -nc --arg v "$VERSION" '{ref: "master", inputs: {version: $v}}' \
+            | gh api -X POST "repos/${GH_REPO}/actions/workflows/${WORKFLOW}/dispatches" --input -
+          echo "Dispatched the Open VSX publish for ${VERSION}."
+
+          # Best-effort: give GitHub a moment to create the run, then link it. Finding nothing new is
+          # not a failure, the publish is already on its way and the workflow page lists it.
+          sleep 10
+          url=""
+          after=$(gh run list --workflow "$WORKFLOW" --limit 1 --json databaseId,url --jq '.[0] | [(.databaseId | tostring), .url] | @tsv' || true)
+          if [ -n "$after" ]; then
+            id=$(printf '%s' "$after" | cut -f1)
+            if [ "$id" != "$before" ]; then
+              url=$(printf '%s' "$after" | cut -f2)
+            fi
+          fi
+
+          {
+            echo "## Open VSX"
+            echo ""
+            if [ -n "$url" ]; then
+              echo "The publish of \`${VERSION}\` runs in its own workflow: $url"
+            else
+              echo "The publish of \`${VERSION}\` was dispatched. See the [Publish to Open VSX runs](https://github.com/${GH_REPO}/actions/workflows/${WORKFLOW})."
+            fi
+            echo ""
+            echo "It cannot fail this release: the Marketplace and Open VSX are independent."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # The documentation site is rebuilt as the last step of a release, so it shows the version that was
   # just published. A release created with GITHUB_TOKEN does not start other workflows, so this cannot

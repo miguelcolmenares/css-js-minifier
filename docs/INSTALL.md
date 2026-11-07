@@ -1,6 +1,6 @@
 # Install the extension
 
-Step-by-step install guide for CSS & JS Minifier: from the VS Code Marketplace, from a downloaded file, and soon from Open VSX.
+Step-by-step install guide for CSS & JS Minifier: from the VS Code Marketplace, from Open VSX, and from a downloaded file.
 
 Never installed an extension before? That is fine, every step is written out. Pick one route, install, then check that it worked.
 
@@ -13,7 +13,7 @@ Which route should you use?
 | Route | Best for | Status |
 | --- | --- | --- |
 | [VS Code Marketplace](#route-1-the-vs-code-marketplace) | Almost everyone. Updates arrive by themselves. | Available |
-| [Open VSX](#route-2-open-vsx-vscodium-and-other-forks) | VSCodium, Eclipse Theia, Gitpod and other forks. | Coming soon, do not use yet |
+| [Open VSX](#route-2-open-vsx-vscodium-and-other-forks) | VSCodium, Eclipse Theia, Gitpod and other forks. | Available |
 | [A downloaded `.vsix` file](#route-3-a-downloaded-vsix-file-offline-or-manual) | No internet on the target machine, or you want to pick the exact file. | Available |
 
 ## Route 1: the VS Code Marketplace
@@ -49,16 +49,29 @@ The Marketplace holds one package for each type of computer (Windows, macOS and 
 
 ## Route 2: Open VSX (VSCodium and other forks)
 
-> [!IMPORTANT]
-> **Coming soon, not installable yet.** The extension was uploaded to [Open VSX](https://open-vsx.org), but it stays inactive there until the `miguel-colmenares` name is verified on that registry. Open VSX answers "Extension not found" for it today. This is tracked in [issue #240](https://github.com/miguelcolmenares/css-js-minifier/issues/240). Do not follow the steps below yet, they will not find the extension.
+Editors such as VSCodium, Eclipse Theia and Gitpod use [Open VSX](https://open-vsx.org) instead of the Microsoft Marketplace. The extension is published there under the same short ID, `miguel-colmenares.css-js-minifier`, from the same files as the Marketplace.
 
-Editors such as VSCodium, Eclipse Theia and Gitpod use Open VSX instead of the Microsoft Marketplace. Once the extension is active there, these are the steps that will apply:
+### From the Extensions view inside your editor
 
-1. Open the Extensions view of your editor.
-2. Search for `miguel-colmenares.css-js-minifier` and click **Install**.
-3. Or, from a terminal, run `codium --install-extension miguel-colmenares.css-js-minifier` (use the command name of your editor).
+1. Open your editor.
+2. Open the Extensions view, usually with `Ctrl+Shift+X`, or `Cmd+Shift+X` on macOS.
+3. Search for `css-js-minifier`.
+4. Click the extension in the list, then click **Install**.
 
-Until then, use [route 3](#route-3-a-downloaded-vsix-file-offline-or-manual), which also works in most VS Code forks.
+### From the Open VSX page
+
+Open the [extension page on Open VSX](https://open-vsx.org/extension/miguel-colmenares/css-js-minifier) to see the versions and the available packages, then install from your editor.
+
+### From the terminal of your editor
+
+```bash
+codium --install-extension miguel-colmenares.css-js-minifier
+```
+
+Replace `codium` with the command of your editor. Open VSX holds one package per type of computer, the same set as the Marketplace, and your editor picks the right one.
+
+> [!NOTE]
+> Alpine Linux packages (`alpine-x64` and `alpine-arm64`) only exist from the release after 1.3.4. On an Alpine-based Dev Container running an older version, use [route 3](#route-3-a-downloaded-vsix-file-offline-or-manual).
 
 ## Route 3: a downloaded `.vsix` file (offline or manual)
 
