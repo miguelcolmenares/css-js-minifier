@@ -201,5 +201,5 @@ src/test/
 ---
 
 **Last Updated**: 2026-10-28
-**Extension Version**: 1.3.4
+**Extension Version**: 1.3.5
 **Test Suite**: 171 tests across 6 files (activation, main, file service, file prefix, workspace capabilities, i18n)

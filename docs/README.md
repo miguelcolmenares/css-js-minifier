@@ -39,4 +39,4 @@ The two animated demos used in the guide live in `images/` and are copied to `si
 ---
 
 **Last Updated**: 2026-11-04
-**Extension Version**: 1.3.4
+**Extension Version**: 1.3.5
