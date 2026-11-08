@@ -70,9 +70,6 @@ codium --install-extension miguel-colmenares.css-js-minifier
 
 Replace `codium` with the command of your editor. Open VSX holds one package per type of computer, the same set as the Marketplace, and your editor picks the right one.
 
-> [!NOTE]
-> Alpine Linux packages (`alpine-x64` and `alpine-arm64`) only exist from the release after 1.3.4. On an Alpine-based Dev Container running an older version, use [route 3](#route-3-a-downloaded-vsix-file-offline-or-manual).
-
 ## Route 3: a downloaded `.vsix` file (offline or manual)
 
 A `.vsix` file is the extension packed in one file. Use this route when the computer has no internet access or you want a specific version.
@@ -90,13 +87,15 @@ A `.vsix` file is the extension packed in one file. Use this route when the comp
 | Mac with Apple silicon (M1 or newer) | `darwin-arm64.vsix` |
 | Linux, Intel or AMD processor | `linux-x64.vsix` |
 | Linux, ARM processor | `linux-arm64.vsix` |
+| Alpine Linux (and other musl-based Linux), Intel or AMD processor | `alpine-x64.vsix` |
+| Alpine Linux (and other musl-based Linux), ARM processor | `alpine-arm64.vsix` |
 
 Not sure which one is yours? Match the architecture of VS Code itself: open the **About** dialog (see "Before you start") and look at the line that starts with **OS**. It ends with a word like `x64` or `arm64`.
 
 Good to know:
 
-- The six files above are the ones released so far (the latest release at the time of writing, 1.3.4, has exactly these six). New platforms are added to the table when they ship.
-- Alpine Linux (and other musl-based Linux, common in small Docker images and Dev Containers) is **not in the current release**. Version 1.3.4 only has Linux files for the standard glibc Linux. Alpine packages (`alpine-x64` and `alpine-arm64`) are already built for the next release, see [issue #244](https://github.com/miguelcolmenares/css-js-minifier/issues/244).
+- The eight files above are the ones released so far (the latest release at the time of writing, 1.3.5, has exactly these eight). New platforms are added to the table when they ship.
+- Alpine Linux (and other musl-based Linux, common in small Docker images and Dev Containers) has its own files from version 1.3.5: `alpine-x64` and `alpine-arm64`. Older versions only have Linux files for the standard glibc Linux, so on an Alpine-based Dev Container with an older version, use this route with a 1.3.5 or newer file.
 - Each file is for one platform because the extension includes fast native code. That is why a release has several downloads.
 
 ### Step 2: install the file
@@ -104,7 +103,7 @@ Good to know:
 Either use the terminal. Replace the file name with the one you downloaded, and add the folder path if the file is not in the current folder:
 
 ```bash
-code --install-extension css-js-minifier-1.3.4-win32-x64.vsix
+code --install-extension css-js-minifier-1.3.5-win32-x64.vsix
 ```
 
 Or use VS Code:

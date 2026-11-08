@@ -52,7 +52,7 @@ The text is added before the last extension of the file name, whatever it is and
 The project's automated tests run on desktop VS Code on macOS, Ubuntu and Windows. Remote setups are not part of them, so treat this answer as what is known, not a promise:
 
 - In a remote window (SSH, WSL, a container), install the extension in that remote window too. VS Code normally runs an extension like this one on the remote machine, so it needs a package for the remote's system. Windows, macOS, and standard glibc Linux packages exist for Intel/AMD and ARM.
-- Alpine Linux, common in small Dev Container images, has no package in the current release (1.3.4). Alpine packages are already built for the next one, see [issue #244](https://github.com/miguelcolmenares/css-js-minifier/issues/244).
+- Alpine Linux, common in small Dev Container images, has its own packages (`alpine-x64` and `alpine-arm64`) from version 1.3.5. An older version has no package for it.
 - Virtual workspaces (a repository opened without cloning it) are not declared as supported or unsupported, and **Minify and Save as New File** may write to the wrong place there. This is tracked in [issue #243](https://github.com/miguelcolmenares/css-js-minifier/issues/243).
 
 ## Why are there several downloads for each version?

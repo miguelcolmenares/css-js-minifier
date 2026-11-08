@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-11-07
+
 ### Added
 
 - **Publishing to [Open VSX](https://open-vsx.org)**, the registry used by VSCodium, Eclipse Theia, Gitpod and other VS Code forks, with **no stored token**. A new [`publish-openvsx.yml`](.github/workflows/publish-openvsx.yml) workflow downloads the platform `.vsix` files from the GitHub Release and publishes them with `ovsx publish --trusted-publishing`, which exchanges the run's OIDC ID token for a publishing token that lives a few minutes and is scoped to this one extension, so both registries serve identical artifacts and there is no `OVSX_PAT` to rotate or leak. One `ovsx` call handles every target, so the token exchange and the registry lookups happen once per release instead of once per package, and `--skip-duplicate` replaces a public-API check that could not see an inactive version. `release.yml` starts it as a `publish-openvsx` job in parallel with the Marketplace `publish` job, and the two do not block each other. It can also be dispatched alone for a version that already has a release, to backfill or retry; targets already on Open VSX are skipped. The `miguel-colmenares` namespace is verified on open-vsx.org and `miguel-colmenares.css-js-minifier` is active there, so [`docs/INSTALL.md`](docs/INSTALL.md), the README and the FAQ now document Open VSX as a real install route instead of one that is coming ([#240](https://github.com/miguelcolmenares/css-js-minifier/issues/240)).

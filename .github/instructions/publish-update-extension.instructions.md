@@ -132,7 +132,7 @@ The release is dispatched manually with the version number as input. The version
 
 1. Repository → **Actions** → **Build & Release** → **Run workflow**.
 2. Branch: `master`.
-3. `version`: the exact version from `package.json` (e.g. `1.3.4`), without the leading `v`.
+3. `version`: the exact version from `package.json` (e.g. `1.3.5`), without the leading `v`.
 4. **Run workflow**.
 
 **Via the CLI:**

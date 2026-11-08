@@ -201,4 +201,4 @@ The eight artifacts are attached to the GitHub Release and published to the Mark
 ---
 
 **Last Updated**: 2026-10-28
-**Extension Version**: 1.3.4
+**Extension Version**: 1.3.5
