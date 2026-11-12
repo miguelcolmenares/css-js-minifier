@@ -8,6 +8,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
+- **CI runs on Node 24**, the standard for all repositories, instead of Node 20 (Node 22 in the Open VSX publish). That covers every workflow in `.github/workflows`, and the Alpine activation check now runs in a `node:24-alpine` container. `CONTRIBUTING.md` and the docs follow.
+- **`@vscode/vsce` is a development dependency**, so `npx vsce` runs the copy installed by `npm ci`. Before, `npx vsce` had no local binary, downloaded the deprecated `vsce@2.15.0` on every build job, and the Windows runner sometimes failed cleaning the `npx` cache (`EPERM`), which failed `Build win32-x64`. The packaged `.vsix` has the same files, except that `README.md` and `CHANGELOG.md` are stored in lower case. Dependabot now keeps it up to date.
 - **Minimum VS Code version raised to `1.145.0`** to match the `@types/vscode` bump to `^1.145.0`. `vsce` refuses to package when `@types/vscode` is newer than `engines.vscode`: it exits 1 with `@types/vscode ^1.145.0 greater than engines.vscode ^1.144.0`, which failed all eight `Build <target>` jobs. The `test-vscode-minimum` workflow, the `VSCODE_VERSION` pin in [`.github/workflows/master.yml`](.github/workflows/master.yml), the `VSCODE_VERSION` fallback in [`.vscode-test.mjs`](.vscode-test.mjs), the README badge, `CONTRIBUTING.md`, `docs/FAQ.md` and `docs/INSTALL.md` now all reference `1.145.0`. Users still on 1.144 stop receiving updates until they upgrade.
 
 ## [1.3.5] - 2026-11-07

@@ -63,7 +63,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Validate input version matches package.json
@@ -183,7 +183,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -228,7 +228,7 @@ jobs:
             css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix
 
       # The musl bindings only load on a musl host, so the check runs in an Alpine container
-      # (the node:20-alpine image is multi-arch, so the arm64 runner gets an arm64 container).
+      # (the node:24-alpine image is multi-arch, so the arm64 runner gets an arm64 container).
       # `--expect-libc musl` makes the script fail if it ever ends up on a glibc host.
       - name: Verify native bindings can activate on ${{ matrix.target }} (Alpine container)
         if: ${{ startsWith(matrix.target, 'alpine-') }}
@@ -237,7 +237,7 @@ jobs:
           docker run --rm \
             --volume "$PWD:/work:ro" \
             --workdir /work \
-            node:20-alpine \
+            node:24-alpine \
             node scripts/verify-vsix-activation.mjs \
               css-js-minifier-${{ steps.version.outputs.value }}-${{ matrix.target }}.vsix \
               --expect-libc musl
@@ -349,7 +349,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies (for vsce)
