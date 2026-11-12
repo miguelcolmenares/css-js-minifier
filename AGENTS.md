@@ -130,6 +130,8 @@ Merge commits (`Merge …`), reverts (`Revert …`), and fixup/squash commits (`
 
 All TypeScript doc comments follow the [TSDoc](https://tsdoc.org/) specification, enforced at lint time by `eslint-plugin-tsdoc` (`tsdoc/syntax: "error"`).
 
+CI also runs the `TSDoc` job of [`master.yml`](.github/workflows/master.yml), the `miguelcolmenares/jsdoc-to-tsdoc` Action pinned by commit SHA. It fails when an export has no TSDoc comment, when a comment has a syntax error, or when a legacy JSDoc tag is left. It excludes `site/src/presentation/components/ui/**`, the generated shadcn components. Test files are not checked, because the Action skips them by default. To run it locally on Node 24: `npx --yes jsdoc-to-tsdoc@1.0.0 check --exclude "**/components/ui/**"`.
+
 **Key rules:**
 
 - No `{type}` annotations in `@param` or `@returns` — TypeScript provides the types.
