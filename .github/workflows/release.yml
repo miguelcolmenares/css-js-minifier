@@ -10,9 +10,10 @@ name: Build & Release
 #
 # 2. `workflow_dispatch` → the maintainer manually cuts a release. The tag,
 #    the GitHub Release and the Marketplace and Open VSX publishes all happen from inside
-#    this workflow, gated on a preflight that includes `vsce verify-pat`.
-#    This guarantees that a tag is NEVER created if the PAT is expired or
-#    the version metadata is inconsistent — which, combined with the tag
+#    this workflow, gated on a preflight that includes `vsce verify-pat
+#    --azure-credential` (Microsoft Entra, over GitHub OIDC, no stored token).
+#    This guarantees that a tag is NEVER created if the Marketplace identity
+#    is not valid or the version metadata is inconsistent — which, combined with the tag
 #    immutability ruleset, means we can't burn a version on GitHub while
 #    failing to reach the Marketplace.
 #
@@ -47,9 +48,13 @@ jobs:
   preflight:
     # Only runs on workflow_dispatch. On pull_request it is skipped and the
     # `build` job's `if:` picks that up so PR validation still runs.
-    name: Preflight — validate version, changelog and VSCE_PAT
+    name: Preflight — validate version, changelog and Marketplace identity
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      # Lets azure/login exchange the run's OIDC token for an Entra access token.
+      id-token: write
     outputs:
       version: ${{ steps.parse.outputs.version }}
       tag: ${{ steps.parse.outputs.tag }}
@@ -119,32 +124,44 @@ jobs:
       - name: Install dependencies (for vsce)
         run: npm ci
 
-      - name: Verify VSCE_PAT is present
+      - name: Verify the Entra identifiers are present
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        # Empty PAT would make `vsce verify-pat` prompt interactively and
-        # hang the runner. Fail fast with a clear message pointing at the
-        # secrets UI.
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        # azure/login would fail with a less clear message if either is empty.
+        # These two values identify the app registration, they are not
+        # credentials: there is no password or token to rotate.
         run: |
-          if [ -z "${VSCE_PAT:-}" ]; then
-            echo "::error::VSCE_PAT secret is not configured on this repository."
-            echo "::error::Add it under Settings → Secrets and variables → Actions → New repository secret."
-            echo "::error::The value must be a PAT from https://dev.azure.com with 'Marketplace (Manage)' scope for publisher 'miguel-colmenares'."
+          missing=0
+          for name in AZURE_CLIENT_ID AZURE_TENANT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured on this repository."
+              missing=1
+            fi
+          done
+          if [ "$missing" = "1" ]; then
+            echo "::error::Add them under Settings → Secrets and variables → Actions. See publish-update-extension.instructions.md, section 'Microsoft Entra identity'."
             exit 1
           fi
-          echo "VSCE_PAT is present (length: ${#VSCE_PAT})."
+          echo "AZURE_CLIENT_ID and AZURE_TENANT_ID are present."
 
-      - name: Verify VSCE_PAT is still valid and scoped correctly
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        # `vsce verify-pat` authenticates against the Marketplace API without
-        # publishing anything. If it succeeds we know the token is not
-        # expired, the scope is correct, and the publisher name matches. If
-        # it fails we exit BEFORE any tag or GitHub Release is created, so
-        # nothing gets burned on GitHub for a broken PAT.
+      - name: Sign in to Azure with the run's OIDC token
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          # The identity has no Azure subscription, it only needs the Marketplace.
+          allow-no-subscriptions: true
+
+      - name: Verify the identity can publish for miguel-colmenares
+        # `vsce verify-pat --azure-credential` authenticates against the
+        # Marketplace API with the Entra identity and checks that it can publish
+        # for the publisher, without uploading anything. If it fails we exit
+        # BEFORE any tag or GitHub Release is created, so nothing gets burned on
+        # GitHub for a broken identity.
         run: |
           set -euo pipefail
-          npx --package=@vscode/vsce -- vsce verify-pat miguel-colmenares
+          npx --package=@vscode/vsce -- vsce verify-pat --azure-credential miguel-colmenares
 
   build:
     name: Build ${{ matrix.target }}
@@ -342,6 +359,8 @@ jobs:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+      # Lets azure/login exchange the run's OIDC token for an Entra access token.
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -355,6 +374,13 @@ jobs:
       - name: Install dependencies (for vsce)
         run: npm ci
 
+      - name: Sign in to Azure with the run's OIDC token
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - name: Download all .vsix artifacts
         uses: actions/download-artifact@v8
         with:
@@ -366,23 +392,22 @@ jobs:
         run: ls -lh dist/
 
       - name: Publish all .vsix files to VS Code Marketplace
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
         # `vsce publish --packagePath` accepts any number of pre-built .vsix
         # files and uploads each one. The Marketplace uses the `--target`
         # baked into each .vsix by the packaging step (see the `build` job)
-        # to serve the right binary per platform. Preflight already ran
-        # `vsce verify-pat` in this workflow, so authentication failures
-        # here would indicate the PAT was revoked mid-run — extremely
-        # unlikely but not impossible. Fails fast in that case; the tag
-        # and GitHub Release remain, so users can install manually via
-        # `code --install-extension` from the release assets while the PAT
-        # is being rotated.
+        # to serve the right binary per platform. `--azure-credential` makes
+        # vsce use the Entra identity that azure/login signed in above, so no
+        # token is stored anywhere. Preflight already ran `vsce verify-pat` in
+        # this workflow, so an authentication failure here would mean the
+        # identity lost its publisher role mid-run, which is very unlikely. In
+        # that case the tag and GitHub Release remain, so users can install
+        # manually via `code --install-extension` from the release assets
+        # while the identity is repaired.
         run: |
           set -euo pipefail
           count=$(find dist -maxdepth 1 -name '*.vsix' -type f | wc -l | tr -d ' ')
           echo "Publishing $count .vsix files to Marketplace..."
-          npx vsce publish --packagePath dist/*.vsix
+          npx vsce publish --azure-credential --packagePath dist/*.vsix
 
   # Open VSX (VSCodium, Theia, Gitpod, ...) gets the same .vsix files as the Marketplace, taken from
   # the GitHub Release. It only needs the tag-and-release job, not the Marketplace publish, so a failure

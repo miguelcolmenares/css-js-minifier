@@ -1,20 +1,23 @@
 name: Verify Marketplace Auth
 
-# Manual smoke test for the VSCE_PAT secret and the Marketplace publisher
-# scope. Runs `vsce verify-pat` which validates the token against the
-# Marketplace API WITHOUT publishing anything — no version is burned. Use
-# this before pushing a real release tag to catch auth/scope problems
-# early (expired PAT, wrong scope, wrong publisher, etc).
+# Manual smoke test for the Microsoft Entra identity and the Marketplace
+# publisher role. Runs `vsce verify-pat --azure-credential`, which validates the
+# identity against the Marketplace API WITHOUT publishing anything, so no
+# version is burned. Use this before dispatching a real release to catch
+# identity or role problems early (app registration removed, federated
+# credential subject changed, identity no longer a member of the publisher).
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
+  # Lets azure/login exchange the run's OIDC token for an Entra access token.
+  id-token: write
 
 jobs:
   verify:
-    name: Verify VSCE_PAT can publish for miguel-colmenares
+    name: Verify the Entra identity can publish for miguel-colmenares
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout
@@ -29,36 +32,46 @@ jobs:
       - name: Install dependencies (for vsce)
         run: npm ci
 
-      - name: Check VSCE_PAT secret is present
+      - name: Check the Entra identifiers are present
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          if [ -z "$VSCE_PAT" ]; then
-            echo "::error::VSCE_PAT is not configured on this repository."
-            echo "::error::Add it under Settings → Secrets and variables → Actions"
-            echo "::error::using a PAT from https://dev.azure.com with 'Marketplace (Manage)' scope."
+          missing=0
+          for name in AZURE_CLIENT_ID AZURE_TENANT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured on this repository."
+              missing=1
+            fi
+          done
+          if [ "$missing" = "1" ]; then
+            echo "::error::Add them under Settings → Secrets and variables → Actions."
             exit 1
           fi
-          echo "VSCE_PAT present (length: ${#VSCE_PAT})."
+          echo "AZURE_CLIENT_ID and AZURE_TENANT_ID are present."
 
-      - name: Verify PAT has publish rights for publisher 'miguel-colmenares'
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        # `vsce verify-pat <publisher>` is the officially supported smoke
-        # test for a Marketplace PAT: it authenticates against the
-        # Marketplace API and checks the token can publish for the given
-        # publisher, but it does NOT upload anything. Nothing is billed,
-        # no version is burned, and no Marketplace state changes.
-        # Exit non-zero (with a clear vsce error) if the PAT is expired,
-        # wrong scope, or scoped to a different publisher.
-        run: npx --package=@vscode/vsce -- vsce verify-pat miguel-colmenares
+      - name: Sign in to Azure with the run's OIDC token
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Verify the identity has publish rights for publisher 'miguel-colmenares'
+        # `vsce verify-pat --azure-credential` is the supported smoke test for
+        # an Entra identity: it authenticates against the Marketplace API and
+        # checks the identity can publish for the given publisher, but it does
+        # NOT upload anything. Nothing is billed, no version is burned, and no
+        # Marketplace state changes. It exits non-zero, with a clear vsce error,
+        # if the identity is not a member of the publisher.
+        run: npx --package=@vscode/vsce -- vsce verify-pat --azure-credential miguel-colmenares
 
       - name: Show current Marketplace record for miguel-colmenares.css-js-minifier
-        # Read-only Marketplace query — confirms the extension is registered
+        # Read-only Marketplace query. It confirms the extension is registered
         # under the expected publisher/id combination and prints the current
-        # published version, install count, etc. Independent of the PAT
-        # (uses the public API), so if this succeeds but verify-pat fails
-        # above, the problem is definitely the token, not the identity.
+        # published version, install count, etc. It does not use the identity
+        # (public API), so if this succeeds but the verification above fails,
+        # the problem is the identity, not the extension.
         run: npx --package=@vscode/vsce -- vsce show miguel-colmenares.css-js-minifier
 
       - name: Summary
@@ -66,10 +79,10 @@ jobs:
           {
             echo "## Marketplace auth verification"
             echo ""
-            echo "✅ VSCE_PAT is configured on this repository."
-            echo "✅ PAT has publish rights for publisher \`miguel-colmenares\`."
+            echo "✅ The Entra identifiers are configured on this repository."
+            echo "✅ The identity has publish rights for publisher \`miguel-colmenares\`."
             echo "✅ Extension \`miguel-colmenares.css-js-minifier\` is registered on Marketplace."
             echo ""
-            echo "The token is ready to be used by the \`publish\` job in \`release.yml\`."
+            echo "The identity is ready to be used by the \`publish\` job in \`release.yml\`."
             echo "Dispatch \`release.yml\` with the target version to cut a release."
           } >> "$GITHUB_STEP_SUMMARY"
