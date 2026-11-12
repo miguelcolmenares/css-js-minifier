@@ -44,6 +44,25 @@ jobs:
       - name: Lint Markdown
         run: npm run lint:md
 
+  # TSDoc completeness: every export of our own code has a comment, and no
+  # legacy JSDoc is left. ESLint (`tsdoc/syntax`) checks only the syntax of the
+  # comments that exist. The generated shadcn components under components/ui
+  # are left out, because they are not ours to document.
+  tsdoc:
+    name: TSDoc
+    timeout-minutes: 5
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Check TSDoc
+        uses: miguelcolmenares/jsdoc-to-tsdoc@78f159f0774ab8d1532c8b14437676dd34d36f6c # v1.0.0
+        with:
+          command: check
+          version: "1.0.0"
+          node-version: "24"
+          exclude: "**/components/ui/**"
+
   # Primary test job - tests with minimum supported VS Code version
   test:
     # Keep the check name stable: the `Protect master` ruleset requires "Test on ubuntu-latest".
