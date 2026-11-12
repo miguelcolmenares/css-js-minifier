@@ -4,12 +4,12 @@ applyTo: '**/*.ts'
 
 # TSDoc Documentation Standards
 
-This project follows the [TSDoc](https://tsdoc.org/) specification for all TypeScript documentation comments. Compliance is enforced by `eslint-plugin-tsdoc` with `tsdoc/syntax: "error"`.
+This project follows the [TSDoc](https://tsdoc.org/) specification for all TypeScript documentation comments. Syntax is enforced by `eslint-plugin-tsdoc` with `tsdoc/syntax: "error"`, and completeness (every export has a comment) by the `TSDoc` job in CI.
 
 ## Configuration
 
 - **`tsdoc.json`** at project root defines custom block tags: `@since`, `@version`, `@author`.
-- **ESLint** enforces `tsdoc/syntax` as an error for `src/**/*.ts` (disabled in test files).
+- **ESLint** enforces `tsdoc/syntax` as an error for `src/**/*.ts` (disabled in test files). The `TSDoc` CI job (`jsdoc-to-tsdoc check`) also fails when an export has no comment, except under `site/src/presentation/components/ui/`.
 
 ## Allowed Tags
 

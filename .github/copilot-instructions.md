@@ -376,7 +376,7 @@ const explorer = vscode.window.activeTextEditor?.document.uri;
 
 ### Documentation Standards
 
-- **TSDoc Standard**: All documentation comments follow the [TSDoc](https://tsdoc.org/) specification, enforced by `eslint-plugin-tsdoc`
+- **TSDoc Standard**: All documentation comments follow the [TSDoc](https://tsdoc.org/) specification, enforced by `eslint-plugin-tsdoc` (syntax) and the `TSDoc` CI job (every export has a comment)
 - **Comprehensive TSDoc**: Every function has detailed documentation with examples
 - **Type Safety**: Interfaces and types for all major data structures
 - **Error Handling**: Documented side effects and error conditions
