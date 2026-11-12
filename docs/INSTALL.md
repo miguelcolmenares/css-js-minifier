@@ -6,7 +6,7 @@ Never installed an extension before? That is fine, every step is written out. Pi
 
 ## Before you start
 
-You need Visual Studio Code version 1.144.0 or newer. To see your version, open **Help > About** on Windows and Linux, or **Code > About Visual Studio Code** on macOS. If it is older, update VS Code first.
+You need Visual Studio Code version 1.145.0 or newer. To see your version, open **Help > About** on Windows and Linux, or **Code > About Visual Studio Code** on macOS. If it is older, update VS Code first.
 
 Which route should you use?
 

@@ -65,7 +65,7 @@ They are two places to get the same extension. The VS Code Marketplace is the on
 
 ## Which VS Code versions work?
 
-VS Code 1.144.0 or newer. The project's tests run on that minimum version, on the current stable release, and on Insiders.
+VS Code 1.145.0 or newer. The project's tests run on that minimum version, on the current stable release, and on Insiders.
 
 ## Can I use it in another language?
 

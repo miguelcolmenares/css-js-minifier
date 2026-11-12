@@ -29,7 +29,7 @@ const locale = process.env.VSCODE_LOCALE;
 /** @type {import('@vscode/test-cli').TestConfiguration} */
 const test = {
 	files: 'out/test/**/*.test.js',
-	version: process.env.VSCODE_VERSION || '1.144.0',
+	version: process.env.VSCODE_VERSION || '1.145.0',
 };
 
 if (locale) {

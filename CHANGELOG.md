@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Changed
+
+- **Minimum VS Code version raised to `1.145.0`** to match the `@types/vscode` bump to `^1.145.0`. `vsce` refuses to package when `@types/vscode` is newer than `engines.vscode`: it exits 1 with `@types/vscode ^1.145.0 greater than engines.vscode ^1.144.0`, which failed all eight `Build <target>` jobs. The `test-vscode-minimum` workflow, the `VSCODE_VERSION` pin in [`.github/workflows/master.yml`](.github/workflows/master.yml), the `VSCODE_VERSION` fallback in [`.vscode-test.mjs`](.vscode-test.mjs), the README badge, `CONTRIBUTING.md`, `docs/FAQ.md` and `docs/INSTALL.md` now all reference `1.145.0`. Users still on 1.144 stop receiving updates until they upgrade.
+
 ## [1.3.5] - 2026-11-07
 
 ### Added

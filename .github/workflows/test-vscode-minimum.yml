@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   test-minimum:
-    name: Test on ${{ matrix.os }} with VS Code 1.144.0
+    name: Test on ${{ matrix.os }} with VS Code 1.145.0
     timeout-minutes: 10
     strategy:
       matrix:
@@ -69,10 +69,10 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm ci
-      - name: Run tests with VS Code 1.144.0
+      - name: Run tests with VS Code 1.145.0
         uses: coactions/setup-xvfb@v1
         with:
           run: npm test
         env:
-          VSCODE_VERSION: '1.144.0'
+          VSCODE_VERSION: '1.145.0'
         timeout-minutes: 10
