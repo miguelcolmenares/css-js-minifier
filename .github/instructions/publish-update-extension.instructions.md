@@ -14,31 +14,28 @@ Two hard constraints shape everything below:
 
 1. **Tag immutability.** The repository ruleset on `refs/tags/v*` blocks deletion and force-push. Once a `v1.x.y` tag exists it is permanent, and any release tied to it is permanent too. This is a feature (immutable audit trail), but it means a mistake that pushes a bad tag burns that version number forever.
 
-2. **VSCE_PAT expires.** Azure DevOps PATs have a maximum lifespan of one year. If the PAT expires between two releases and nobody notices, a naïve "push tag → workflow publishes" flow would burn the tag on GitHub while failing to reach the Marketplace, leaving the two out of sync.
+2. **The Marketplace identity can break without a commit to blame.** Publishing uses a Microsoft Entra identity. If the app registration is deleted, its federated credential no longer matches the workflow, or it is removed from the publisher, and nobody notices, a naïve "push tag → workflow publishes" flow would burn the tag on GitHub while failing to reach the Marketplace, leaving the two out of sync.
 
-The preflight-first workflow solves both: the tag is created **from inside** the workflow, and only **after** `vsce verify-pat` confirms the PAT is still valid and correctly scoped. If the PAT is broken, nothing gets created on GitHub, no version is burned, and the maintainer can rotate the PAT and re-run the workflow with the same version number.
+The preflight-first workflow solves both: the tag is created **from inside** the workflow, and only **after** `vsce verify-pat --azure-credential` confirms the identity can still publish for the publisher. If the identity is broken, nothing gets created on GitHub, no version is burned, and the maintainer can repair the identity and re-run the workflow with the same version number.
 
 ## Prerequisites (one-time setup)
 
-### 1. `VSCE_PAT` repository secret
+### 1. Microsoft Entra identity (Marketplace publishing)
 
-> **⚠️ Hard deadline: 2026-12-01.** Microsoft is retiring global PATs on this date — see [Retirement of Global Personal Access Tokens in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/). The PAT rotation instructions below still work today (2026-07-22), but on 2026-12-01 the token stops working regardless of its own expiration. Migration to Microsoft Entra ID federated auth (`azure/login@v2` + `vsce publish --azure-credential`) is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180). Once that lands, this section is replaced with the Entra setup steps and `VSCE_PAT` is deleted from the repository secrets.
+The workflows publish to the Visual Studio Marketplace with a Microsoft Entra identity, over GitHub OIDC. There is **no token to create or rotate**. This replaced the `VSCE_PAT` secret, because Microsoft retires global Azure DevOps Personal Access Tokens on 2026-12-01 ([announcement](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/)) and ours was a global one. The migration is tracked in [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180).
 
-> **🔥 CRITICAL: If the migration in [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180) is not merged before 2026-12-01, do not attempt a release.** The publish step will fail after the tag is created, placing the release in the same broken state described in "Publish fails after tag was created". Complete the Entra migration first.
+How it works: `azure/login` exchanges the run's OIDC token for an Entra access token, and `vsce` uses that sign-in when it is given `--azure-credential`. Both `preflight` and `publish` in `release.yml`, and `verify-marketplace-auth.yml`, need `id-token: write` for that exchange.
 
-The workflow reads the PAT from `secrets.VSCE_PAT`. To create or rotate it:
+One-time setup, done by the owner of the `miguel-colmenares` publisher. These steps happen in the Azure portal and the Marketplace, so they cannot be checked from this repository:
 
-1. Sign in at <https://dev.azure.com> with the account that owns the `miguel-colmenares` Marketplace publisher.
-2. User Settings → Personal Access Tokens → **New Token**.
-3. Configure:
-   - **Name**: `VS Code Marketplace — miguel-colmenares (GitHub Actions)`
-   - **Organization**: **All accessible organizations** (do NOT scope to a single org — Marketplace lookups fail otherwise; this is precisely the setting Microsoft is retiring, hence the deadline above).
-   - **Scopes**: Custom defined → **Marketplace (Manage)**.
-   - **Expiration**: 1 year (the maximum allowed).
-4. Copy the token immediately (it is shown only once).
-5. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
-   - **Name**: `VSCE_PAT`
-   - **Secret**: paste the PAT verbatim, no wrapping quotes.
+1. In Microsoft Entra ID, create an **app registration** for this repository.
+2. On that app registration, add a **federated credential** for GitHub Actions with the subject `repo:miguelcolmenares/css-js-minifier:ref:refs/heads/master`. Releases are dispatched on `master`, so this is the subject the run presents. The workflows do not use a GitHub environment. If they ever do, the subject changes and the credential must be recreated.
+3. Make the app registration's service principal a **member of the `miguel-colmenares` publisher** on the [Marketplace publisher page](https://marketplace.visualstudio.com/manage), with the right to publish. `vsce verify-pat --azure-credential` is the check for this step, so run `verify-marketplace-auth.yml` after it. The exact screens are in Microsoft's documentation linked under [Reference](#reference).
+4. In GitHub, add two **repository secrets**: `AZURE_CLIENT_ID` (the app registration's application ID) and `AZURE_TENANT_ID` (the directory ID). They identify the app registration and are not credentials: nothing secret can be taken from them, and nothing needs rotating.
+5. Run `gh workflow run verify-marketplace-auth.yml` and wait for a green run.
+6. Only after a release has succeeded with the new flow, delete the old `VSCE_PAT` secret.
+
+If `verify-marketplace-auth.yml` fails at the sign-in step, the federated credential subject or the two secrets are wrong. If it fails at `vsce verify-pat --azure-credential`, the service principal is not a member of the publisher.
 
 ### 2. Open VSX: namespace and trusted publishing
 
@@ -70,9 +67,9 @@ curl -s -o /dev/null -w '%{http_code}\n' https://open-vsx.org/api/miguel-colmena
 npm install -g @vscode/vsce
 ```
 
-## Verifying `VSCE_PAT` any time (without publishing)
+## Verifying the Marketplace identity any time (without publishing)
 
-Before every release, and any time you rotate the PAT, run the standalone verification workflow. It uses `vsce verify-pat`, which authenticates against the Marketplace API without publishing:
+Before every release, and any time the Entra setup changes, run the standalone verification workflow. It uses `vsce verify-pat --azure-credential`, which authenticates against the Marketplace API without publishing:
 
 ```bash
 # From your local checkout, on any branch (workflow file must exist on master).
@@ -83,9 +80,9 @@ RUN_ID=$(gh run list --workflow=verify-marketplace-auth.yml --limit 1 --json dat
 gh run watch "$RUN_ID" --exit-status
 ```
 
-A green run confirms the PAT is present, unexpired, correctly scoped and matches the `miguel-colmenares` publisher. **No version is burned; the Marketplace state is untouched.**
+A green run confirms the two Entra secrets are present, the OIDC sign-in works and the identity can publish for the `miguel-colmenares` publisher. **No version is burned; the Marketplace state is untouched.**
 
-The release workflow (`Build & Release`) also runs this check in its preflight step, so even if you skip the standalone verification the release is still safe. Running it manually is a fast smoke test after rotating the PAT.
+The release workflow (`Build & Release`) also runs this check in its preflight step, so even if you skip the standalone verification the release is still safe. Running it manually is a fast smoke test after any change to the Entra setup.
 
 ## The release runbook
 
@@ -116,13 +113,13 @@ The release workflow (`Build & Release`) also runs this check in its preflight s
 
 6. Merge the PR (squash). The 8-target build matrix runs automatically on the PR because `package.json` is in the workflow's path filter.
 
-### Step 2 — Verify `VSCE_PAT` is healthy
+### Step 2 — Verify the Marketplace identity is healthy
 
 ```bash
 gh workflow run verify-marketplace-auth.yml
 ```
 
-Wait for the run to complete green. If it fails, rotate the PAT (see [Prerequisites](#1-vsce_pat-repository-secret)) before continuing.
+Wait for the run to complete green. If it fails, repair the identity (see [Prerequisites](#1-microsoft-entra-identity-marketplace-publishing)) before continuing.
 
 ### Step 3 — Trigger the release workflow
 
@@ -149,8 +146,8 @@ The workflow runs these jobs in order:
    - The `version` input matches `package.json` on `master`.
    - `CHANGELOG.md` has a `## [X.Y.Z]` entry.
    - The tag `vX.Y.Z` does not already exist on `origin`.
-   - `VSCE_PAT` is present.
-   - `vsce verify-pat miguel-colmenares` succeeds.
+   - `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` are present.
+   - `azure/login` signs in, and `vsce verify-pat --azure-credential miguel-colmenares` succeeds.
 2. **Build matrix** (~10–15 min). Packages one `.vsix` per target (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`, `alpine-x64`, `alpine-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each. The two `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` and smoke-tested inside a `node:20-alpine` container.
 3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all eight `.vsix` files attached and auto-generated release notes.
 4. **Publish** (~2 min). Uploads all eight `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
@@ -158,7 +155,7 @@ The workflow runs these jobs in order:
 
 If any step in preflight, build or tag-and-release fails, the workflow stops **before** the tag is created. The version number remains available and you can fix the issue and re-run.
 
-If publish fails (e.g. Marketplace outage, PAT revoked mid-run), the tag and GitHub Release stay in place, and users can install manually from the release assets via `code --install-extension` while the maintainer investigates. Re-running just the publish job is not currently supported — a manual `vsce publish` from the maintainer's machine using the already-attached `.vsix` files is the recovery path (see [Emergency procedures](#emergency-procedures) below).
+If publish fails (e.g. Marketplace outage, identity removed from the publisher mid-run), the tag and GitHub Release stay in place, and users can install manually from the release assets via `code --install-extension` while the maintainer investigates. Re-running just the publish job is not currently supported — a manual `vsce publish` from the maintainer's machine using the already-attached `.vsix` files is the recovery path (see [Emergency procedures](#emergency-procedures) below).
 
 > **Note:** If the `.vsix` files are missing from the GitHub Release, rebuild them locally with `vsce package --target <platform>` for each of the eight targets before running the emergency publish steps.
 
@@ -196,9 +193,9 @@ Open a follow-up PR that adds `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG
 
 The tag was created by a previous run and cannot be reused (immutability policy). Bump `package.json` to the next available version on a new PR, merge, and dispatch with the new number.
 
-### Preflight fails on `vsce verify-pat`
+### Preflight fails on the Azure sign-in or on `vsce verify-pat`
 
-The PAT is expired, has the wrong scope, or does not belong to the `miguel-colmenares` publisher. Rotate the PAT (see [Prerequisites](#1-vsce_pat-repository-secret)) and re-dispatch. **No tag was created**, so nothing is burned.
+If the sign-in step fails, the federated credential subject or the `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` secrets are wrong. If `vsce verify-pat` fails, the identity is not a member of the `miguel-colmenares` publisher. Repair it (see [Prerequisites](#1-microsoft-entra-identity-marketplace-publishing)) and re-dispatch. **No tag was created**, so nothing is burned.
 
 ### Build matrix fails on a specific platform
 
@@ -213,7 +210,7 @@ Look at the failing job's log. Common causes:
 The tag and GitHub Release are in place; the Marketplace is missing the version. Recovery:
 
 1. Investigate the failure (`vsce publish` output is in the job log). If it's a transient Marketplace error, wait and re-run manually (see [Emergency procedures](#emergency-procedures)).
-2. If the PAT was revoked mid-run, rotate it, then run the emergency manual publish using the `.vsix` files from the GitHub Release.
+2. If the identity lost its publisher role mid-run, restore it, then run the emergency manual publish using the `.vsix` files from the GitHub Release.
 3. Do **not** try to re-cut the release under a different tag — the tag/release pair is immutable and users may already have installed from the GitHub assets.
 
 ### Publish to Open VSX fails
@@ -247,8 +244,9 @@ A token is never the cause any more: there is no `OVSX_PAT`. If one is ever adde
 Use this only when the workflow's publish step failed and you cannot re-run it (e.g. GitHub Actions outage, or Marketplace requires interactive confirmation). It assumes the tag and GitHub Release already exist.
 
 ```bash
-# 1. Authenticate vsce locally with a fresh PAT.
-export VSCE_PAT=<your-pat>
+# 1. Sign in with Azure CLI as an identity that is a member of the publisher.
+#    This path has not been run yet: check that `vsce publish --azure-credential` accepts your sign-in.
+az login
 
 # 2. Download all the .vsix files from the GitHub Release.
 mkdir -p /tmp/release-X.Y.Z
@@ -256,15 +254,16 @@ gh release download vX.Y.Z --repo miguelcolmenares/css-js-minifier --dir /tmp/re
 
 # 3. Publish them all in one shot.
 cd /tmp/release-X.Y.Z
-npx @vscode/vsce publish --packagePath *.vsix
+npx @vscode/vsce publish --azure-credential --packagePath *.vsix
 ```
 
-### Rotating a compromised PAT
+### Repairing the Entra identity
 
-1. Revoke the PAT at <https://dev.azure.com> immediately.
-2. Create a fresh PAT (see [Prerequisites](#1-vsce_pat-repository-secret)).
-3. Update the `VSCE_PAT` secret in the repository.
-4. Run `gh workflow run verify-marketplace-auth.yml` to confirm the new PAT works.
+There is no token to rotate. If the app registration is deleted, or the federated credential or the publisher membership is lost:
+
+1. Recreate whatever is missing following [Prerequisites](#1-microsoft-entra-identity-marketplace-publishing).
+2. If the app registration is new, update the `AZURE_CLIENT_ID` secret.
+3. Run `gh workflow run verify-marketplace-auth.yml` to confirm the identity works.
 
 ### Unpublishing (extreme caution)
 
@@ -283,13 +282,15 @@ The tag and GitHub Release remain untouched by unpublishing — they must be dea
 ## Reference
 
 - [`.github/workflows/release.yml`](../workflows/release.yml) — the release workflow.
-- [`.github/workflows/verify-marketplace-auth.yml`](../workflows/verify-marketplace-auth.yml) — the standalone PAT check.
+- [`.github/workflows/verify-marketplace-auth.yml`](../workflows/verify-marketplace-auth.yml) — the standalone Marketplace identity check.
 - [`.github/workflows/publish-openvsx.yml`](../workflows/publish-openvsx.yml) — the Open VSX publish, called by the release and dispatchable alone.
 - [`AGENTS.md`](../../AGENTS.md) — agent-oriented summary of the release flow and Husky hooks.
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md) — contributor onboarding and CI matrix explanation.
 - [VS Code Extension Publishing Guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
 - [vsce CLI documentation](https://github.com/microsoft/vscode-vsce)
-- [Azure DevOps PAT management](https://dev.azure.com)
+- [vsce: publishing with Microsoft Entra ID](https://github.com/microsoft/vscode-vsce)
+- [Retirement of global PATs in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/)
+- [Azure Login action](https://github.com/Azure/login)
 - [Marketplace Publisher Portal](https://marketplace.visualstudio.com/manage)
 - [Open VSX: Publishing Extensions](https://github.com/eclipse/openvsx/wiki/Publishing-Extensions)
 - [`ovsx` CLI](https://github.com/eclipse/openvsx/blob/master/cli/README.md)

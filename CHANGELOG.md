@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Changed
+
+- **Marketplace publishing uses a Microsoft Entra identity instead of the `VSCE_PAT` token** ([#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180)). Microsoft retires global Azure DevOps Personal Access Tokens on 2026-12-01, and ours was a global one. `release.yml` and `verify-marketplace-auth.yml` now sign in with `azure/login` over GitHub OIDC and run `vsce verify-pat --azure-credential` and `vsce publish --azure-credential`. The preflight still runs before any tag is created, so a broken identity burns no version. It needs the repository secrets `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` and an identity that is a member of the `miguel-colmenares` publisher, set up as described in `.github/instructions/publish-update-extension.instructions.md`. The `VSCE_PAT` secret is no longer read.
+
 ## [1.3.5] - 2026-11-07
 
 ### Added

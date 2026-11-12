@@ -101,7 +101,7 @@ Before opening a PR, please make sure:
 
 Releases are gated behind three safeguards that contributors don't need to worry about but should be aware of:
 
-1. **Marketplace auth preflight** — before a tag or GitHub Release is created, the release workflow verifies that the maintainer's `VSCE_PAT` is still valid via `vsce verify-pat`. If the PAT is expired or has the wrong scope, the workflow exits before creating anything on GitHub or the Marketplace — no versions are burned.
+1. **Marketplace auth preflight** — before a tag or GitHub Release is created, the release workflow verifies that the Microsoft Entra identity used for publishing is still valid via `vsce verify-pat --azure-credential`. If the identity cannot publish for the publisher, the workflow exits before creating anything on GitHub or the Marketplace — no versions are burned.
 2. **Independent registries** — the Marketplace and [Open VSX](https://open-vsx.org) publish jobs both start after the tag and GitHub Release exist, and neither blocks the other. Open VSX publishes with trusted publishing (OIDC), so there is no token to expire, and it can be retried alone with `publish-openvsx.yml`.
 3. **Immutable tags and releases** — once a `v*` tag is pushed, the repository ruleset blocks deletion and force-push. A given `v1.x.y` tag → release → `.vsix` set is stable forever. If a release ever needs to be re-cut, it must go under a fresh version number.
 
