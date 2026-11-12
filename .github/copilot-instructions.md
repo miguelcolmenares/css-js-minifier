@@ -173,7 +173,7 @@ Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. D
 2. Add `## [X.Y.Z] - YYYY-MM-DD` heading to `CHANGELOG.md`.
 3. Commit both in the same commit. Convention: `chore: Release version X.Y.Z`.
 4. Open PR → get the 8-target matrix green → squash-merge.
-5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the `VSCE_PAT` is healthy. Open VSX needs no secret: it publishes with trusted publishing (OIDC) and is not checked in preflight.
+5. (Optional) `gh workflow run verify-marketplace-auth.yml` to confirm the Marketplace identity (Microsoft Entra) can publish. Open VSX needs no secret: it publishes with trusted publishing (OIDC) and is not checked in preflight.
 6. `gh workflow run release.yml -f version=X.Y.Z` and watch the run.
 
 #### Prohibitions
@@ -185,7 +185,7 @@ Releases are cut via `workflow_dispatch` from `.github/workflows/release.yml`. D
 
 #### Background (rationale & pipeline details)
 
-Two invariants drive this design: (1) the repository ruleset makes `refs/tags/v*` immutable, and (2) the `VSCE_PAT` expires after at most 1 year. The workflow validates the PAT via `vsce verify-pat` **before** creating the tag, so a broken token never burns a version number.
+Two invariants drive this design: (1) the repository ruleset makes `refs/tags/v*` immutable, and (2) the Marketplace identity (Microsoft Entra, over GitHub OIDC) can stop working without a commit to blame. The workflow validates it with `vsce verify-pat --azure-credential` **before** creating the tag, so a broken identity never burns a version number.
 
 See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.github/instructions/publish-update-extension.instructions.md`](instructions/publish-update-extension.instructions.md) for the human runbook.
 
@@ -193,7 +193,7 @@ See [`AGENTS.md`](../AGENTS.md) for the full agent-oriented reference and [`.git
 
 ```text
 gh workflow run release.yml -f version=X.Y.Z
-  ├─ preflight       — version match, changelog entry, tag unused, vsce verify-pat
+  ├─ preflight       — version match, changelog entry, tag unused, vsce verify-pat --azure-credential
   ├─ build (× 8)     — matrix packages one .vsix per target + activation smoke test
   ├─ tag-and-release — creates annotated tag, pushes it, creates GitHub Release
   ├─ publish         — vsce publish --packagePath dist/*.vsix (VS Code Marketplace)

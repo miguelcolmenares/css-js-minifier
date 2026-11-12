@@ -29,7 +29,7 @@ If any instruction here contradicts something you found in the codebase, the cod
 2. PR is squash-merged to master                   (maintainer)
 3. Optional: gh workflow run verify-marketplace-auth.yml   (maintainer)
 4. gh workflow run release.yml -f version=X.Y.Z    (maintainer)
-   ├─ preflight       — version match, changelog present, tag unused, VSCE_PAT valid
+   ├─ preflight       — version match, changelog present, tag unused, Marketplace identity valid
    ├─ build matrix    — 8 targets, .vsix per target, activation smoke test
    ├─ tag-and-release — annotated tag pushed, GitHub Release with .vsix assets
    ├─ publish         — vsce publish --packagePath dist/*.vsix            (VS Code Marketplace)
@@ -47,18 +47,18 @@ If any instruction here contradicts something you found in the codebase, the cod
 Two invariants are enforced by external systems and drive every decision:
 
 1. **Tag immutability.** The repository ruleset on `refs/tags/v*` blocks `deletion` and `non_fast_forward`. A pushed `v1.x.y` cannot be moved, deleted, or overwritten — ever.
-2. **`VSCE_PAT` expires.** Azure DevOps PATs live at most one year. If the token expires between releases, we must catch it **before** creating a tag on GitHub, otherwise the tag becomes an orphan (exists on GitHub, missing on Marketplace, and unfixable because of #1).
+2. **The Marketplace identity must stay valid.** Publishing uses a Microsoft Entra identity (an app registration with a federated credential for this repository, over GitHub OIDC). There is no token to expire, but the identity can still stop working: the app registration is deleted, the federated credential no longer matches the workflow, or the identity is removed from the publisher. We must catch that **before** creating a tag on GitHub, otherwise the tag becomes an orphan (exists on GitHub, missing on Marketplace, and unfixable because of #1).
 
-The preflight-first release workflow gives us: if the PAT is broken, nothing gets created anywhere; if the PAT is fine, the tag is created and immediately published, in one atomic-ish sequence.
+The preflight-first release workflow gives us: if the identity is broken, nothing gets created anywhere; if it is fine, the tag is created and immediately published, in one atomic-ish sequence.
 
-> **⚠️ Hard deadline: 2026-12-01 — Global PATs are being retired by Microsoft.** Our `VSCE_PAT` is scoped as *All accessible organizations* (required for Marketplace lookups), which makes it a global PAT. Per [Retirement of Global Personal Access Tokens in Azure DevOps](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/), **every global PAT stops working on 2026-12-01** regardless of its own expiration date. Migration to Microsoft Entra ID federated authentication (`azure/login@v2` + `vsce publish --azure-credential`) is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180). Until that ships, the preflight guard is what protects us: on 2026-12-01 the `vsce verify-pat` step will start failing and the workflow will refuse to create any tag — no orphan releases, but also no publishing until we finish the Entra migration.
+> **Why there is no `VSCE_PAT` any more.** Microsoft retires global Azure DevOps Personal Access Tokens on 2026-12-01 ([announcement](https://devblogs.microsoft.com/devops/retirement-of-global-personal-access-tokens-in-azure-devops/)), and our token was a global one. The release workflow now signs in with `azure/login` and publishes with `vsce publish --azure-credential`. The setup of the identity is in `publish-update-extension.instructions.md`, section "Microsoft Entra identity". The migration is tracked in issue [#180](https://github.com/miguelcolmenares/css-js-minifier/issues/180).
 
 ### What to check before dispatching a release
 
 - `package.json` on `master` has the intended version.
 - `CHANGELOG.md` has a heading matching `^## \[X.Y.Z\]`.
 - The tag `vX.Y.Z` does not already exist on `origin` (workflow will refuse otherwise).
-- `VSCE_PAT` is configured as a repository secret with `Marketplace (Manage)` scope for publisher `miguel-colmenares`.
+- `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` are configured as repository secrets, and that identity is a member of publisher `miguel-colmenares`.
 - Open VSX needs **no secret**: the `miguel-colmenares` namespace is verified, the Eclipse Publisher Agreement is signed, and a trusted publisher for `publish-openvsx.yml` is registered, so the publish authenticates with OIDC. Nothing about it is checked in `preflight` because there is no credential to check; a failure there happens after the tag exists and is retried by dispatching `publish-openvsx.yml` again. To confirm the registry side at any time: `curl -s https://open-vsx.org/api/miguel-colmenares | jq '.verified'` returns `true`.
 
 The workflow re-checks all four in its `preflight` job, so you can't accidentally skip them.
@@ -342,7 +342,7 @@ Short version:
 
 ```bash
 # 1. Bump + changelog PR, get merged.
-# 2. (Optional) Verify PAT.
+# 2. (Optional) Verify the Marketplace identity.
 gh workflow run verify-marketplace-auth.yml
 # 3. Dispatch release.
 gh workflow run release.yml -f version=X.Y.Z
@@ -366,8 +366,8 @@ gh workflow run release.yml -f version=X.Y.Z
 
 - **Never guess at a version number.** Read `package.json`.
 - **Never guess at a translation key.** Read the corresponding `.json` bundle.
-- **Never introduce a shortcut that bypasses the release preflight.** The preflight exists because tag immutability + PAT expiration are a real footgun combination.
-- **Never commit / push secrets.** `VSCE_PAT` lives only in GitHub Secrets and (temporarily) in the maintainer's password manager.
+- **Never introduce a shortcut that bypasses the release preflight.** The preflight exists because tag immutability + an unnoticed broken Marketplace identity are a real footgun combination.
+- **Never commit / push secrets.** There is no Marketplace token any more: `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` identify the app registration and are not credentials, and nothing in this repository stores a password.
 
 ---
 

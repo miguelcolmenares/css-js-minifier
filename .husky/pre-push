@@ -2,7 +2,7 @@
 #
 # Why: the release flow requires tags to be created from inside the
 # `Build & Release` workflow, after the preflight (which includes
-# `vsce verify-pat`) has succeeded. A hand-pushed `v*` tag would bypass
+# `vsce verify-pat --azure-credential`) has succeeded. A hand-pushed `v*` tag would bypass
 # that safety net and, because the repo's ruleset makes tags immutable,
 # could burn a version number if the workflow later refused to publish.
 #
@@ -21,7 +21,7 @@ while read -r local_ref _local_sha remote_ref _remote_sha; do
 ❌ Refusing to push $remote_ref from a local machine.
 
 Release tags (v*) must be created by the 'Build & Release' workflow, not
-by hand. Manual tag pushes bypass the VSCE_PAT preflight and, because
+by hand. Manual tag pushes bypass the Marketplace identity preflight and, because
 the repository ruleset makes tags immutable, can burn a version number
 if the Marketplace publish later fails.
 
