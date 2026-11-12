@@ -251,7 +251,7 @@ Each runner:
 1. `npm ci` — installs the native optional dependencies for its platform. The `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` (so `oxc-minify` installs its musl binding) and the glibc-only `lightningcss-linux-*-gnu` binding is deleted before packaging.
 2. `npm run package` — webpack production bundle.
 3. `npx vsce package --target <t>` — produces a platform-tagged `.vsix`.
-4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to make sure the binary loads on that platform. The `alpine-*` targets run this inside a `node:20-alpine` container with `--expect-libc musl`, because musl bindings only load on a musl host.
+4. `node scripts/verify-vsix-activation.mjs <vsix>` — extracts the archive, `require()`s `lightningcss` and `oxc-minify`, and calls each once to make sure the binary loads on that platform. The `alpine-*` targets run this inside a `node:24-alpine` container with `--expect-libc musl`, because musl bindings only load on a musl host.
 
 `verify-vsix-activation.mjs` exit codes:
 

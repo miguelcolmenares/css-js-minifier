@@ -151,7 +151,7 @@ The workflow runs these jobs in order:
    - The tag `vX.Y.Z` does not already exist on `origin`.
    - `VSCE_PAT` is present.
    - `vsce verify-pat miguel-colmenares` succeeds.
-2. **Build matrix** (~10–15 min). Packages one `.vsix` per target (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`, `alpine-x64`, `alpine-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each. The two `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` and smoke-tested inside a `node:20-alpine` container.
+2. **Build matrix** (~10–15 min). Packages one `.vsix` per target (`darwin-x64`, `darwin-arm64`, `linux-x64`, `linux-arm64`, `win32-x64`, `win32-arm64`, `alpine-x64`, `alpine-arm64`) and runs `scripts/verify-vsix-activation.mjs` against each. The two `alpine-*` targets are built on the glibc Linux runners with `npm ci --libc=musl` and smoke-tested inside a `node:24-alpine` container.
 3. **Tag and release** (~1 min). Re-verifies `master`'s `package.json` hasn't drifted, then creates the annotated tag `vX.Y.Z`, pushes it, and creates the GitHub Release with all eight `.vsix` files attached and auto-generated release notes.
 4. **Publish** (~2 min). Uploads all eight `.vsix` files to the Marketplace via `vsce publish --packagePath dist/*.vsix`.
 5. **Publish to Open VSX** (~2 min, `publish-openvsx` job). Starts after tag-and-release, in parallel with Publish, and calls [`publish-openvsx.yml`](../workflows/publish-openvsx.yml). It downloads the `.vsix` files of the release (eight since the Alpine targets, six for older releases; the workflow fails if it finds fewer than six) from the GitHub Release and runs `ovsx publish` once per file, skipping any target already on Open VSX.
@@ -205,7 +205,7 @@ The PAT is expired, has the wrong scope, or does not belong to the `miguel-colme
 Look at the failing job's log. Common causes:
 
 - Native binding regression: `scripts/verify-vsix-activation.mjs` will report exactly which `require()` failed. Usually points at a missing entry in `optionalDependencies` or `.vscodeignore`.
-- `alpine-x64` / `alpine-arm64` fail with `oxc-minify` unable to find its native binding: the musl binding was not installed. The `Install dependencies (musl bindings)` step must run `npm ci --libc=musl`. `--expect-libc musl` exiting `2` means the smoke test ran on a glibc host instead of the `node:20-alpine` container.
+- `alpine-x64` / `alpine-arm64` fail with `oxc-minify` unable to find its native binding: the musl binding was not installed. The `Install dependencies (musl bindings)` step must run `npm ci --libc=musl`. `--expect-libc musl` exiting `2` means the smoke test ran on a glibc host instead of the `node:24-alpine` container.
 - Test flake: retry the job. If it fails twice, treat it as a real failure.
 
 ### Publish fails after tag was created

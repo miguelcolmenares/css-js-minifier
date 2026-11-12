@@ -85,7 +85,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           # ovsx 1.x requires Node >= 22 (the rest of the repo's workflows use 20).
-          node-version: 22
+          node-version: 24
 
       - name: Download .vsix files from the GitHub Release
         env:
