@@ -40,7 +40,9 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-26.04, windows-latest, macos-latest]
+        # No macOS here: `master.yml` runs the same VS Code version on macOS
+        # (`Test on macos-latest`, a required check), so this job would repeat it.
+        os: [ubuntu-26.04, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
