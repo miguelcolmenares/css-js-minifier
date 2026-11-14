@@ -48,25 +48,14 @@ jobs:
         run: git config --global core.autocrlf false
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Cache dependencies
-        uses: actions/cache@v6
-        id: cache-deps
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: deps-v2-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            deps-v2-${{ runner.os }}-
-            deps-v2-
-      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true'}}
-        name: List the state of node modules
-        continue-on-error: true
-        run: npm list
+      # Caches the npm download cache only. node_modules is never cached: npm ci removes it
+      # before installing, and the native bindings in it belong to one platform and Node build.
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Run tests with VS Code 1.145.0
