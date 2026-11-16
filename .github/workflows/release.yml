@@ -480,7 +480,7 @@ jobs:
 
       # Installs the site, builds it, checks it, and uploads the Pages artifact.
       - name: Build the docs site
-        uses: miguelcolmenares/docs-sitekit@v0.2.4
+        uses: miguelcolmenares/docs-sitekit@v0.3.0
         with:
           version: 0.2.4
 
