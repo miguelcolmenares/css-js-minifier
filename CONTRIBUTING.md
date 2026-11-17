@@ -6,7 +6,7 @@ Thanks for wanting to contribute! This document covers the essentials: local set
 
 - **Node.js 24** (the version used in CI; the build needs 22 or newer).
 - **npm 11** (bundled with Node 24).
-- **VS Code 1.145.0 or newer** (matches `engines.vscode` in `package.json`).
+- **VS Code 1.146.0 or newer** (matches `engines.vscode` in `package.json`).
 - **Git** with `core.autocrlf` set to `false` if you're on Windows (the CI enforces this to keep test fixtures byte-identical across platforms).
 
 ## Local setup
