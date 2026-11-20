@@ -156,6 +156,10 @@
   "theme": {
     "default": "dark"
   },
+  "analytics": {
+    "provider": "gtm",
+    "id": "GTM-P7JGH55"
+  },
   "search": {
     "enabled": false
   },
